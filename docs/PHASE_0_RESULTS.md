@@ -1,6 +1,6 @@
 # Phase 0 — Foundations acceptance
 
-Branch: `phase-0-foundations`. Phase 0 is **pending external acceptance**; do not start Phase 1.
+Branch: `phase-0-foundations`. [Draft PR #1](https://github.com/peter-elmasry/BTSApp/pull/1). Phase 0 is **pending external acceptance**; do not start Phase 1.
 
 ## Delivered
 

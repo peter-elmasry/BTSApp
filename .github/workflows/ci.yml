@@ -21,8 +21,17 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
-      - run: npm run serve:dist &
-      - run: npm run test:lighthouse
+      - name: Lighthouse shell acceptance
+        shell: bash
+        run: |
+          npm run serve:dist > /tmp/btsapp-shell.log 2>&1 &
+          shell_pid=$!
+          trap 'kill "$shell_pid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:4200/home > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:lighthouse
       - uses: actions/upload-artifact@v4
         if: always()
         with:
