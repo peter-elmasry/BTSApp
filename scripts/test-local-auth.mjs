@@ -25,6 +25,14 @@ const env = {
 const admin = createClient(url, values.SERVICE_ROLE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
+const publicClient = createClient(url, values.ANON_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+const signup = await publicClient.auth.signUp({
+  email: `signup-${randomBytes(12).toString('hex')}@members.dst-bts.app`,
+  password: randomBytes(24).toString('hex'),
+});
+if (!signup.error || signup.data.user) throw new Error('Global signup must remain disabled');
 function checked(response) {
   if (response.error) throw new Error(response.error.message);
   return response.data;
@@ -75,6 +83,9 @@ for (const member of first) {
   if (checked(await client.rpc('is_owner')) !== true)
     throw new Error('Seeded Auth JWT does not grant owner permission');
   checked(await client.auth.signOut());
+  const recovery = await client.auth.resetPasswordForEmail(`m-${member.id}@members.dst-bts.app`);
+  if (!recovery.error || !recovery.error.message.includes('EMAIL_DISABLED'))
+    throw new Error('Email recovery must be denied by the mail hook');
 }
 console.log(
   'Local GoTrue: both synthetic-email owners authenticate; seed rerun preserves IDs/passwords; owner RPC recognizes JWTs.',

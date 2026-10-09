@@ -78,6 +78,10 @@ select is(op_result('80000000-0000-0000-0000-000000000001','test_rpc'),null::jso
 select is(op_complete('80000000-0000-0000-0000-000000000001','test_rpc','{"ok":true}'::jsonb),'{"ok":true}'::jsonb,'store result');
 select is(op_complete('80000000-0000-0000-0000-000000000001','test_rpc','{"ok":false}'::jsonb),'{"ok":true}'::jsonb,'retry returns first result');
 select is((select count(*) from client_ops),1::bigint,'one operation stored');
+select ok(not has_function_privilege('anon','public.block_auth_email(jsonb)','EXECUTE'),'anonymous cannot call mail hook');
+select ok(not has_function_privilege('authenticated','public.block_auth_email(jsonb)','EXECUTE'),'authenticated cannot call mail hook');
+select ok(has_function_privilege('supabase_auth_admin','public.block_auth_email(jsonb)','EXECUTE'),'GoTrue can call mail hook');
+select is(block_auth_email('{}'::jsonb),'{"error":{"http_code":403,"message":"EMAIL_DISABLED"}}'::jsonb,'mail hook denies all delivery');
 select throws_ok($$select op_result('80000000-0000-0000-0000-000000000001','different_rpc')$$,'P0001','OP_ID_CONFLICT','RPC cannot reuse operation');
 select set_config('request.jwt.claim.sub','10000000-0000-0000-0000-000000000002',true);
 select throws_ok($$select op_result('80000000-0000-0000-0000-000000000001','test_rpc')$$,'P0001','OP_ID_CONFLICT','different actor cannot replay');

@@ -32,6 +32,12 @@ create or replace function public.server_now() returns timestamptz
 language sql volatile set search_path = public, pg_temp
 as $$ select clock_timestamp() $$;
 
+-- Stateless Auth hook: no SMTP/recovery/magic-link delivery. Password sign-in
+-- remains available for confirmed synthetic-email accounts created by owners.
+create or replace function public.block_auth_email(event jsonb) returns jsonb
+language sql immutable set search_path = public, pg_temp
+as $$ select '{"error":{"http_code":403,"message":"EMAIL_DISABLED"}}'::jsonb $$;
+
 create or replace function public.audit(p_event uuid, p_action text, p_entity text, p_entity_id uuid, p_before jsonb, p_after jsonb) returns void
 language sql security definer set search_path = public, pg_temp
 as $$ insert into public.audit_log(event_id, actor_id, action, entity, entity_id, before, after)

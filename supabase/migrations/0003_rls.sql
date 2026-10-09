@@ -17,6 +17,8 @@ revoke execute on all functions in schema public from public, anon, authenticate
 alter default privileges in schema public revoke execute on functions from public, anon, authenticated;
 grant execute on function public.current_member_id(), public.is_owner(), public.is_event_admin(uuid), public.is_referee_for_match(uuid), public.is_staff(uuid), public.can_see_results(uuid), public.server_now() to anon, authenticated;
 grant execute on all functions in schema public to service_role;
+grant usage on schema public to supabase_auth_admin;
+grant execute on function public.block_auth_email(jsonb) to supabase_auth_admin;
 
 create index teams_event_id_idx on public.teams(event_id);
 create index games_event_id_idx on public.games(event_id);

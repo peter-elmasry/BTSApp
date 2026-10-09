@@ -27,8 +27,14 @@ enable_signup = false
 minimum_password_length = 12
 
 [auth.email]
-enable_signup = false
+# This toggles the email/password provider in local GoTrue. Global signup above
+# stays disabled; seeded synthetic-email users still need password sign-in.
+enable_signup = true
 enable_confirmations = false
+
+[auth.hook.send_email]
+enabled = true
+uri = "pg-functions://postgres/public/block_auth_email"
 
 [realtime]
 enabled = true
