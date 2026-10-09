@@ -48,6 +48,12 @@ jobs:
       - run: npm ci
       - run: npx supabase start
       - run: npx supabase db reset
+      - name: Verify owner seed and synthetic-email auth
+        shell: bash
+        run: |
+          npx supabase status -o env > "$RUNNER_TEMP/btsapp-supabase.env"
+          SUPABASE_ENV_FILE="$RUNNER_TEMP/btsapp-supabase.env" node scripts/test-local-auth.mjs
+          rm -f "$RUNNER_TEMP/btsapp-supabase.env"
       - run: npm run test:db
       - run: npx supabase stop
         if: always()
