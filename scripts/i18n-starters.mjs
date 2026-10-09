@@ -48,7 +48,7 @@ en.foundation = {
   avatar: 'Falcon emblem',
   notifications: 'Preview notifications',
   preview: 'Preview',
-  previewMessage: 'Your preview is ready. Event registration will be available soon.',
+  previewMessage: 'Your preview is ready. Teams will appear when event setup is complete.',
   saved: 'Preview complete',
   upcoming: 'We’re getting this page ready for event day.',
 };
@@ -64,7 +64,7 @@ ar.foundation = {
   avatar: 'رمز الصقر',
   notifications: 'جرّب الإشعارات',
   preview: 'معاينة',
-  previewMessage: 'المعاينة جاهزة. التسجيل في الإيفنت هيكون متاح قريب.',
+  previewMessage: 'المعاينة جاهزة. الفرق هتظهر لما إعدادات الإيفنت تجهز.',
   saved: 'المعاينة خلصت',
   upcoming: 'بنجهّز الصفحة دي ليوم الإيفنت.',
 };

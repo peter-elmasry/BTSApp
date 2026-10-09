@@ -51,3 +51,7 @@ The local GoTrue smoke test in CI failed with `Email logins are disabled` when `
 ## D014 — Other confidence tags
 
 Calculated WCAG contrast for `#FFB800`: 1.73:1 on white, 1.65:1 on ivory, 8.13:1 on navy. This confirms the plan's gold-only-on-navy rule for text. [ExcelJS official releases](https://github.com/exceljs/exceljs/releases) provide its v4.4.0 release history; [SheetJS's official repository](https://github.com/SheetJS/sheetjs) points to a new upstream home. The broad claim that all SheetJS development is unmaintained is not established by these sources. Retain the explicitly mandated ExcelJS choice; browser/import compatibility and security checks belong to Phase 3, before adding it. No XLSX library is added to the Phase 0 bundle.
+
+## D015 — Auth and mail runtime checks passed
+
+[CI run 37870574137](https://github.com/peter-elmasry/BTSApp/actions/runs/37870574137) successfully applies/resets the schema, authenticates both seeded owners at `m-<uuid>@members.dst-bts.app`, verifies their JWTs with `is_owner()`, preserves IDs/passwords across seed reruns, rejects anonymous signup and denies password-recovery mail through the Postgres hook. The expanded SQL suite passes 159 assertions. This verifies the exact synthetic domain against real local GoTrue; hosted owners/secrets/project linking are still pending. Frontend build, five unit tests, three mobile/PWA browser tests and Lighthouse acceptance also pass in the same run.

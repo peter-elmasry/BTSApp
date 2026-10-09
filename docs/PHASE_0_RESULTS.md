@@ -13,18 +13,18 @@ Branch: `phase-0-foundations`. [Draft PR #1](https://github.com/peter-elmasry/BT
 
 ## Acceptance evidence
 
-| Criterion                                                              | Result                                                                                                                       |
-| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Production build / output                                              | Passed; initial 314.30 kB, `dist/btsapp/browser/index.html` exists                                                           |
-| Unit tests                                                             | 5 passed (shell and language/direction persistence)                                                                          |
-| 360×740 Arabic/English, switch/reload, no overflow, ≥44px controls     | Passed in Chromium                                                                                                           |
-| Automated accessibility                                                | No axe violations in either language                                                                                         |
-| Header white DST mark / crop                                           | Passed; generated mark visually inspected, no tagline pixels                                                                 |
-| Offline / Lighthouse                                                   | Offline reload passed; local Lighthouse accessibility 100, best practices 100, performance 66; PWA category removed          |
-| Supabase migrations and permission suite                               | Passed on GitHub local Supabase: migrations 0001–0003 applied and 155 assertions passed; Docker/Podman still missing locally |
-| Linked hosted project / owners seeded / exact synthetic domain sign-in | Pending project credentials and owner passwords                                                                              |
-| GitHub CI green                                                        | First CI run green: https://github.com/peter-elmasry/BTSApp/actions/runs/37869822097; latest owner-auth smoke check pending  |
-| Vercel deployment / hosted Lighthouse                                  | Pending Vercel project/environment configuration                                                                             |
+| Criterion                                                          | Result                                                                                                                                      |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Production build / output                                          | Passed; initial 314.30 kB, `dist/btsapp/browser/index.html` exists                                                                          |
+| Unit tests                                                         | 5 passed (shell and language/direction persistence)                                                                                         |
+| 360×740 Arabic/English, switch/reload, no overflow, ≥44px controls | Passed in Chromium                                                                                                                          |
+| Automated accessibility                                            | No axe violations in either language                                                                                                        |
+| Header white DST mark / crop                                       | Passed; generated mark visually inspected, no tagline pixels                                                                                |
+| Offline / Lighthouse                                               | Offline reload passed; local Lighthouse accessibility 100, best practices 100, performance 66; PWA category removed                         |
+| Supabase migrations and permission suite                           | Passed on GitHub local Supabase: migrations 0001–0003 applied and 159 assertions passed; Docker/Podman still missing locally                |
+| Local owner seed / exact synthetic domain sign-in                  | Passed on CI local GoTrue; hosted project linking/seeding still need credentials and owner passwords                                        |
+| GitHub CI green                                                    | Code verification passed: https://github.com/peter-elmasry/BTSApp/actions/runs/37870574137 (frontend + DB + owner/login/signup/mail checks) |
+| Vercel deployment / hosted Lighthouse                              | Pending Vercel project/environment configuration                                                                                            |
 
 The SQL suite exercises all foundation helpers as anonymous, owner, event admin, assigned/unassigned referee, guide, unassigned member and inactive admin; cross-event isolation, public/hidden outcomes, direct table grants and actual denied requests, internal helper revocation, actor/RPC-bound replay. Later phases add their mutation RPC tests and scoring/lifecycle suites; this phase does not claim those nonexistent RPCs were tested.
 
