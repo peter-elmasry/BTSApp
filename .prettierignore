@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.angular/
+package-lock.json
+design/
+public/brand/
+public/avatars/*.svg
+src/environments/environment.ts
+artifacts/
+test-results/
+playwright-report/
+supabase/.temp/
+supabase/migrations/*.sql
+supabase/tests/*.sql
+docs/IMPLEMENTATION_PLAN.md

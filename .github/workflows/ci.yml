@@ -1,0 +1,59 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+permissions:
+  contents: read
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node scripts/set-env.mjs --allow-empty
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Lighthouse shell acceptance
+        shell: bash
+        run: |
+          npm run serve:dist > /tmp/btsapp-shell.log 2>&1 &
+          shell_pid=$!
+          trap 'kill "$shell_pid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:4200/home > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:lighthouse
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shell-checks
+          path: artifacts/
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx supabase start
+      - run: npx supabase db reset
+      - name: Verify owner seed and synthetic-email auth
+        shell: bash
+        run: |
+          npx supabase status -o env > "$RUNNER_TEMP/btsapp-supabase.env"
+          SUPABASE_ENV_FILE="$RUNNER_TEMP/btsapp-supabase.env" node scripts/test-local-auth.mjs
+          rm -f "$RUNNER_TEMP/btsapp-supabase.env"
+      - run: npm run test:db
+      - run: npx supabase stop
+        if: always()

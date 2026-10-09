@@ -1,0 +1,146 @@
+[
+  {
+    "key": "falcon",
+    "label_en": "Falcon",
+    "label_ar": "صقر",
+    "file": "falcon.svg"
+  },
+  {
+    "key": "lion",
+    "label_en": "Lion",
+    "label_ar": "أسد",
+    "file": "lion.svg"
+  },
+  {
+    "key": "fox",
+    "label_en": "Fox",
+    "label_ar": "ثعلب",
+    "file": "fox.svg"
+  },
+  {
+    "key": "owl",
+    "label_en": "Owl",
+    "label_ar": "بومة",
+    "file": "owl.svg"
+  },
+  {
+    "key": "eagle",
+    "label_en": "Eagle",
+    "label_ar": "نسر",
+    "file": "eagle.svg"
+  },
+  {
+    "key": "turtle",
+    "label_en": "Turtle",
+    "label_ar": "سلحفاة",
+    "file": "turtle.svg"
+  },
+  {
+    "key": "dolphin",
+    "label_en": "Dolphin",
+    "label_ar": "دولفين",
+    "file": "dolphin.svg"
+  },
+  {
+    "key": "whale",
+    "label_en": "Whale",
+    "label_ar": "حوت",
+    "file": "whale.svg"
+  },
+  {
+    "key": "butterfly",
+    "label_en": "Butterfly",
+    "label_ar": "فراشة",
+    "file": "butterfly.svg"
+  },
+  {
+    "key": "horse",
+    "label_en": "Horse",
+    "label_ar": "حصان",
+    "file": "horse.svg"
+  },
+  {
+    "key": "star",
+    "label_en": "Star",
+    "label_ar": "نجمة",
+    "file": "star.svg"
+  },
+  {
+    "key": "shield",
+    "label_en": "Shield",
+    "label_ar": "درع",
+    "file": "shield.svg"
+  },
+  {
+    "key": "bolt",
+    "label_en": "Bolt",
+    "label_ar": "برق",
+    "file": "bolt.svg"
+  },
+  {
+    "key": "mountain",
+    "label_en": "Mountain",
+    "label_ar": "جبل",
+    "file": "mountain.svg"
+  },
+  {
+    "key": "sun",
+    "label_en": "Sun",
+    "label_ar": "شمس",
+    "file": "sun.svg"
+  },
+  {
+    "key": "moon",
+    "label_en": "Moon",
+    "label_ar": "قمر",
+    "file": "moon.svg"
+  },
+  {
+    "key": "flame",
+    "label_en": "Flame",
+    "label_ar": "شعلة",
+    "file": "flame.svg"
+  },
+  {
+    "key": "wave",
+    "label_en": "Wave",
+    "label_ar": "موجة",
+    "file": "wave.svg"
+  },
+  {
+    "key": "anchor",
+    "label_en": "Anchor",
+    "label_ar": "مرساة",
+    "file": "anchor.svg"
+  },
+  {
+    "key": "crown",
+    "label_en": "Crown",
+    "label_ar": "تاج",
+    "file": "crown.svg"
+  },
+  {
+    "key": "ball",
+    "label_en": "Ball",
+    "label_ar": "كرة",
+    "file": "ball.svg"
+  },
+  {
+    "key": "racket",
+    "label_en": "Racket",
+    "label_ar": "مضرب",
+    "file": "racket.svg"
+  },
+  {
+    "key": "trophy",
+    "label_en": "Trophy",
+    "label_ar": "كأس",
+    "file": "trophy.svg"
+  },
+  {
+    "key": "compass",
+    "label_en": "Compass",
+    "label_ar": "بوصلة",
+    "file": "compass.svg"
+  }
+]
