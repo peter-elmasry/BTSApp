@@ -42,3 +42,14 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+.env
+.env.*
+!.env.example
+src/environments/environment.ts
+supabase/.temp/
+supabase/.branches/
+.vercel/
+playwright-report/
+test-results/
+artifacts/

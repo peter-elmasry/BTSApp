@@ -1,3 +1,152 @@
-/* You can add global styles to this file, and also import other style files */
-
+@import '@fontsource/cairo/arabic-400.css';
+@import '@fontsource/cairo/arabic-600.css';
+@import '@fontsource/cairo/arabic-700.css';
+@import '@fontsource/cairo/arabic-800.css';
+@import '@fontsource/cairo/latin-400.css';
+@import '@fontsource/cairo/latin-600.css';
+@import '@fontsource/cairo/latin-700.css';
+@import '@fontsource/cairo/latin-800.css';
 @import 'tailwindcss';
+
+@theme {
+  --color-*: initial;
+  --color-gold: #ffb800;
+  --color-navy: #172b4d;
+  --color-white: #ffffff;
+  --color-teal: #087f8c;
+  --color-ivory: #fff9eb;
+  --color-gold-soft: #fff0c2;
+  --color-slate: #5f6b7a;
+  --color-mist: #e5e7eb;
+  --color-success: #16794b;
+  --color-warning: #9a6700;
+  --color-error: #c53030;
+  --color-info: #2563eb;
+  --font-sans: 'Cairo', system-ui, sans-serif;
+  --radius-card: 1rem;
+  --shadow-card: 0 1px 2px rgb(23 43 77 / 0.06), 0 4px 12px rgb(23 43 77 / 0.08);
+}
+
+html {
+  background: var(--color-ivory);
+  color: var(--color-navy);
+  font-family: var(--font-sans);
+}
+body {
+  margin: 0;
+}
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled),
+select {
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 3px solid var(--color-teal);
+  outline-offset: 3px;
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-active {
+  color: var(--color-teal);
+  background: var(--color-ivory);
+}
+.ds-button {
+  min-height: 44px;
+  min-width: 44px;
+  border-radius: 0.75rem;
+  padding: 0.65rem 1rem;
+  font-weight: 700;
+}
+.ds-button.primary {
+  background: var(--color-gold);
+  color: var(--color-navy);
+}
+.ds-button.secondary {
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+.ds-button.ghost {
+  color: var(--color-navy);
+  border: 1px solid var(--color-mist);
+}
+.ds-button.danger {
+  background: var(--color-error);
+  color: var(--color-white);
+}
+.ds-button.sm {
+  font-size: 0.875rem;
+}
+.ds-button.lg {
+  min-height: 52px;
+  font-size: 1.125rem;
+}
+.ds-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.ds-control {
+  min-height: 48px;
+  border: 1px solid var(--color-slate);
+  border-radius: 0.75rem;
+  padding-block: 0.625rem;
+  padding-inline: 0.75rem;
+  background: var(--color-white);
+}
+.ds-control[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+.ds-sheet {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-start: auto;
+  inset-block-end: 0;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 48rem;
+  max-height: 85dvh;
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+}
+.ds-sheet::backdrop {
+  background: rgb(23 43 77 / 0.65);
+}
+.skip-link {
+  position: fixed;
+  inset-inline-start: 1rem;
+  inset-block-start: -6rem;
+  z-index: 100;
+  background: var(--color-white);
+  padding: 1rem;
+}
+.skip-link:focus {
+  inset-block-start: 1rem;
+}
+.enter {
+  animation: rise 0.2s ease-out;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,10 +1,35 @@
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
+import { appConfig } from './app.config';
+import { provideTransloco, TranslocoLoader } from '@jsverse/transloco';
+import { of } from 'rxjs';
+
+class TestLoader implements TranslocoLoader {
+  getTranslation() {
+    return of({
+      app: { title: 'DST' },
+      common: { switchLanguage: 'Switch language', navigation: 'Navigation', skip: 'Skip' },
+      nav: { home: 'Home', schedule: 'Schedule', about: 'About' },
+    });
+  }
+}
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [
+        ...appConfig.providers,
+        provideTransloco({
+          config: {
+            availableLangs: ['ar', 'en'],
+            defaultLang: 'ar',
+            reRenderOnLangChange: true,
+            prodMode: true,
+          },
+          loader: TestLoader,
+        }),
+      ],
     }).compileComponents();
   });
 
@@ -14,10 +39,13 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render title', async () => {
+  it('renders branded header and navigation', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, BTSApp');
+    expect(compiled.querySelector('header img')?.getAttribute('src')).toBe(
+      '/brand/dst-mark-white.webp',
+    );
+    expect(compiled.querySelectorAll('nav a').length).toBe(3);
   });
 });

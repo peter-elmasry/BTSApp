@@ -1,0 +1,16 @@
+{
+  "framework": "angular",
+  "buildCommand": "node scripts/set-env.mjs && npm run build",
+  "outputDirectory": "dist/btsapp/browser",
+  "rewrites": [{ "source": "/((?!.*\\.).*)", "destination": "/index.html" }],
+  "headers": [
+    { "source": "/", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+    { "source": "/index.html", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+    { "source": "/ngsw.json", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+    { "source": "/ngsw-worker.js", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+    {
+      "source": "/:file([a-zA-Z0-9_-]+-[A-Z0-9]{8}\\.(js|css))",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ]
+}
