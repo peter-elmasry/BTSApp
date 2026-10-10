@@ -2,11 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-10 — Git workflow and branch publishing — STARTED
+## 2026-10-10 — Git workflow and branch publishing — DONE
 
 - **Requested by:** Gendy.
 - **Goal:** Add the requested Git workflow to `AGENTS.md`; diagnose why `codex/phase-1-auth-owner` cannot be published and try to publish it.
-- **Initial state:** Current branch is `codex/phase-1-auth-owner`; it has no upstream configured. Working tree was clean at inspection. Remote `origin` points to `https://github.com/peter-elmasry/BTSApp.git`; authentication uses Git Credential Manager. Next inspect branch contents and remote refs, run relevant checks, then publish if remote permissions allow.
+- **Initial state:** Current branch is `codex/phase-1-auth-owner`; it had no upstream configured. Working tree was clean at inspection. Remote `origin` points to `https://github.com/peter-elmasry/BTSApp.git`; authentication uses Git Credential Manager.
+- **Completed:** Added the Git workflow to `AGENTS.md` and committed it as `1cc93d6 chore: document git workflow and branch publishing`. The existing Phase 1 commit `a2965aa` is also on the published branch.
+- **Checks:** Targeted Prettier and `git diff --check` passed for the documentation changes.
+- **Publishing diagnosis and resolution:** The initial `git ls-remote` attempt failed because sandboxed network access to GitHub was blocked. After retrying with network access, `git push --set-upstream origin codex/phase-1-auth-owner` succeeded and configured `origin/codex/phase-1-auth-owner` as upstream. Branch is published and ready for a PR.
+- **PR URL:** https://github.com/peter-elmasry/BTSApp/pull/new/codex/phase-1-auth-owner
 
 ## 2026-10-10 — Name preference for this chat — DONE
 
