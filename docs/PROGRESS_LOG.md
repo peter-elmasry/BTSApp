@@ -2,6 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — PR #3 cloud database verification — STARTED
+
+- **Requested by:** Gendy; explicitly authorized pushing and resolving CI failures promptly; use GitHub runners because local disk space is insufficient.
+- **Branch/state:** `codex/phase-2-event-setup`, clean at `e0f1a50`; fetch/push confirms origin and PR #3 already contain both repair/setup commits. Earlier unpushed notes are superseded by this verified remote state.
+- **Scope:** Inspect latest GitHub CI, repair remaining database failures, run available formatting checks, commit and push fixes, and verify the cloud database result. No local Docker installation needed.
+- **Milestone:** CI run `38039617333` passes foundations and Phase 1 owner suites. Phase 2 stops at malformed dollar quoting in the two newly added regression assertions; corrected those delimiters.
+
 ## 2026-10-10 — Local Supabase runtime setup — HANDOFF
 
 - **Requested by:** Gendy; set up local Supabase and execute/fix database checks.

@@ -2,8 +2,8 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
 select no_plan();
-select throws_ok($select public.phase2_fail('INVALID_SETTINGS')$,'P0001','INVALID_SETTINGS','error helper accepts omitted details');
-select throws_ok($select public.phase2_fail('INVALID_SETTINGS', '{"field":"name_en"}')$,'P0001','INVALID_SETTINGS','error helper accepts JSON details');
+select throws_ok($$select public.phase2_fail('INVALID_SETTINGS')$$,'P0001','INVALID_SETTINGS','error helper accepts omitted details');
+select throws_ok($$select public.phase2_fail('INVALID_SETTINGS', '{"field":"name_en"}')$$,'P0001','INVALID_SETTINGS','error helper accepts JSON details');
 
 -- Call RPCs as clients; inspect persisted rows only as the test runner.
 -- Count this suite's fixtures so pre-existing seeded owners are harmless.
