@@ -8,7 +8,7 @@
         [attr.aria-label]="t('nav.home')"
         ><img src="/brand/dst-mark-white.webp" alt="DST" width="75" height="32" class="h-8 w-auto"
       /></a>
-      <div class="min-w-0 flex-1">
+      <div class="min-w-0 flex-1" [class.hidden]="auth.profile()" [class.sm:block]="auth.profile()">
         <p class="text-sm font-extrabold">{{ t('app.title') }}</p>
         <p class="text-xs text-gold">ONE TEAM. ONE SPIRIT.</p>
       </div>

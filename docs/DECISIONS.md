@@ -67,3 +67,13 @@ PR #3 CI run `38035607700` exposed tests assuming an empty member directory and 
 ## D018 — Storage deletion policy tests emulate API context
 
 Supabase Storage now rejects direct SQL deletes unless `storage.allow_delete_query=true`; the Storage API sets this transaction context automatically ([upstream explanation](https://supabase.com/blog/supabase-storage-performance-security-reliability-updates)). Phase 2 pgTAP tests set it locally around deletion checks of synthetic metadata-only fixtures, assert referee filtering and actual admin deletion, then turn it off. RLS stays enabled, the suite rolls back, and no production migration or Storage safeguard changes.
+
+## D019 — Import shares setup rules and write path
+
+Phase 3 uses the Phase 2 mutation RPCs inside a rollbackable subtransaction. Dry-run exercises the real write path and rolls back rows, audits, broadcasts and operation records; any row failure rolls back all rows. Successful apply records an actor/event-bound operation result for retries. PostgreSQL sequence gaps after rollback are expected. UPSERT retains omitted setup rows, referee game assignments, game images and team sort order. REPLACE preserves EVENT_ADMIN roles and requires event/round draft state plus no round started_at. The workbook may assign only REFEREE/GUIDE, never owners/admins or new accounts.
+
+## D020 — ExcelJS browser integration and dependency review
+
+Use the plan's ExcelJS 4.4.0 through a dynamic default import: its browser bundle is CommonJS, so named imports worked in Node tests but failed in the production browser. ExcelJS is a separate lazy chunk; no initial-bundle exemption is needed. Reject formulas and non-scalar cells; accept only XLSX up to 5 MiB, with sheet row/column limits after parsing. Keep pure template/parser functions behind a small injectable wrapper for Angular TestBed mocks.
+
+The local dependency audit reports two moderate findings through ExcelJS's uuid dependency (GHSA-w5hq-g745-h8pq, missing buffer bounds checks in UUID v3/v5/v6). Inspection of installed ExcelJS source finds only UUID v4 calls without caller buffers. This scopes the identified path but does not claim a clean audit. The browser distribution embeds its dependencies, so an npm override alone would not repair that copy; retain the mandated library and track the upstream advisory rather than force npm's suggested major downgrade. Production builds report the expected CommonJS optimization warning.

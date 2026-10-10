@@ -33,6 +33,10 @@ export const routes: Routes = [
         path: 'setup',
         loadComponent: () => import('./features/manage/setup-page').then((m) => m.EventSetupPage),
       },
+      {
+        path: 'import',
+        loadComponent: () => import('./features/manage/import-page').then((m) => m.EventImportPage),
+      },
     ],
   },
   { path: '**', redirectTo: 'home' },
