@@ -59,6 +59,9 @@ set local role authenticated;
 select lives_ok($$insert into storage.objects(bucket_id,name) values('game-images','32000000-0000-0000-0000-000000000001/42000000-0000-0000-0000-000000000001.webp')$$,'event admin can upload to own event folder');
 select lives_ok($$insert into storage.objects(bucket_id,name) values('game-images','32000000-0000-0000-0000-000000000001/42000000-0000-0000-0000-000000000005.webp')$$,'event admin can upload another event image');
 select set_config('request.jwt.claim.sub','12000000-0000-0000-0000-000000000003',true);
+-- Emulate the Storage API's transaction setting for metadata-only fixtures.
+-- RLS remains active; rollback removes every fixture without touching real files.
+set local storage.allow_delete_query = 'true';
 select lives_ok($$delete from storage.objects where bucket_id='game-images' and name='32000000-0000-0000-0000-000000000001/42000000-0000-0000-0000-000000000005.webp'$$,'referee delete request is safely filtered');
 select is((select count(*)::int from storage.objects where bucket_id='game-images' and name='32000000-0000-0000-0000-000000000001/42000000-0000-0000-0000-000000000005.webp'),1,'referee cannot delete event image');
 select set_config('request.jwt.claim.sub','12000000-0000-0000-0000-000000000002',true);
@@ -66,6 +69,8 @@ select lives_ok($$update storage.objects set metadata='{"mimetype":"image/webp"}
 select throws_ok($$insert into storage.objects(bucket_id,name) values('game-images','32000000-0000-0000-0000-000000000002/42000000-0000-0000-0000-000000000002.webp')$$,'42501',null,'event admin cannot upload to another event folder');
 select throws_ok($$update storage.objects set name='32000000-0000-0000-0000-000000000002/42000000-0000-0000-0000-000000000003.webp' where bucket_id='game-images' and name='32000000-0000-0000-0000-000000000001/42000000-0000-0000-0000-000000000001.webp'$$,'42501',null,'event admin cannot move an image into another event folder');
 select lives_ok($$delete from storage.objects where bucket_id='game-images' and name='32000000-0000-0000-0000-000000000001/42000000-0000-0000-0000-000000000001.webp'$$,'event admin can delete own event image');
+select is((select count(*)::int from storage.objects where bucket_id='game-images' and name='32000000-0000-0000-0000-000000000001/42000000-0000-0000-0000-000000000001.webp'),0,'event admin deletion removes the image metadata');
+set local storage.allow_delete_query = 'false';
 select throws_ok($$select public.upsert_event_settings('92000000-0000-0000-0000-000000000011','32000000-0000-0000-0000-000000000001','{"status":"LIVE"}')$$,'P0001','INVALID_SETTINGS','settings reject unsupported fields');
 select throws_ok($$select public.upsert_event_settings('92000000-0000-0000-0000-000000000012','32000000-0000-0000-0000-000000000001','{"name_en":"   "}')$$,'P0001','INVALID_SETTINGS','English event name cannot be blank');
 select throws_ok($$select public.upsert_event_settings('92000000-0000-0000-0000-000000000013','32000000-0000-0000-0000-000000000001',jsonb_build_object('name_en',repeat('x',121)))$$,'P0001','INVALID_SETTINGS','English event name length is bounded');
