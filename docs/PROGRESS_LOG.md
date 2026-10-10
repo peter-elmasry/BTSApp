@@ -2,6 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — Publish Vercel header fix — STARTED
+
+- **Requested by:** Peter authorized proceeding with publication/merge and reporting when ready to deploy.
+- **Preflight:** Clean `fix/vercel-cache-pattern` at `0d6e330`; refreshed origin and confirmed no newer master commits. Reviewed the three-file configuration/documentation diff.
+- **Scope:** Publish the validated fix, create a PR, verify CI, merge after passing checks and report deployment readiness. Vercel may automatically deploy the merge if its GitHub connection is active.
+- **Validation retained:** Vercel routing parser reproduces the old failure and accepts the corrected configuration; hashed/unhashed asset selection, formatting and whitespace checks passed.
+- **Next:** Push branch, create PR, inspect CI and merge the verified head. Never record credentials.
+
 ## 2026-10-10 — Vercel asset header pattern — HANDOFF
 
 - **Requested by:** Peter; confirm the Supabase URL and fix Vercel's invalid header source error.
