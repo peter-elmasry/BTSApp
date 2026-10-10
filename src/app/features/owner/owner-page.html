@@ -167,6 +167,11 @@
               </button>
             }
           </div>
+          <a
+            [routerLink]="['/manage', event.id, 'setup']"
+            class="inline-flex min-h-11 items-center rounded-xl bg-navy px-3 py-2 font-semibold text-white"
+            >{{ t('owner.openSetup') }}</a
+          >
           <div class="flex flex-wrap items-end gap-2">
             <label class="min-w-52 flex-1"
               ><span class="mb-1 block text-sm font-semibold">{{ t('owner.assignAdmin') }}</span

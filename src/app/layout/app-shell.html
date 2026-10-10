@@ -43,10 +43,9 @@
   >
     <div
       class="mx-auto grid max-w-3xl gap-1 px-2 py-2"
-      [class.grid-cols-3]="auth.profile()?.system_role !== 'OWNER'"
-      [class.grid-cols-4]="auth.profile()?.system_role === 'OWNER'"
+      [style.grid-template-columns]="'repeat(' + visibleNavigation().length + ', minmax(0, 1fr))'"
     >
-      @for (item of navigation; track item.path) {
+      @for (item of visibleNavigation(); track item.path) {
         <a
           [routerLink]="item.path"
           routerLinkActive="nav-active"
@@ -54,15 +53,6 @@
           class="flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-sm font-semibold"
           ><span aria-hidden="true" class="text-xl">{{ item.icon }}</span
           >{{ t(item.key) }}</a
-        >
-      }
-      @if (auth.profile()?.system_role === 'OWNER') {
-        <a
-          routerLink="/owner/members"
-          routerLinkActive="nav-active"
-          ariaCurrentWhenActive="page"
-          class="flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-sm font-semibold"
-          ><span aria-hidden="true" class="text-xl">♙</span>{{ t('owner.title') }}</a
         >
       }
     </div>

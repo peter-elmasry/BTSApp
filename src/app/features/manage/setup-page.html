@@ -1,0 +1,644 @@
+<main *transloco="let t" class="space-y-5">
+  <header class="space-y-1">
+    <h1 class="text-2xl font-extrabold">{{ t('manage.setupTitle') }}</h1>
+    @if (setup(); as data) {
+      <p class="text-sm text-slate">{{ data.event.name_en }} · {{ data.event.code }}</p>
+    }
+  </header>
+
+  @if (notice()) {
+    <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
+  }
+  @if (loading()) {
+    <p role="status" class="rounded-card bg-white p-4">{{ t('manage.loading') }}</p>
+  } @else {
+    <nav class="flex gap-2 overflow-x-auto pb-1" [attr.aria-label]="t('manage.setupNavigation')">
+      @for (item of tabs; track item) {
+        <button
+          type="button"
+          class="min-h-11 shrink-0 rounded-xl px-3 font-semibold"
+          [class.bg-navy]="tab() === item"
+          [class.text-white]="tab() === item"
+          [class.bg-white]="tab() !== item"
+          (click)="tab.set(item)"
+        >
+          {{ t('manage.tab.' + item) }}
+        </button>
+      }
+    </nav>
+
+    @if (tab() === 'settings') {
+      <form
+        [formGroup]="settingsForm"
+        (ngSubmit)="saveSettings()"
+        class="space-y-4 rounded-card bg-white p-4 shadow-card"
+      >
+        <h2 class="text-lg font-bold">{{ t('manage.settings') }}</h2>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <label class="space-y-1"
+            ><span>{{ t('manage.nameEn') }}</span
+            ><input class="ds-control w-full" maxlength="120" formControlName="name_en"
+          /></label>
+          <label class="space-y-1"
+            ><span>{{ t('manage.nameAr') }}</span
+            ><input class="ds-control w-full" formControlName="name_ar" dir="rtl"
+          /></label>
+          <label class="space-y-1"
+            ><span>{{ t('manage.pointsWin') }}</span
+            ><input class="ds-control w-full" type="number" min="0" formControlName="points_win"
+          /></label>
+          <label class="space-y-1"
+            ><span>{{ t('manage.pointsDraw') }}</span
+            ><input class="ds-control w-full" type="number" min="0" formControlName="points_draw"
+          /></label>
+          <label class="space-y-1"
+            ><span>{{ t('manage.pointsLoss') }}</span
+            ><input class="ds-control w-full" type="number" min="0" formControlName="points_loss"
+          /></label>
+        </div>
+        <fieldset class="space-y-3 rounded-xl border border-mist p-3">
+          <legend class="px-1 font-bold">{{ t('manage.currency') }}</legend>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="space-y-1"
+              ><span>{{ t('manage.currencyEnOne') }}</span
+              ><input class="ds-control w-full" formControlName="currency_en_one"
+            /></label>
+            <label class="space-y-1"
+              ><span>{{ t('manage.currencyEnOther') }}</span
+              ><input class="ds-control w-full" formControlName="currency_en_other"
+            /></label>
+            <label class="space-y-1"
+              ><span>{{ t('manage.currencyArOne') }}</span
+              ><input class="ds-control w-full" formControlName="currency_ar_one" dir="rtl"
+            /></label>
+            <label class="space-y-1"
+              ><span>{{ t('manage.currencyArTwo') }}</span
+              ><input class="ds-control w-full" formControlName="currency_ar_two" dir="rtl"
+            /></label>
+            <label class="space-y-1"
+              ><span>{{ t('manage.currencyArPlural') }}</span
+              ><input class="ds-control w-full" formControlName="currency_ar_plural" dir="rtl"
+            /></label>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <label class="font-semibold" for="currency-count">{{ t('manage.previewCount') }}</label>
+            <input
+              id="currency-count"
+              class="ds-control w-24"
+              type="number"
+              min="0"
+              [value]="previewCount()"
+              (input)="previewCount.set(+$any($event.target).value)"
+            />
+            <p aria-live="polite" class="rounded-lg bg-ivory px-3 py-2">
+              {{ previewCount() }} {{ previewCurrency() }}
+            </p>
+          </div>
+        </fieldset>
+        <fieldset class="space-y-3 rounded-xl border border-mist p-3">
+          <legend class="px-1 font-bold">{{ t('manage.caps') }}</legend>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="space-y-1"
+              ><span>{{ t('manage.matchBonusCap') }}</span
+              ><input
+                class="ds-control w-full"
+                type="number"
+                min="0"
+                formControlName="match_bonus_cap"
+            /></label>
+            <label class="space-y-1"
+              ><span>{{ t('manage.matchPenaltyCap') }}</span
+              ><input
+                class="ds-control w-full"
+                type="number"
+                min="0"
+                formControlName="match_penalty_cap"
+            /></label>
+            <label class="space-y-1"
+              ><span>{{ t('manage.eventBonusCap') }}</span
+              ><input
+                class="ds-control w-full"
+                type="number"
+                min="0"
+                formControlName="event_bonus_cap"
+            /></label>
+            <label class="space-y-1"
+              ><span>{{ t('manage.eventPenaltyCap') }}</span
+              ><input
+                class="ds-control w-full"
+                type="number"
+                min="0"
+                formControlName="event_penalty_cap"
+            /></label>
+          </div>
+        </fieldset>
+        <div class="grid gap-2 sm:grid-cols-2">
+          <label class="flex min-h-11 items-center gap-3 rounded-xl bg-ivory px-3"
+            ><input type="checkbox" formControlName="leaderboard_public" />{{
+              t('manage.leaderboardPublic')
+            }}</label
+          >
+          <label class="flex min-h-11 items-center gap-3 rounded-xl bg-ivory px-3"
+            ><input type="checkbox" formControlName="show_guide_phone" />{{
+              t('manage.showGuidePhone')
+            }}</label
+          >
+        </div>
+        <button
+          class="min-h-11 rounded-xl bg-gold px-4 font-bold"
+          type="submit"
+          [disabled]="saving()"
+        >
+          {{ t('common.save') }}
+        </button>
+      </form>
+    }
+
+    @if (tab() === 'teams') {
+      <section class="space-y-4">
+        <form
+          [formGroup]="teamForm"
+          (ngSubmit)="saveTeam()"
+          class="grid gap-3 rounded-card bg-white p-4 shadow-card sm:grid-cols-2"
+        >
+          <h2 class="text-lg font-bold sm:col-span-2">
+            {{ editingTeam() ? t('manage.editTeam') : t('manage.addTeam') }}
+          </h2>
+          <label class="space-y-1"
+            ><span>{{ t('manage.code') }}</span
+            ><input class="ds-control w-full" maxlength="4" formControlName="code"
+          /></label>
+          @if (teamForm.controls.code.invalid && teamForm.controls.code.touched) {
+            <p role="alert" class="text-sm text-error sm:col-span-2">
+              {{ t('manage.invalidTeamCode') }}
+            </p>
+          }
+          <label class="space-y-1"
+            ><span>{{ t('manage.nameEn') }}</span
+            ><input class="ds-control w-full" maxlength="80" formControlName="name_en"
+          /></label>
+          <label class="space-y-1"
+            ><span>{{ t('manage.nameAr') }}</span
+            ><input class="ds-control w-full" formControlName="name_ar" dir="rtl"
+          /></label>
+          <label class="space-y-1"
+            ><span>{{ t('manage.avatar') }}</span
+            ><select class="ds-control w-full" formControlName="avatar_key">
+              @for (avatar of TEAM_AVATARS; track avatar) {
+                <option [value]="avatar">{{ avatar }}</option>
+              }
+            </select></label
+          >
+          <label class="space-y-1"
+            ><span>{{ t('manage.color') }}</span
+            ><input class="ds-control h-11 w-full" type="color" formControlName="color_hex"
+          /></label>
+          <div class="flex gap-2 sm:col-span-2">
+            <button class="min-h-11 rounded-xl bg-gold px-4 font-bold" [disabled]="saving()">
+              {{ t('common.save') }}
+            </button>
+            @if (editingTeam()) {
+              <button type="button" class="min-h-11 rounded-xl px-4" (click)="editTeam()">
+                {{ t('common.cancel') }}
+              </button>
+            }
+          </div>
+        </form>
+        <div class="grid gap-3 sm:grid-cols-2">
+          @for (team of teams(); track team.id) {
+            <article class="flex items-center gap-3 rounded-card bg-white p-4 shadow-card">
+              <img
+                class="h-12 w-12 rounded-full"
+                [src]="'/avatars/' + team.avatar_key + '.svg'"
+                [alt]="team.avatar_key"
+              />
+              <div class="min-w-0 flex-1">
+                <h3 class="font-bold">
+                  {{ team.name_en }} <span class="text-slate">({{ team.code }})</span>
+                </h3>
+                <p class="text-sm text-slate">{{ team.name_ar }}</p>
+              </div>
+              <span
+                class="h-7 w-7 rounded-full border"
+                [style.backgroundColor]="team.color_hex"
+              ></span>
+              <button type="button" class="min-h-11 rounded-lg px-2" (click)="editTeam(team)">
+                {{ t('common.edit') }}
+              </button>
+              <button
+                type="button"
+                class="min-h-11 rounded-lg px-2 text-error"
+                (click)="deleteTeam(team)"
+              >
+                {{ t('common.delete') }}
+              </button>
+            </article>
+          } @empty {
+            <p class="rounded-card bg-white p-4">{{ t('manage.noTeams') }}</p>
+          }
+        </div>
+      </section>
+    }
+
+    @if (tab() === 'games') {
+      <section class="space-y-4">
+        <form
+          [formGroup]="gameForm"
+          (ngSubmit)="saveGame()"
+          class="grid gap-3 rounded-card bg-white p-4 shadow-card sm:grid-cols-2"
+        >
+          <h2 class="text-lg font-bold sm:col-span-2">
+            {{ editingGame() ? t('manage.editGame') : t('manage.addGame') }}
+          </h2>
+          <label class="space-y-1"
+            ><span>{{ t('manage.code') }}</span
+            ><input class="ds-control w-full" maxlength="4" formControlName="code"
+          /></label>
+          @if (gameForm.controls.code.invalid && gameForm.controls.code.touched) {
+            <p role="alert" class="text-sm text-error sm:col-span-2">
+              {{ t('manage.invalidGameCode') }}
+            </p>
+          }
+          <label class="space-y-1"
+            ><span>{{ t('manage.nameEn') }}</span
+            ><input class="ds-control w-full" maxlength="100" formControlName="name_en"
+          /></label>
+          <label class="space-y-1"
+            ><span>{{ t('manage.nameAr') }}</span
+            ><input class="ds-control w-full" formControlName="name_ar" dir="rtl"
+          /></label>
+          <label class="space-y-1"
+            ><span>{{ t('manage.locationEn') }}</span
+            ><input class="ds-control w-full" maxlength="120" formControlName="location_en"
+          /></label>
+          <label class="space-y-1"
+            ><span>{{ t('manage.locationAr') }}</span
+            ><input
+              class="ds-control w-full"
+              maxlength="120"
+              formControlName="location_ar"
+              dir="rtl"
+          /></label>
+          <div class="space-y-2 sm:col-span-2">
+            <label class="block space-y-1"
+              ><span>{{ t('manage.gameImage') }}</span
+              ><input
+                class="ds-control w-full"
+                type="file"
+                accept="image/webp,.webp"
+                (change)="selectGameImage($event)"
+            /></label>
+            @if (gameImagePreview()) {
+              <img
+                class="h-28 w-full rounded-xl object-cover"
+                [src]="gameImagePreview()"
+                [alt]="t('manage.gameImage')"
+              />
+              @if (gameImage(); as image) {
+                <p class="text-sm text-slate">
+                  {{ image.name }} · {{ (image.size / 1024).toFixed(0) }} KB
+                </p>
+              }
+            }
+          </div>
+          <div class="flex gap-2 sm:col-span-2">
+            <button class="min-h-11 rounded-xl bg-gold px-4 font-bold" [disabled]="saving()">
+              {{ t('common.save') }}
+            </button>
+            @if (editingGame()) {
+              <button type="button" class="min-h-11 rounded-xl px-4" (click)="editGame()">
+                {{ t('common.cancel') }}
+              </button>
+            }
+          </div>
+        </form>
+        <div class="grid gap-3 sm:grid-cols-2">
+          @for (game of games(); track game.id) {
+            <article
+              class="flex items-center justify-between gap-3 rounded-card bg-white p-4 shadow-card"
+            >
+              @if (game.image_path) {
+                <img
+                  class="h-16 w-20 rounded-xl object-cover"
+                  [src]="gameImageUrl(game.image_path)"
+                  [alt]="t('manage.gameImage')"
+                />
+              }
+              <div class="flex-1">
+                <h3 class="font-bold">
+                  {{ game.name_en }} <span class="text-slate">({{ game.code }})</span>
+                </h3>
+                <p class="text-sm text-slate">{{ game.location_en }} · {{ game.location_ar }}</p>
+              </div>
+              <div class="flex gap-1">
+                <button type="button" class="min-h-11 rounded-lg px-2" (click)="editGame(game)">
+                  {{ t('common.edit') }}</button
+                ><button
+                  type="button"
+                  class="min-h-11 rounded-lg px-2 text-error"
+                  (click)="deleteGame(game)"
+                >
+                  {{ t('common.delete') }}
+                </button>
+              </div>
+            </article>
+          } @empty {
+            <p class="rounded-card bg-white p-4">{{ t('manage.noGames') }}</p>
+          }
+        </div>
+      </section>
+    }
+
+    @if (tab() === 'rounds') {
+      <section class="space-y-4">
+        <form
+          [formGroup]="roundForm"
+          (ngSubmit)="saveRound()"
+          class="grid gap-3 rounded-card bg-white p-4 shadow-card sm:grid-cols-2"
+        >
+          <h2 class="text-lg font-bold sm:col-span-2">
+            {{ editingRound() ? t('manage.editRound') : t('manage.addRound') }}
+          </h2>
+          <label class="space-y-1"
+            ><span>{{ t('manage.roundNumber') }}</span
+            ><input class="ds-control w-full" type="number" min="0" formControlName="number"
+          /></label>
+          <label class="space-y-1"
+            ><span>{{ t('manage.roundType') }}</span
+            ><select
+              class="ds-control w-full"
+              formControlName="type"
+              (change)="onRoundTypeChange()"
+            >
+              <option value="REGULAR">{{ t('manage.regular') }}</option>
+              <option value="OPENING">{{ t('manage.opening') }}</option>
+            </select></label
+          >
+          <label class="space-y-1"
+            ><span>{{ t('manage.nameEn') }}</span
+            ><input class="ds-control w-full" maxlength="100" formControlName="name_en"
+          /></label>
+          <label class="space-y-1"
+            ><span>{{ t('manage.nameAr') }}</span
+            ><input class="ds-control w-full" formControlName="name_ar" dir="rtl"
+          /></label>
+          <label class="space-y-1"
+            ><span>{{ t('manage.duration') }}</span
+            ><input
+              class="ds-control w-full"
+              type="number"
+              min="1"
+              max="600"
+              formControlName="duration_min"
+          /></label>
+          <div class="flex gap-2 sm:col-span-2">
+            <button class="min-h-11 rounded-xl bg-gold px-4 font-bold" [disabled]="saving()">
+              {{ t('common.save') }}
+            </button>
+            @if (editingRound()) {
+              <button type="button" class="min-h-11 rounded-xl px-4" (click)="editRound()">
+                {{ t('common.cancel') }}
+              </button>
+            }
+          </div>
+        </form>
+        <form
+          [formGroup]="matchForm"
+          (ngSubmit)="saveMatch()"
+          class="space-y-3 rounded-card bg-white p-4 shadow-card"
+        >
+          <h2 class="text-lg font-bold">{{ t('manage.matchBuilder') }}</h2>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="space-y-1"
+              ><span>{{ t('manage.round') }}</span
+              ><select class="ds-control w-full" formControlName="round_id">
+                <option value="">{{ t('common.choose') }}</option>
+                @for (round of rounds(); track round.id) {
+                  <option [value]="round.id">
+                    {{ round.number }} · {{ t(roundLabel(round.type)) }}
+                  </option>
+                }
+              </select></label
+            >
+            <label class="space-y-1"
+              ><span>{{ t('manage.game') }}</span
+              ><select class="ds-control w-full" formControlName="game_id">
+                <option value="">{{ t('common.choose') }}</option>
+                @for (game of matchGameOptions(matchForm.controls.round_id.value); track game.id) {
+                  <option [value]="game.id">{{ game.name_en }}</option>
+                }
+              </select></label
+            >
+            @if (!isOpeningSelected()) {
+              <label class="space-y-1"
+                ><span>{{ t('manage.teamA') }}</span
+                ><select class="ds-control w-full" formControlName="team_a">
+                  <option value="">{{ t('common.choose') }}</option>
+                  @for (code of matchOptions(matchForm.controls.round_id.value); track code) {
+                    <option [value]="code">{{ code }}</option>
+                  }
+                </select></label
+              >
+              <label class="space-y-1"
+                ><span>{{ t('manage.teamB') }}</span
+                ><select class="ds-control w-full" formControlName="team_b">
+                  <option value="">{{ t('common.choose') }}</option>
+                  @for (code of matchOptions(matchForm.controls.round_id.value); track code) {
+                    <option [value]="code">{{ code }}</option>
+                  }
+                </select></label
+              >
+            } @else {
+              <p class="rounded-xl bg-gold-soft p-3 sm:col-span-2">
+                {{ t('manage.openingAllTeams') }} ({{ teams().length }})
+              </p>
+            }
+          </div>
+          @if (!isOpeningSelected()) {
+            <button class="min-h-11 rounded-xl bg-gold px-4 font-bold" [disabled]="saving()">
+              {{ t('manage.addMatch') }}
+            </button>
+          }
+        </form>
+        @for (round of rounds(); track round.id) {
+          <article class="space-y-3 rounded-card bg-white p-4 shadow-card">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 class="font-bold">
+                  {{ t('manage.round') }} {{ round.number }} · {{ t(roundLabel(round.type)) }}
+                </h3>
+                <p class="text-sm text-slate">
+                  {{ round.duration_min }} {{ t('manage.minutes') }} · {{ round.name_en }}
+                </p>
+              </div>
+              <div class="flex gap-1">
+                <button type="button" class="min-h-11 rounded-lg px-2" (click)="editRound(round)">
+                  {{ t('common.edit') }}</button
+                ><button
+                  type="button"
+                  class="min-h-11 rounded-lg px-2 text-error"
+                  (click)="deleteRound(round)"
+                >
+                  {{ t('common.delete') }}
+                </button>
+              </div>
+            </div>
+            @if (round.type === 'OPENING' && games().length) {
+              <div class="flex flex-wrap gap-2">
+                <span class="self-center text-sm font-semibold">{{
+                  t('manage.generateOpening')
+                }}</span>
+                @for (game of matchGameOptions(round.id); track game.id) {
+                  <button
+                    type="button"
+                    class="min-h-11 rounded-xl bg-ivory px-3 font-semibold"
+                    (click)="generateOpening(round, game.id)"
+                  >
+                    {{ game.name_en }}
+                  </button>
+                }
+              </div>
+            }
+            @for (match of round.matches ?? []; track match.id) {
+              <div
+                class="flex items-center justify-between gap-2 rounded-xl border border-mist p-3"
+              >
+                <span>{{ roundGameName(match) }} · {{ matchTeams(match).join(' / ') }}</span
+                ><button
+                  type="button"
+                  class="min-h-11 px-2 text-error"
+                  (click)="deleteMatch(match)"
+                >
+                  {{ t('common.delete') }}
+                </button>
+              </div>
+            }
+          </article>
+        } @empty {
+          <p class="rounded-card bg-white p-4">{{ t('manage.noRounds') }}</p>
+        }
+      </section>
+    }
+
+    @if (tab() === 'staff') {
+      <section class="space-y-4">
+        <form
+          [formGroup]="staffForm"
+          (ngSubmit)="assignStaff()"
+          class="grid gap-3 rounded-card bg-white p-4 shadow-card sm:grid-cols-3"
+        >
+          <h2 class="text-lg font-bold sm:col-span-3">{{ t('manage.assignStaff') }}</h2>
+          <label class="space-y-1"
+            ><span>{{ t('manage.member') }}</span
+            ><select class="ds-control w-full" formControlName="member_id">
+              <option value="">{{ t('common.choose') }}</option>
+              @for (member of members(); track member.id) {
+                <option [value]="member.id" [disabled]="!member.has_login && !isGuide()">
+                  {{ member.full_name_en }} (@{{ member.username }}){{
+                    member.has_login ? '' : ' · ' + t('manage.noLogin')
+                  }}
+                </option>
+              }
+            </select></label
+          >
+          <label class="space-y-1"
+            ><span>{{ t('manage.role') }}</span
+            ><select
+              class="ds-control w-full"
+              formControlName="role"
+              (change)="onStaffRoleChange()"
+            >
+              @if (isOwner()) {
+                <option value="EVENT_ADMIN">{{ t('manage.eventAdmin') }}</option>
+              }
+              <option value="REFEREE">{{ t('manage.referee') }}</option>
+              <option value="GUIDE">{{ t('manage.guide') }}</option>
+            </select></label
+          >
+          @if (staffForm.controls.role.value === 'GUIDE') {
+            <label class="space-y-1"
+              ><span>{{ t('manage.team') }}</span
+              ><select class="ds-control w-full" formControlName="team_id">
+                <option value="">{{ t('common.choose') }}</option>
+                @for (team of teams(); track team.id) {
+                  <option [value]="team.id">{{ team.name_en }}</option>
+                }
+              </select></label
+            >
+            @if (staffForm.controls.team_id.invalid && staffForm.controls.team_id.touched) {
+              <p role="alert" class="text-sm text-error">{{ t('manage.guideTeamRequired') }}</p>
+            }
+          }
+          <button
+            class="min-h-11 rounded-xl bg-gold px-4 font-bold sm:col-span-3"
+            [disabled]="saving()"
+          >
+            {{ t('manage.assign') }}
+          </button>
+        </form>
+        @for (person of staff(); track person.member_id + person.role) {
+          <article class="space-y-3 rounded-card bg-white p-4 shadow-card">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <h3 class="font-bold">{{ person.full_name_en || person.username }}</h3>
+                <p class="text-sm text-slate">
+                  {{
+                    person.role === 'EVENT_ADMIN'
+                      ? t('manage.eventAdmin')
+                      : t(person.role === 'REFEREE' ? 'manage.referee' : 'manage.guide')
+                  }}
+                  · {{ person.team_name || '' }}
+                </p>
+              </div>
+              @if (person.role !== 'EVENT_ADMIN' || isOwner()) {
+                <button
+                  type="button"
+                  class="min-h-11 rounded-lg px-2 text-error"
+                  (click)="removeStaff(person)"
+                >
+                  {{ t('common.remove') }}
+                </button>
+              }
+            </div>
+            @if (person.role === 'REFEREE') {
+              <fieldset class="space-y-2">
+                <legend class="font-semibold">{{ t('manage.assignedGames') }}</legend>
+                <div class="grid gap-2 sm:grid-cols-2">
+                  @for (game of games(); track game.id) {
+                    <label class="flex min-h-11 items-center gap-2 rounded-xl bg-ivory px-3"
+                      ><input
+                        type="checkbox"
+                        [checked]="
+                          (refereeGames()[person.member_id] ?? person.game_ids ?? []).includes(
+                            game.id
+                          )
+                        "
+                        (change)="
+                          toggleRefereeGame(
+                            person.member_id,
+                            game.id,
+                            $any($event.target).checked,
+                            person.game_ids ?? []
+                          )
+                        "
+                      />{{ game.name_en }}</label
+                    >
+                  }
+                </div>
+                <button
+                  type="button"
+                  class="min-h-11 rounded-xl border border-mist px-3"
+                  (click)="saveRefereeGames(person.member_id)"
+                >
+                  {{ t('common.save') }}
+                </button>
+              </fieldset>
+            }
+          </article>
+        } @empty {
+          <p class="rounded-card bg-white p-4">{{ t('manage.noStaff') }}</p>
+        }
+      </section>
+    }
+  }
+</main>
