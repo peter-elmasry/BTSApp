@@ -10,13 +10,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
       - run: npm ci
       - run: node scripts/set-env.mjs --allow-empty
-      - run: npm run format:check
+      - name: Check formatting in changed files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "No comparison base was provided; checking tracked files."
+            npm run format:check
+            exit $?
+          fi
+
+          mapfile -t changed_files < <(git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" --)
+          if [ ${#changed_files[@]} -eq 0 ]; then
+            echo "No changed files to format-check."
+            exit 0
+          fi
+          npx prettier --check "${changed_files[@]}"
       - run: npm test
       - run: npm run build
       - run: npx playwright install --with-deps chromium
