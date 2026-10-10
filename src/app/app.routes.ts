@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestOnlyGuard, ownerGuard } from './core/auth/guards';
+import { authGuard, eventRoleGuard, guestOnlyGuard, ownerGuard } from './core/auth/guards';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'home' },
@@ -21,6 +21,18 @@ export const routes: Routes = [
         path,
         loadComponent: () => import('./features/owner/owner-page').then((m) => m.OwnerPage),
       })),
+    ],
+  },
+  {
+    path: 'manage/:eventId',
+    canActivate: [authGuard, eventRoleGuard],
+    data: { roles: ['EVENT_ADMIN'] },
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'setup' },
+      {
+        path: 'setup',
+        loadComponent: () => import('./features/manage/setup-page').then((m) => m.EventSetupPage),
+      },
     ],
   },
   { path: '**', redirectTo: 'home' },
