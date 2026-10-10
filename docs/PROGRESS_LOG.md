@@ -2,13 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-10 — PR #3 cloud database verification — STARTED
+## 2026-10-10 — PR #3 cloud database verification — DONE
 
 - **Requested by:** Gendy; explicitly authorized pushing and resolving CI failures promptly; use GitHub runners because local disk space is insufficient.
 - **Branch/state:** `codex/phase-2-event-setup`, clean at `e0f1a50`; fetch/push confirms origin and PR #3 already contain both repair/setup commits. Earlier unpushed notes are superseded by this verified remote state.
 - **Scope:** Inspect latest GitHub CI, repair remaining database failures, run available formatting checks, commit and push fixes, and verify the cloud database result. No local Docker installation needed.
 - **Milestone:** CI run `38039617333` passes foundations and Phase 1 owner suites. Phase 2 stops at malformed dollar quoting in the two newly added regression assertions; corrected those delimiters.
 - **Milestone:** Run `38039934684` executes all 240 assertions, with only two Storage delete checks failing because upstream blocks direct SQL deletes. Tests now emulate the Storage API transaction setting for synthetic metadata fixtures, retain RLS, and assert actual admin deletion. Production safeguards unchanged.
+- **Validation passed:** GitHub CI run `38040208562` on pushed code commit `7c94050`: all 241 pgTAP assertions across three suites, fresh migration reset, owner seed/auth smoke checks, and the full frontend job (formatting, unit tests, build, browser tests, Lighthouse). Local changed-file Prettier and `git diff --check` passed.
+- **Publication/handoff:** Fixes `78d926c` and `7c94050` are pushed to PR #3. This final verification record is committed locally; no further code changes are required. PR ready for review; no merge requested.
 
 ## 2026-10-10 — Local Supabase runtime setup — HANDOFF
 
