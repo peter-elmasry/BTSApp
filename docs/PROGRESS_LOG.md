@@ -2,6 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — Publish Phase 3 and verify cloud CI — STARTED
+
+- **Requested by:** Gendy explicitly authorized pushing the ready phase and creating a PR.
+- **Branch/state:** Clean `codex/phase-3-xlsx-import` at `9381db2`; refreshed origin and checked for an existing open Phase 3 PR (none found). Merge conflicts are resolved.
+- **Scope:** Review the phase diff, publish this branch without rewriting history, create/attach a PR against `master`, and inspect/fix its CI checks. Local verification already passed 28 unit tests, five browser tests, build, TypeScript and formatting; the 69 new pgTAP assertions still need cloud execution.
+- **Next:** Commit this publication record, push, open the PR and verify frontend/database results. No merge or hosted deployment requested.
+
 ## 2026-10-10 — Resolve Phase 3 merge conflicts — DONE
 
 - **Requested by:** Gendy; fix the in-progress merge conflict.
