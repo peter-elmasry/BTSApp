@@ -2,11 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-10 — Publish Phase 4 and verify cloud CI — STARTED
+## 2026-10-10 — Publish Phase 4 and verify cloud CI — DONE
 
 - **Requested by:** Gendy explicitly authorized pushing Phase 4, opening its PR and running/fixing cloud CI.
 - **Preflight:** Clean `codex/phase-4-player-experience` at `b48330b`; refreshed origin, master remains `30e6da0`. Reviewed the 48-file feature/database/test/documentation diff. No history rewriting.
 - **Scope/next:** Publish branch, create/attach PR against master, inspect both CI jobs, repair failures and rerun as needed. Local build, 46 unit tests, all nine browser checks across runs, app/spec TypeScript, formatting and whitespace pass. Database runtime remains pending, with 397 assertions expected. No merge or hosted deployment authorized.
+- **Publication milestone:** Published `03637b0` and opened/attached [PR #7](https://github.com/peter-elmasry/BTSApp/pull/7). Existing local `Gendyadel` Git authentication succeeded after the colleague's account name had no local credential; credentials were never printed or stored. [CI run 38071136990](https://github.com/peter-elmasry/BTSApp/actions/runs/38071136990) is queued. PR is ready for cloud validation; no merge performed.
+- **Cloud milestone:** Frontend job `114268607596` passes formatting, unit tests, production build, all nine browser checks with unchanged CI timing, and Lighthouse acceptance. Database job is starting Supabase; its migration and pgTAP outcomes remain pending.
+- **Validation passed:** [CI run 38071136990](https://github.com/peter-elmasry/BTSApp/actions/runs/38071136990) on `03637b0` passes both jobs. Fresh startup/reset applies `0007_phase4_public.sql`; all 397 pgTAP assertions across five suites pass, including 87 public-read assertions, plus owner seed/auth smoke checks. Frontend passes 46 unit tests, nine browser tests with standard CI timings, formatting, production build (340.26 kB initial) and Lighthouse acceptance (accessibility 100). No code repair was needed after cloud execution.
+- **Handoff:** Phase 4 implementation is ready for review in PR #7. Publish this final documentation record and update the PR with verified results; the documentation commit triggers its own head checks. No merge or hosted deployment performed. Phase 5 live operations follows after Phase 4 review/merge; Phase 0 hosted acceptance remains separate.
 
 ## 2026-10-10 — Phase 4 public player experience — HANDOFF
 
