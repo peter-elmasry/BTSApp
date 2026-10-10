@@ -3,6 +3,11 @@
     <h1 class="text-2xl font-extrabold">{{ t('manage.setupTitle') }}</h1>
     <a
       class="inline-flex min-h-11 items-center font-semibold text-teal underline"
+      [routerLink]="['/manage', eventId, 'live']"
+      >{{ t('live.title') }}</a
+    >
+    <a
+      class="inline-flex min-h-11 items-center font-semibold text-teal underline"
       [routerLink]="['/manage', eventId, 'import']"
       >{{ t('import.title') }}</a
     >

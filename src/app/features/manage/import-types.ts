@@ -23,6 +23,7 @@ export interface ImportReport {
   errors: ImportIssue[];
   counts: Record<'teams' | 'games' | 'rounds' | 'matches' | 'staff', number>;
   applied: boolean;
+  queued?: boolean;
 }
 export interface ParsedImport {
   payload: ImportPayload;
