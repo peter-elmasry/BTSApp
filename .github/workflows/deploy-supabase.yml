@@ -24,8 +24,19 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Check migration connection configuration
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::Set the production environment secret SUPABASE_DB_URL to the Supabase Session pooler connection string (port 5432)."
+            exit 1
+          fi
       - run: npx supabase link --project-ref "$SUPABASE_PROJECT_REF"
-      - run: npx supabase db push
+      - name: Apply migrations through the IPv4 Session pooler
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: npx supabase db push --db-url "$SUPABASE_DB_URL"
       # login/members functions are implemented in Phase 1.
       - name: Deploy existing Edge Functions
         shell: bash
