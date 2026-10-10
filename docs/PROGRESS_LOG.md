@@ -2,6 +2,32 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — Resolve Phase 3 merge conflicts — DONE
+
+- **Requested by:** Gendy; fix the in-progress merge conflict.
+- **Branch/state:** `codex/phase-3-xlsx-import` at `1da966c`, merging `bd1de7b` from master. `docs/DECISIONS.md` and `docs/PROGRESS_LOG.md` are unmerged; workflow/README changes are already staged and will be preserved.
+- **Scope:** Retain both import/deployment histories and completed Phase 2 CI evidence; keep master's published IPv4 decision as D019, renumber import decisions to D020/D021, and update their references. Validate formatting, merged content and Git state, then finish the merge with a local commit.
+- **Resolution:** Retained both parent histories, including Phase 3 implementation notes, IPv4 deployment handoffs and the completed Phase 2 CI results. D019 remains the IPv4 decision; import/ExcelJS decisions are D020/D021 with updated references. Incoming workflow and README content are preserved; normalized line endings for Prettier.
+- **Validation:** Both-parent history retention, unique decision IDs, unchanged incoming workflow content, both README sections, tracked conflict-marker scan, changed-file Prettier and whitespace checks passed. No application/SQL code changed; runtime suites were not rerun for this documentation conflict resolution.
+- **Handoff/next:** Completed the in-progress merge with a local Conventional Commit on `codex/phase-3-xlsx-import`; no push or deployment requested or performed. Phase 3 cloud database verification remains pending publication.
+
+## 2026-10-10 — Publish and merge IPv4 deployment fix — HANDOFF
+
+- **Requested by:** Peter explicitly authorized merging `fix/supabase-ipv4-deploy`.
+- **Preflight:** Clean working tree; refreshed origin; `master` remains `5df1bcb` with no intervening colleague commits. Reviewed the workflow change and retained the previously verified formatting/CLI checks.
+- **Scope:** Publish this branch, open a PR against `master`, merge after required checks, then inspect the automatically triggered hosted deployment. No force push or history rewriting.
+- **Next:** Confirm PR merge and hosted deployment result. `SUPABASE_DB_URL` must be configured in GitHub's `production` environment; its value is never read into documentation.
+
+## 2026-10-10 — Supabase deployment IPv4 connection — HANDOFF
+
+- **Requested by:** Peter; investigate the failed hosted deployment.
+- **Branch:** `fix/supabase-ipv4-deploy`, based on current `master` at `5df1bcb`; initial working tree clean.
+- **Evidence:** Run `38041380671` links successfully, then `supabase db push` fails with `IPv6 is not supported on your current network`; Edge Functions are skipped. The Node action warning is unrelated.
+- **Scope:** Use an explicit Session pooler database URL for migrations; update deployment instructions and decisions. No schema or application permission changes, no hosted retry or push in this session.
+- **Changes:** Deployment now checks the `SUPABASE_DB_URL` environment secret and explicitly supplies it to `db push`; README documents the Session pooler URI and D019 records the transport decision.
+- **Validation:** Changed-file Prettier and `git diff --check` pass. Installed CLI help confirms `db push --db-url` accepts a percent-encoded connection URI. Initial help invocation was sandbox-blocked writing telemetry; an unrestricted help-only retry passed. No hosted migration or deployment was attempted.
+- **Next:** Add the Session pooler URI as `SUPABASE_DB_URL` in GitHub's `production` environment, publish/merge this fix, then run Deploy Supabase on updated `master`. Changes are committed locally on this branch, not pushed per AGENTS.md; repository credentials/secrets are unchanged.
+
 ## 2026-10-10 — Phase 3 XLSX setup import — HANDOFF
 
 - **Requested by:** Gendy; start next phase with divide-and-conquer subagents, DRY and KISS.
@@ -12,7 +38,7 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Environment:** Local Docker remains unavailable and disk-limited; do not install Docker. Phase 2 cloud CI passed 241 database assertions. Hosted project acceptance remains pending; Phase 3 implementation is explicitly requested.
 - **Integration milestone:** All three delegated scopes delivered. Template/parser, guarded EN/AR preview/confirmation page, and atomic server import are integrated; added 10 workbook, 6 confirmation-safety, 2 browser tests and 67 pgTAP assertions. Browser checks caught and fixed ExcelJS CommonJS default-export interoperability; Angular tests required TestBed dependency mocks instead of relative module mocks. Serial local workers avoid startup timeouts. Existing mobile accessibility/offline tests passed; final checks remain in progress.
 - **Verification milestone:** 28 unit tests, app/spec TypeScript checks, changed-file Prettier and production build passed. All five production browser checks passed (real XLSX round trip in EN/AR with mocked RPC, accessibility/mobile overflow, shell/offline coverage); mocked import tests block service workers to keep RPC interception deterministic. Visual QA prompted success-focus and narrow signed-in header fixes, now undergoing final recheck. Optional blank leaderboard visibility preserves the existing value; database regression suite expanded to 69 assertions. No database runtime result claimed: local port 54322 has no Supabase service, and publishing this new branch for cloud CI has not been authorized.
-- **Final checks/outcome:** Rechecked after focus/header fixes: all 28 unit tests and five Chromium tests pass; production initial bundle 324.46 kB with ExcelJS lazy-loaded separately. App/spec TypeScript, changed-file Prettier and whitespace checks pass. Local Vitest uses temporary ignored configuration with one thread worker; default forks timed out before test execution. Browser runs use a temporary port 4300 to preserve the user's existing dev server. Both languages were visually inspected. D019/D020 record import semantics and the two moderate dependency-audit findings; SQL runtime remains unverified.
+- **Final checks/outcome:** Rechecked after focus/header fixes: all 28 unit tests and five Chromium tests pass; production initial bundle 324.46 kB with ExcelJS lazy-loaded separately. App/spec TypeScript, changed-file Prettier and whitespace checks pass. Local Vitest uses temporary ignored configuration with one thread worker; default forks timed out before test execution. Browser runs use a temporary port 4300 to preserve the user's existing dev server. Both languages were visually inspected. D020/D021 record import semantics and the two moderate dependency-audit findings; SQL runtime remains unverified.
 - **Handoff/next:** Phase 3 implementation and docs are committed locally on `codex/phase-3-xlsx-import`; nothing pushed or deployed. Request publication of this branch and a PR, then run/fix cloud CI (expected 310 database assertions across four suites). Do not mark Phase 3 accepted until its database checks pass. Hosted Supabase/Vercel acceptance remains separate.
 
 ## 2026-10-10 — PR #3 cloud database verification — DONE
