@@ -59,3 +59,7 @@ Calculated WCAG contrast for `#FFB800`: 1.73:1 on white, 1.65:1 on ivory, 8.13:1
 ## D016 — Phase 1 implementation kickoff
 
 The product owner explicitly requested Phase 1 implementation while Phase 0's hosted Supabase/Vercel acceptance remains pending. This starts implementation only; it does not change the recorded Phase 0 acceptance status or permit hosted deployment. Work is on `codex/phase-1-auth-owner`. Phase 1 adds the login/member Edge Functions, profile and owner RPC migration, frontend session/guards, and owner management screens. Local Docker/Supabase and hosted credentials are not available in this workspace, so runtime acceptance still needs to be completed when those dependencies are available.
+
+## D017 — Database test identities and seeded data
+
+PR #3 CI run `38035607700` exposed tests assuming an empty member directory and reading protected tables as `authenticated`. Keep deny-by-default grants unchanged. Count suite-owned fixtures, invoke RPCs with the intended client role, and use the privileged test runner only to inspect persisted state or exercise raw constraints. Phase 2 errors must emit their intended `P0001` code even when optional JSON details are absent; use an empty DETAIL rather than NULL.

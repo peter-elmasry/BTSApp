@@ -2,6 +2,11 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
 select no_plan();
+select throws_ok($select public.phase2_fail('INVALID_SETTINGS')$,'P0001','INVALID_SETTINGS','error helper accepts omitted details');
+select throws_ok($select public.phase2_fail('INVALID_SETTINGS', '{"field":"name_en"}')$,'P0001','INVALID_SETTINGS','error helper accepts JSON details');
+
+-- Call RPCs as clients; inspect persisted rows only as the test runner.
+-- Count this suite's fixtures so pre-existing seeded owners are harmless.
 
 insert into auth.users(id)
 select ('12000000-0000-0000-0000-' || lpad(n::text,12,'0'))::uuid from generate_series(1,5) n;
@@ -35,18 +40,20 @@ select throws_ok($$select public.upsert_team('92000000-0000-0000-0000-0000000000
 select throws_ok($$insert into storage.objects(bucket_id,name) values('game-images','32000000-0000-0000-0000-000000000001/42000000-0000-0000-0000-000000000004.webp')$$,'42501',null,'referee cannot upload game images');
 
 select set_config('request.jwt.claim.sub','12000000-0000-0000-0000-000000000002',true);
-select is(jsonb_array_length(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'eligible_members'),6,'event admin receives active member directory');
+select is((select count(*)::int from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'eligible_members') m where starts_with(m->>'username', 'phase2_')),6,'event admin receives active member directory');
 select ok((public.get_event_setup('32000000-0000-0000-0000-000000000001')->'eligible_members' @> '[{"id":"22000000-0000-0000-0000-000000000006","has_login":false}]'::jsonb),'directory includes no-login guide without auth data');
 select ok(not ((public.get_event_setup('32000000-0000-0000-0000-000000000001')->'eligible_members'->0) ? 'phone'),'directory excludes phone numbers');
 
 select lives_ok($$select public.upsert_event_settings('92000000-0000-0000-0000-000000000010','32000000-0000-0000-0000-000000000001','{"name_en":"Updated Event","name_ar":"الحدث","points_win":3,"leaderboard_public":true}')$$,'event admin can update names and settings');
+reset role;
 select is((select name_en from public.events where id='32000000-0000-0000-0000-000000000001'),'Updated Event','event English name is updated');
 select is((select name_ar from public.events where id='32000000-0000-0000-0000-000000000001'),'الحدث','event Arabic name is updated');
 select is((select points_win from public.events where id='32000000-0000-0000-0000-000000000001'),3,'settings update is applied');
 select is((select count(*)::int from public.audit_log where event_id='32000000-0000-0000-0000-000000000001' and action='EVENT_SETTINGS_UPDATED'),1,'settings mutation is audited once');
+set local role authenticated;
 select is(public.upsert_event_settings('92000000-0000-0000-0000-000000000010','32000000-0000-0000-0000-000000000001','{"points_win":1}')->'settings'->>'points_win','3','same op id returns stored result');
-select is((select count(*)::int from public.audit_log where event_id='32000000-0000-0000-0000-000000000001' and action='EVENT_SETTINGS_UPDATED'),1,'settings replay does not repeat audit');
 reset role;
+select is((select count(*)::int from public.audit_log where event_id='32000000-0000-0000-0000-000000000001' and action='EVENT_SETTINGS_UPDATED'),1,'settings replay does not repeat audit');
 select ok((select public and file_size_limit=5242880 and allowed_mime_types=array['image/webp'] from storage.buckets where id='game-images'),'game image bucket is public WebP with a 5 MiB limit');
 set local role authenticated;
 select lives_ok($$insert into storage.objects(bucket_id,name) values('game-images','32000000-0000-0000-0000-000000000001/42000000-0000-0000-0000-000000000001.webp')$$,'event admin can upload to own event folder');
@@ -77,23 +84,27 @@ select is(public.upsert_round('92000000-0000-0000-0000-000000000040','32000000-0
 select is(public.upsert_round('92000000-0000-0000-0000-000000000041','32000000-0000-0000-0000-000000000001','{"number":0,"type":"OPENING","name_en":"Opening","duration_min":10}')->>'type','OPENING','valid opening round accepted');
 select throws_ok($$select public.upsert_round('92000000-0000-0000-0000-000000000042','32000000-0000-0000-0000-000000000001','{"number":2,"type":"OPENING","duration_min":10}')$$,'P0001','INVALID_ROUND','opening round must be round zero');
 
-select is(jsonb_array_length(public.upsert_match('92000000-0000-0000-0000-000000000050',(select id from public.rounds where event_id='32000000-0000-0000-0000-000000000001' and number=1),(select id from public.games where event_id='32000000-0000-0000-0000-000000000001' and code='G01'),array['T01','T02'])->'participants'),2,'admin can build a regular match with two teams');
-select throws_ok($$insert into public.matches(id,event_id,round_id,game_id) values('72000000-0000-0000-0000-000000000001','32000000-0000-0000-0000-000000000001',(select id from public.rounds where event_id='32000000-0000-0000-0000-000000000001' and number=1),(select id from public.games where event_id='32000000-0000-0000-0000-000000000001' and code='G01'))$$,'23505',null,'database enforces one match per game per round');
-select throws_ok($$select public.upsert_match('92000000-0000-0000-0000-000000000051',(select id from public.rounds where event_id='32000000-0000-0000-0000-000000000001' and number=1),(select id from public.games where event_id='32000000-0000-0000-0000-000000000001' and code='G02'),array['T01','T03'])$$,'P0001','TEAM_ALREADY_SCHEDULED','team cannot be scheduled twice in one round');
-select throws_ok($$select public.upsert_match('92000000-0000-0000-0000-000000000052',(select id from public.rounds where event_id='32000000-0000-0000-0000-000000000001' and number=1),(select id from public.games where event_id='32000000-0000-0000-0000-000000000002' and code='G01'),array['T01','T02'])$$,'P0001','EVENT_MISMATCH','cross-event game rejected');
+select is(jsonb_array_length(public.upsert_match('92000000-0000-0000-0000-000000000050',(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'rounds') item where item->>'number'='1'),(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'games') item where item->>'code'='G01'),array['T01','T02'])->'participants'),2,'admin can build a regular match with two teams');
+reset role;
+select throws_ok($$insert into public.matches(id,event_id,round_id,game_id) values('72000000-0000-0000-0000-000000000001','32000000-0000-0000-0000-000000000001',(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'rounds') item where item->>'number'='1'),(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'games') item where item->>'code'='G01'))$$,'23505',null,'database enforces one match per game per round');
+set local role authenticated;
+select throws_ok($$select public.upsert_match('92000000-0000-0000-0000-000000000051',(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'rounds') item where item->>'number'='1'),(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'games') item where item->>'code'='G02'),array['T01','T03'])$$,'P0001','TEAM_ALREADY_SCHEDULED','team cannot be scheduled twice in one round');
+select throws_ok($$select public.upsert_match('92000000-0000-0000-0000-000000000052',(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'rounds') item where item->>'number'='1'),'52000000-0000-0000-0000-000000000099'::uuid,array['T01','T02'])$$,'P0001','EVENT_MISMATCH','cross-event game rejected');
 
-select is(jsonb_array_length(public.generate_opening_match('92000000-0000-0000-0000-000000000060',(select id from public.rounds where event_id='32000000-0000-0000-0000-000000000001' and type='OPENING'),(select id from public.games where event_id='32000000-0000-0000-0000-000000000001' and code='G02'))->'participants'),3,'opening generation assigns every event team');
+select is(jsonb_array_length(public.generate_opening_match('92000000-0000-0000-0000-000000000060',(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'rounds') item where item->>'type'='OPENING'),(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'games') item where item->>'code'='G02'))->'participants'),3,'opening generation assigns every event team');
+reset role;
 select is((select count(*)::int from public.match_participants mp join public.rounds r on r.id=mp.round_id where r.type='OPENING' and r.event_id='32000000-0000-0000-0000-000000000001'),3,'opening participants are unique');
-select is(jsonb_array_length(public.generate_opening_match('92000000-0000-0000-0000-000000000060',(select id from public.rounds where event_id='32000000-0000-0000-0000-000000000001' and type='OPENING'),(select id from public.games where event_id='32000000-0000-0000-0000-000000000001' and code='G01'))->'participants'),3,'opening generation replay is idempotent');
+set local role authenticated;
+select is(jsonb_array_length(public.generate_opening_match('92000000-0000-0000-0000-000000000060',(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'rounds') item where item->>'type'='OPENING'),(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'games') item where item->>'code'='G01'))->'participants'),3,'opening generation replay is idempotent');
 select throws_ok($$select public.upsert_team('92000000-0000-0000-0000-000000000061','32000000-0000-0000-0000-000000000001','{"code":"T04","name_en":"Late Team","avatar_key":"star","color_hex":"#654321"}')$$,'P0001','OPENING_MATCH_EXISTS','team cannot be added after opening match generation');
 
 select lives_ok($$select public.set_event_role('92000000-0000-0000-0000-000000000070','32000000-0000-0000-0000-000000000001','22000000-0000-0000-0000-000000000004','REFEREE')$$,'event admin can assign referee');
-select lives_ok($$select public.set_referee_games('92000000-0000-0000-0000-000000000071','32000000-0000-0000-0000-000000000001','22000000-0000-0000-0000-000000000004',array[(select id from public.games where event_id='32000000-0000-0000-0000-000000000001' and code='G01')])$$,'event admin can assign referee games');
-select lives_ok($$select public.set_event_role('92000000-0000-0000-0000-000000000072','32000000-0000-0000-0000-000000000001','22000000-0000-0000-0000-000000000006','GUIDE',(select id from public.teams where event_id='32000000-0000-0000-0000-000000000001' and code='T01'))$$,'event admin can assign guide without login');
-select throws_ok($$select public.set_event_role('92000000-0000-0000-0000-000000000073','32000000-0000-0000-0000-000000000001','22000000-0000-0000-0000-000000000005','GUIDE',(select id from public.teams where event_id='32000000-0000-0000-0000-000000000001' and code='T01'))$$,'P0001','TEAM_HAS_GUIDE','second guide for same team rejected');
+select lives_ok($$select public.set_referee_games('92000000-0000-0000-0000-000000000071','32000000-0000-0000-0000-000000000001','22000000-0000-0000-0000-000000000004',array[(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'games') item where item->>'code'='G01')])$$,'event admin can assign referee games');
+select lives_ok($$select public.set_event_role('92000000-0000-0000-0000-000000000072','32000000-0000-0000-0000-000000000001','22000000-0000-0000-0000-000000000006','GUIDE',(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'teams') item where item->>'code'='T01'))$$,'event admin can assign guide without login');
+select throws_ok($$select public.set_event_role('92000000-0000-0000-0000-000000000073','32000000-0000-0000-0000-000000000001','22000000-0000-0000-0000-000000000005','GUIDE',(select (item->>'id')::uuid from jsonb_array_elements(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'teams') item where item->>'code'='T01'))$$,'P0001','TEAM_HAS_GUIDE','second guide for same team rejected');
 select throws_ok($$select public.set_event_role('92000000-0000-0000-0000-000000000075','32000000-0000-0000-0000-000000000001','22000000-0000-0000-0000-000000000005','EVENT_ADMIN')$$,'P0001','FORBIDDEN','event admin cannot grant event-admin role');
 select throws_ok($$select public.remove_event_role('92000000-0000-0000-0000-000000000076','32000000-0000-0000-0000-000000000001','22000000-0000-0000-0000-000000000005','EVENT_ADMIN')$$,'P0001','FORBIDDEN','event admin cannot remove event-admin role');
-select throws_ok($$select public.set_referee_games('92000000-0000-0000-0000-000000000074','32000000-0000-0000-0000-000000000001','22000000-0000-0000-0000-000000000004',array[(select id from public.games where event_id='32000000-0000-0000-0000-000000000002' limit 1)])$$,'P0001','INVALID_GAMES','cross-event referee assignment rejected');
+select throws_ok($$select public.set_referee_games('92000000-0000-0000-0000-000000000074','32000000-0000-0000-0000-000000000001','22000000-0000-0000-0000-000000000004',array['52000000-0000-0000-0000-000000000099'::uuid])$$,'P0001','INVALID_GAMES','cross-event referee assignment rejected');
 
 select set_config('request.jwt.claim.sub','12000000-0000-0000-0000-000000000001',true);
 select is(public.get_event_setup('32000000-0000-0000-0000-000000000001')->'event'->>'code','P2-EVENT','owner can read event setup');

@@ -5,7 +5,7 @@ returns void language plpgsql immutable set search_path = public, pg_temp
 as $$
 begin
   raise exception using errcode = 'P0001', message = p_code,
-    detail = case when p_detail is null then null else p_detail::text end;
+    detail = coalesce(p_detail::text, '');
 end $$;
 
 create or replace function public.phase2_event_lock(p_event uuid)

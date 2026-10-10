@@ -2,6 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — PR #3 database check repair — HANDOFF
+
+- **Requested by:** Gendy; inspect failing `npm run test:db` and explain checksum.
+- **Branch/state:** `codex/phase-2-event-setup`, clean at `157f3e1`; PR #3 head matches local HEAD.
+- **Scope:** Inspect CI failures, repair database tests or implementation as indicated, run available checks, and commit without pushing.
+- **Confirmed causes:** CI run `38035607700` shows NULL exception DETAIL breaking Phase 2 error codes; seeded owners inflating Phase 1/2 directory counts; direct authenticated table reads aborting both suites.
+- **Changes:** Fixed `phase2_fail` optional details; added two error-helper regression assertions; fixture-scoped directory counts; privileged test-runner observations/constraint checks; authenticated setup ID lookups through `get_event_setup`. Client grants remain unchanged.
+- **Validation:** Local `npm run test:db` blocked by ECONNREFUSED at `127.0.0.1:54322`; runtime results are not claimed. Prior PR frontend job passed. Changed-file Prettier and `git diff --check` passed.
+- **Next:** Fix is committed locally as `fix: repair database error handling and role-aware tests`, without pushing, per repository rules. Push when requested, then confirm the PR database job passes. Docker checksum verification succeeded in the failed run and is unrelated to SQL failures.
+
 ## 2026-10-10 — Phase 2 manual event setup — HANDOFF
 
 - **Requested by:** Gendy.
