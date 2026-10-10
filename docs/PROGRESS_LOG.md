@@ -2,6 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — Local Supabase runtime setup — HANDOFF
+
+- **Requested by:** Gendy; set up local Supabase and execute/fix database checks.
+- **Branch/state:** `codex/phase-2-event-setup`, clean at `827198c`, one local commit ahead; no push authorized.
+- **Scope:** Check Windows virtualization/WSL, install/start Docker if supported, start Supabase, run pgTAP, and repair remaining failures.
+- **Verified prerequisites:** Windows 10 Home build 19045 on Lenovo 81AX; Intel i7-8550U supports SLAT, but `VirtualizationFirmwareEnabled=false` and `HypervisorPresent=false`. Inbox WSL does not support `--version`; modern WSL setup remains needed.
+- **Installation attempt:** WinGet resolved Docker Desktop 4.94.0 and started its official download, but no download progress or installed executable was observed. Stopped the attempt after confirming the BIOS prerequisite blocker; Docker installation is not claimed.
+- **Checks/outcome:** Supabase startup and pgTAP were not run because no usable Docker engine is available. Existing database fix `827198c` remains local and unpushed.
+- **Next:** Gendy must enable Intel virtualization in BIOS/UEFI and restart. Then install/update WSL and Docker Desktop, start the engine, run `npx supabase start` and `npm run test:db`, and repair any further failures. No automatic restart was attempted.
+
 ## 2026-10-10 — PR #3 database check repair — HANDOFF
 
 - **Requested by:** Gendy; inspect failing `npm run test:db` and explain checksum.
