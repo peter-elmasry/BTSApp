@@ -12,3 +12,10 @@ For every work session:
 6. Keep progress entries concise and factual. Distinguish passed checks from checks that were not run or were blocked by unavailable services.
 
 These instructions apply to the primary agent and any delegated agents. The primary agent is responsible for making sure delegated work is reflected in the shared log before handoff.
+
+## Git workflow
+
+- After completing a task, run the relevant tests and lint/format checks, then commit the finished work.
+- Use Conventional Commit prefixes: `feat:`, `fix:`, `refactor:`, or `chore:`.
+- Keep one logical change per commit.
+- Never push or amend existing commits unless the user asks. If the user asks to publish a branch, inspect the diff and branch state first, then push that branch without rewriting existing history.

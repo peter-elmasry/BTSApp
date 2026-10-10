@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — Git workflow and branch publishing — STARTED
+
+- **Requested by:** Gendy.
+- **Goal:** Add the requested Git workflow to `AGENTS.md`; diagnose why `codex/phase-1-auth-owner` cannot be published and try to publish it.
+- **Initial state:** Current branch is `codex/phase-1-auth-owner`; it has no upstream configured. Working tree was clean at inspection. Remote `origin` points to `https://github.com/peter-elmasry/BTSApp.git`; authentication uses Git Credential Manager. Next inspect branch contents and remote refs, run relevant checks, then publish if remote permissions allow.
+
 ## 2026-10-10 — Name preference for this chat — DONE
 
 - Gendy asked to be called “Gendy” in this chat and in future logs written through this chat. Use that name in future entries and handoffs from this chat.
