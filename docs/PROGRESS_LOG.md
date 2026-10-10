@@ -2,12 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-10 — Publish Phase 3 and verify cloud CI — STARTED
+## 2026-10-10 — Publish Phase 3 and verify cloud CI — DONE
 
 - **Requested by:** Gendy explicitly authorized pushing the ready phase and creating a PR.
 - **Branch/state:** Clean `codex/phase-3-xlsx-import` at `9381db2`; refreshed origin and checked for an existing open Phase 3 PR (none found). Merge conflicts are resolved.
 - **Scope:** Review the phase diff, publish this branch without rewriting history, create/attach a PR against `master`, and inspect/fix its CI checks. Local verification already passed 28 unit tests, five browser tests, build, TypeScript and formatting; the 69 new pgTAP assertions still need cloud execution.
 - **Next:** Commit this publication record, push, open the PR and verify frontend/database results. No merge or hosted deployment requested.
+- **Publication milestone:** Pushed `084a1aa` with upstream tracking and opened [PR #5](https://github.com/peter-elmasry/BTSApp/pull/5), attached to this chat; GitHub reports mergeable. Integration PR creation returned 403 and the browser bridge failed; creation succeeded through GitHub's API using existing Git authentication without printing/storing credentials. Cloud CI run `38053285280` is in progress.
+- **Validation passed:** [Cloud CI run 38053285280](https://github.com/peter-elmasry/BTSApp/actions/runs/38053285280) on code head `084a1aa` passes both jobs. Fresh migration/reset includes `0006_phase3_import.sql`; all 310 pgTAP assertions across four suites pass, including 69 import assertions, plus owner seed/auth smoke checks. Frontend formatting, 28 unit tests, build, five browser tests and Lighthouse acceptance pass. This supersedes the earlier Phase 3 SQL-runtime blocker; dependency findings remain documented in D021.
+- **Handoff/next:** Phase 3 is ready for PR review. PR #5 now includes the passing CI evidence; this documentation-only verification note is published on the same branch. No implementation changes were needed after cloud execution. Review/merge PR #5 when approved; hosted deployment remains separate and was not performed here.
 
 ## 2026-10-10 — Resolve Phase 3 merge conflicts — DONE
 
