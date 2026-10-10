@@ -2,6 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — Supabase deployment IPv4 connection — HANDOFF
+
+- **Requested by:** Peter; investigate the failed hosted deployment.
+- **Branch:** `fix/supabase-ipv4-deploy`, based on current `master` at `5df1bcb`; initial working tree clean.
+- **Evidence:** Run `38041380671` links successfully, then `supabase db push` fails with `IPv6 is not supported on your current network`; Edge Functions are skipped. The Node action warning is unrelated.
+- **Scope:** Use an explicit Session pooler database URL for migrations; update deployment instructions and decisions. No schema or application permission changes, no hosted retry or push in this session.
+- **Changes:** Deployment now checks the `SUPABASE_DB_URL` environment secret and explicitly supplies it to `db push`; README documents the Session pooler URI and D019 records the transport decision.
+- **Validation:** Changed-file Prettier and `git diff --check` pass. Installed CLI help confirms `db push --db-url` accepts a percent-encoded connection URI. Initial help invocation was sandbox-blocked writing telemetry; an unrestricted help-only retry passed. No hosted migration or deployment was attempted.
+- **Next:** Add the Session pooler URI as `SUPABASE_DB_URL` in GitHub's `production` environment, publish/merge this fix, then run Deploy Supabase on updated `master`. Changes are committed locally on this branch, not pushed per AGENTS.md; repository credentials/secrets are unchanged.
+
 ## 2026-10-10 — PR #3 cloud database verification — STARTED
 
 - **Requested by:** Gendy; explicitly authorized pushing and resolving CI failures promptly; use GitHub runners because local disk space is insufficient.

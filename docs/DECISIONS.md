@@ -67,3 +67,7 @@ PR #3 CI run `38035607700` exposed tests assuming an empty member directory and 
 ## D018 — Storage deletion policy tests emulate API context
 
 Supabase Storage now rejects direct SQL deletes unless `storage.allow_delete_query=true`; the Storage API sets this transaction context automatically ([upstream explanation](https://supabase.com/blog/supabase-storage-performance-security-reliability-updates)). Phase 2 pgTAP tests set it locally around deletion checks of synthetic metadata-only fixtures, assert referee filtering and actual admin deletion, then turn it off. RLS stays enabled, the suite rolls back, and no production migration or Storage safeguard changes.
+
+## D019 — Explicit IPv4 connection for hosted migrations
+
+[Deployment run 38041380671](https://github.com/peter-elmasry/BTSApp/actions/runs/38041380671) links successfully but `db push` fails with `IPv6 is not supported on your current network`, before applying migrations or deploying Edge Functions. [Supabase connection documentation](https://supabase.com/docs/guides/database/connecting-to-postgres) identifies the shared Session pooler on port 5432 as IPv4-compatible. Keep project linking and use `db push --db-url` with a new production environment secret `SUPABASE_DB_URL` containing that project's completed Session pooler URI. Never commit the URI or password. This corrects the deployment transport only; no schema, RLS, business rules or permission changes. Hosted deployment remains unverified until the secret is configured and the updated workflow succeeds.
