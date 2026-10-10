@@ -2,6 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — Publish and merge IPv4 deployment fix — HANDOFF
+
+- **Requested by:** Peter explicitly authorized merging `fix/supabase-ipv4-deploy`.
+- **Preflight:** Clean working tree; refreshed origin; `master` remains `5df1bcb` with no intervening colleague commits. Reviewed the workflow change and retained the previously verified formatting/CLI checks.
+- **Scope:** Publish this branch, open a PR against `master`, merge after required checks, then inspect the automatically triggered hosted deployment. No force push or history rewriting.
+- **Next:** Confirm PR merge and hosted deployment result. `SUPABASE_DB_URL` must be configured in GitHub's `production` environment; its value is never read into documentation.
+
 ## 2026-10-10 — Supabase deployment IPv4 connection — HANDOFF
 
 - **Requested by:** Peter; investigate the failed hosted deployment.
