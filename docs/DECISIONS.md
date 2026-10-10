@@ -71,3 +71,13 @@ Supabase Storage now rejects direct SQL deletes unless `storage.allow_delete_que
 ## D019 — Explicit IPv4 connection for hosted migrations
 
 [Deployment run 38041380671](https://github.com/peter-elmasry/BTSApp/actions/runs/38041380671) links successfully but `db push` fails with `IPv6 is not supported on your current network`, before applying migrations or deploying Edge Functions. [Supabase connection documentation](https://supabase.com/docs/guides/database/connecting-to-postgres) identifies the shared Session pooler on port 5432 as IPv4-compatible. Keep project linking and use `db push --db-url` with a new production environment secret `SUPABASE_DB_URL` containing that project's completed Session pooler URI. Never commit the URI or password. This corrects the deployment transport only; no schema, RLS, business rules or permission changes. Hosted deployment remains unverified until the secret is configured and the updated workflow succeeds.
+
+## D020 — Import shares setup rules and write path
+
+Phase 3 uses the Phase 2 mutation RPCs inside a rollbackable subtransaction. Dry-run exercises the real write path and rolls back rows, audits, broadcasts and operation records; any row failure rolls back all rows. Successful apply records an actor/event-bound operation result for retries. PostgreSQL sequence gaps after rollback are expected. UPSERT retains omitted setup rows, referee game assignments, game images and team sort order. REPLACE preserves EVENT_ADMIN roles and requires event/round draft state plus no round started_at. The workbook may assign only REFEREE/GUIDE, never owners/admins or new accounts.
+
+## D021 — ExcelJS browser integration and dependency review
+
+Use the plan's ExcelJS 4.4.0 through a dynamic default import: its browser bundle is CommonJS, so named imports worked in Node tests but failed in the production browser. ExcelJS is a separate lazy chunk; no initial-bundle exemption is needed. Reject formulas and non-scalar cells; accept only XLSX up to 5 MiB, with sheet row/column limits after parsing. Keep pure template/parser functions behind a small injectable wrapper for Angular TestBed mocks.
+
+The local dependency audit reports two moderate findings through ExcelJS's uuid dependency (GHSA-w5hq-g745-h8pq, missing buffer bounds checks in UUID v3/v5/v6). Inspection of installed ExcelJS source finds only UUID v4 calls without caller buffers. This scopes the identified path but does not claim a clean audit. The browser distribution embeds its dependencies, so an npm override alone would not repair that copy; retain the mandated library and track the upstream advisory rather than force npm's suggested major downgrade. Production builds report the expected CommonJS optimization warning.

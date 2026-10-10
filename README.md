@@ -46,6 +46,14 @@ Run `npm run serve:dist` in one terminal and `npm run test:lighthouse` in anothe
 
 The home page currently provides a foundation control preview. Schedule and About are placeholders for Phase 4. Phase 1 implementation now adds staff sign-in and owner member/event management; it still requires local runtime and hosted acceptance before deployment. There is no live event, team selection or result-entry UI yet; do not interpret the preview as saved event data.
 
+## Event setup import (Phase 3)
+
+Owners and event administrators can open **Import event setup** from the event setup page. Download the bilingual template, replace its sample rows, and upload a `.xlsx` file (up to 5 MiB). ExcelJS loads on demand in the browser. The preview combines local row errors with a server dry-run; saving requires explicit confirmation and revalidates the whole workbook atomically.
+
+`UPSERT` matches teams/games by code and rounds by number, retains existing rows and referee assignments, and preserves UI-managed game images/team ordering. `REPLACE` removes the event setup and imports it again, retaining event administrators; it requires a draft event with no round ever started. Imports assign existing active members as referees/guides and never create accounts. Export remains scheduled for a later phase.
+
+Migration `0006_phase3_import.sql` adds the import RPC; its pgTAP suite runs through `npm run test:db` and GitHub CI. Frontend browser tests mock the RPC boundary and exercise actual workbook generation/parsing; they do not replace database tests.
+
 ## Hosting and deployment
 
 Import `peter-elmasry/BTSApp` into Vercel with the Angular preset. `vercel.json` sets the build and `dist/btsapp/browser` output. Configure `SUPABASE_URL`/`SUPABASE_ANON_KEY` for Production and Preview; Preview must point to a separate Supabase project. No production fallback is configured.

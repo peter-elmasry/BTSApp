@@ -1,0 +1,197 @@
+<div *transloco="let t" class="min-w-0 space-y-5">
+  <header class="space-y-2">
+    <a
+      class="inline-flex min-h-11 items-center font-semibold text-teal"
+      [routerLink]="['/manage', eventId, 'setup']"
+      >{{ t('import.backToSetup') }}</a
+    >
+    <h1 class="text-2xl font-extrabold">{{ t('import.title') }}</h1>
+    <p class="text-sm text-slate">{{ t('import.intro') }}</p>
+  </header>
+  @if (notice()) {
+    <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
+  }
+  @if (loading()) {
+    <p role="status">{{ t('manage.loading') }}</p>
+  } @else if (!setup()) {
+    <button class="ds-button secondary" (click)="loadSetup()">{{ t('import.retry') }}</button>
+  } @else {
+    <section
+      class="space-y-4 rounded-card bg-white p-4 shadow-card"
+      [attr.aria-label]="t('import.upload')"
+    >
+      <button
+        class="ds-button ghost"
+        [disabled]="downloading() || applying()"
+        (click)="downloadTemplate()"
+      >
+        {{ t(downloading() ? 'import.downloading' : 'import.downloadTemplate') }}
+      </button>
+      <p class="text-sm text-slate">{{ t('import.templateHint') }}</p>
+      <label class="block space-y-1"
+        ><span class="font-semibold">{{ t('import.file') }}</span
+        ><input
+          type="file"
+          accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          class="ds-control w-full min-w-0 max-w-full"
+          [disabled]="applying()"
+          (change)="selectFile($event)"
+          aria-describedby="import-file-hint"
+      /></label>
+      <p id="import-file-hint" class="text-sm text-slate">{{ t('import.fileHint') }}</p>
+      <label class="block space-y-1"
+        ><span class="font-semibold">{{ t('import.mode') }}</span
+        ><select
+          class="ds-control w-full"
+          [formControl]="modeControl"
+          aria-describedby="import-mode-hint"
+        >
+          <option value="UPSERT">{{ t('import.upsert') }}</option>
+          <option value="REPLACE">{{ t('import.replace') }}</option>
+        </select></label
+      >
+      <p id="import-mode-hint" class="text-sm" [class.text-error]="mode() === 'REPLACE'">
+        {{ t(mode() === 'REPLACE' ? 'import.replaceHint' : 'import.upsertHint') }}
+      </p>
+    </section>
+    @if (parsing() || validating() || applying()) {
+      <p role="status">
+        {{ t(applying() ? 'import.applying' : parsing() ? 'import.parsing' : 'import.validating') }}
+      </p>
+    }
+    @if (parsed()) {
+      <section
+        class="space-y-4 rounded-card bg-white p-4 shadow-card"
+        [attr.aria-label]="t('import.preview')"
+      >
+        <h2 class="text-lg font-bold">{{ t('import.preview') }}</h2>
+        <p class="break-all text-sm">{{ file()?.name }}</p>
+        <dl class="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          @for (sheet of preview(); track sheet.key) {
+            <div>
+              <dt class="text-sm text-slate">
+                {{ t(sheet.key === 'matches' ? 'import.matches' : 'manage.tab.' + sheet.key) }}
+              </dt>
+              <dd class="tabular text-xl font-bold">{{ sheet.count }}</dd>
+            </div>
+          }
+        </dl>
+        <p class="text-sm text-slate">{{ t('import.previewHint') }}</p>
+        <details>
+          <summary class="min-h-11 cursor-pointer py-2 font-semibold">
+            {{ t('import.eventSettings') }}
+          </summary>
+          <dl class="space-y-2">
+            @for (value of eventPreview(); track value.key) {
+              <div class="break-words">
+                <dt class="font-semibold" dir="ltr">{{ value.key }}</dt>
+                <dd class="whitespace-pre-wrap">{{ value.value }}</dd>
+              </div>
+            }
+          </dl>
+        </details>
+        @for (sheet of preview(); track sheet.key) {
+          <details>
+            <summary class="min-h-11 cursor-pointer py-2 font-semibold">
+              {{ t(sheet.key === 'matches' ? 'import.matches' : 'manage.tab.' + sheet.key) }} ({{
+                sheet.count
+              }})
+            </summary>
+            <ol class="space-y-3">
+              @for (row of sheet.rows; track $index) {
+                <li class="space-y-1 rounded-xl border border-mist p-3">
+                  <p class="text-sm text-slate">{{ t('import.row') }} {{ row.row }}</p>
+                  <dl>
+                    @for (value of row.values; track value.key) {
+                      <div class="break-words">
+                        <dt class="text-sm font-semibold" dir="ltr">{{ value.key }}</dt>
+                        <dd class="whitespace-pre-wrap">{{ value.value }}</dd>
+                      </div>
+                    }
+                  </dl>
+                </li>
+              }
+            </ol>
+          </details>
+        }
+      </section>
+      @if (issues().length) {
+        <section class="space-y-3 rounded-card bg-white p-4 shadow-card" aria-live="polite">
+          <h2 class="text-lg font-bold text-error">
+            {{ t('import.errorsTitle') }} ({{ issues().length }})
+          </h2>
+          <p>{{ t('import.errorsHint') }}</p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-start text-sm">
+              <thead>
+                <tr>
+                  <th class="p-2 text-start">{{ t('import.sheet') }}</th>
+                  <th class="p-2 text-start">{{ t('import.row') }}</th>
+                  <th class="p-2 text-start">{{ t('import.column') }}</th>
+                  <th class="p-2 text-start">{{ t('import.problem') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (issue of issues(); track $index) {
+                  <tr class="border-t border-mist text-error">
+                    <td class="p-2">{{ issue.sheet }}</td>
+                    <td class="p-2">{{ issue.row || '—' }}</td>
+                    <td class="break-words p-2" dir="ltr">{{ issue.column || '—' }}</td>
+                    <td class="p-2">{{ t(issueKey(issue.code)) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+      @if (report()?.valid && !issues().length && !report()?.applied) {
+        <p role="status" class="rounded-xl bg-white p-3 text-success">{{ t('import.valid') }}</p>
+      }
+      @if (report()?.applied) {
+        <a
+          class="ds-button secondary inline-flex items-center"
+          [routerLink]="['/manage', eventId, 'setup']"
+          #reviewSetupLink
+          >{{ t('import.reviewSetup') }}</a
+        >
+      } @else {
+        <div class="flex flex-wrap gap-3">
+          <button class="ds-button ghost" [disabled]="busy()" (click)="validatePreview()">
+            {{ t('import.validateAgain') }}</button
+          ><button
+            class="ds-button primary"
+            [disabled]="!canConfirm()"
+            (click)="openConfirmation()"
+          >
+            {{ t('import.reviewImport') }}
+          </button>
+        </div>
+      }
+    }
+  }
+  @if (confirmationOpen()) {
+    <ds-bottom-sheet [title]="t('import.confirmTitle')" (close)="closeConfirmation()">
+      <div class="space-y-4">
+        <p>{{ t(mode() === 'REPLACE' ? 'import.confirmReplace' : 'import.confirmUpsert') }}</p>
+        <p class="text-sm text-slate">{{ t('import.atomicHint') }}</p>
+        @if (notice() === 'import.applyFailed') {
+          <p role="alert" class="text-error">{{ t(notice()) }}</p>
+        }
+        <div class="flex flex-wrap gap-3">
+          <button class="ds-button ghost" [disabled]="applying()" (click)="closeConfirmation()">
+            {{ t('common.cancel') }}</button
+          ><button
+            class="ds-button"
+            [class.danger]="mode() === 'REPLACE'"
+            [class.primary]="mode() === 'UPSERT'"
+            [disabled]="!canConfirm()"
+            (click)="confirmImport()"
+          >
+            {{ t(applying() ? 'import.applying' : 'import.confirm') }}
+          </button>
+        </div>
+      </div>
+    </ds-bottom-sheet>
+  }
+</div>

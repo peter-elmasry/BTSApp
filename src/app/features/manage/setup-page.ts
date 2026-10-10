@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthStore } from '../../core/auth/auth.store';
 import { supabase } from '../../core/supabase/client';
@@ -23,7 +23,7 @@ type SetupTab = 'settings' | 'teams' | 'games' | 'rounds' | 'staff';
 
 @Component({
   selector: 'app-event-setup-page',
-  imports: [CommonModule, ReactiveFormsModule, TranslocoDirective],
+  imports: [CommonModule, ReactiveFormsModule, TranslocoDirective, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './setup-page.html',
 })
