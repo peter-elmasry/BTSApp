@@ -1,6 +1,6 @@
 # BTSApp
 
-Mobile-first DST event scoring. Follow [the agreed implementation plan](docs/IMPLEMENTATION_PLAN.md); implementation findings are in [DECISIONS.md](docs/DECISIONS.md). Phase 0 delivery status and outstanding acceptance checks are in [PHASE_0_RESULTS.md](docs/PHASE_0_RESULTS.md).
+Mobile-first DST event scoring. Follow [the agreed implementation plan](docs/IMPLEMENTATION_PLAN.md); implementation findings are in [DECISIONS.md](docs/DECISIONS.md). Phase 0 delivery status and outstanding acceptance checks are in [PHASE_0_RESULTS.md](docs/PHASE_0_RESULTS.md). Cross-device handoffs follow [COORDINATION.md](docs/COORDINATION.md), with chronological work in [PROGRESS_LOG.md](docs/PROGRESS_LOG.md); repository agents must also follow [AGENTS.md](AGENTS.md).
 
 ## Local development
 
@@ -44,7 +44,7 @@ Run `npm run serve:dist` in one terminal and `npm run test:lighthouse` in anothe
 
 `npm run brand` regenerates PNG/WebP logo variants, favicon and install icons from the committed white source, plus 24 original SVG avatars. Visually check the mark-only crop after changing the source. Cairo Arabic/Latin weights 400/600/700/800 are self-hosted through Fontsource. Use only the plan's Tailwind tokens; gold text requires navy, and layout uses logical directions.
 
-The home page currently provides a foundation control preview. Schedule and About are placeholders for Phase 4. There is no live event, team selection, staff authentication or result entry UI yet; do not interpret the preview as saved event data.
+The home page currently provides a foundation control preview. Schedule and About are placeholders for Phase 4. Phase 1 implementation now adds staff sign-in and owner member/event management; it still requires local runtime and hosted acceptance before deployment. There is no live event, team selection or result-entry UI yet; do not interpret the preview as saved event data.
 
 ## Hosting and deployment
 
@@ -52,6 +52,6 @@ Import `peter-elmasry/BTSApp` into Vercel with the Angular preset. `vercel.json`
 
 GitHub CI builds/tests the frontend and runs the SQL suite on local Supabase. Workflows target the existing default `master` and future `main`. The production environment needs `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF` for deploy, and repository secrets `SUPABASE_URL`/`SUPABASE_ANON_KEY` for keepalive. Deploy migrations via the main/default branch only; Edge Functions are deployed once implemented in Phase 1. Use GitHub production environment protections for deployment control.
 
-No Supabase project is linked or Vercel deployment verified until credentials are configured and their real checks pass. Never start Phase 1 while Phase 0's external acceptance is pending.
+No Supabase project is linked or Vercel deployment verified until credentials are configured and their real checks pass. Phase 1 implementation began at the product owner's explicit direction while those Phase 0 external checks remain pending; this does not authorize hosted deployment or mark Phase 0 accepted.
 
 Hosted Auth setup must keep global public signup disabled, enable the email/password provider for synthetic-email password login, disable email confirmation, and select the Postgres Send Email hook `public.block_auth_email` in Authentication > Hooks. The hook blocks mail delivery, including recovery/magic links. CI tests this configuration against local GoTrue before it can pass. Setting the local `auth.email.enable_signup` flag to false also blocks password login; use the global signup flag instead.

@@ -1,0 +1,12 @@
+<button
+  [type]="type()"
+  [disabled]="disabled() || loading()"
+  [attr.aria-busy]="loading()"
+  [class]="'ds-button ' + variant() + ' ' + size()"
+  [class.w-full]="fullWidth()"
+>
+  <span [class.opacity-50]="loading()"><ng-content /></span>
+  @if (loading()) {
+    <span class="ms-2" aria-hidden="true">…</span>
+  }
+</button>

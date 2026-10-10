@@ -23,61 +23,7 @@ import { ToastService } from '../shared/ui/toast';
     DsBottomSheet,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<div *transloco="let t" class="space-y-5" animate.enter="enter">
-    <section class="rounded-card bg-navy p-6 text-white">
-      <img
-        src="/brand/dst-logo-full-white.webp"
-        alt="DST — St. Demiana Sports Team"
-        width="1200"
-        height="509"
-        class="mx-auto mb-5 w-full max-w-xs"
-      />
-      <h1 class="text-2xl font-extrabold">
-        {{ t(page === 'home' ? 'foundation.welcome' : 'nav.' + page) }}
-      </h1>
-      <p class="mt-3 leading-7">{{ t('foundation.message') }}</p>
-    </section>
-    @if (page === 'home') {
-      <ds-card
-        ><h2 class="mb-4 text-lg font-bold">{{ t('foundation.components') }}</h2>
-        <form [formGroup]="form" class="space-y-5" (ngSubmit)="preview()">
-          <div class="flex items-center gap-3">
-            <ds-avatar avatarKey="falcon" [label]="t('foundation.avatar')" />
-            <p class="text-sm text-slate">{{ t('foundation.demo') }}</p>
-          </div>
-          <ds-input
-            [label]="t('foundation.name')"
-            formControlName="name"
-            [error]="
-              form.controls.name.touched && form.controls.name.invalid ? 'errors.REQUIRED' : ''
-            "
-          />
-          <ds-select
-            [label]="t('foundation.emblem')"
-            formControlName="emblem"
-            [options]="[
-              { value: 'falcon', label: t('foundation.falcon') },
-              { value: 'star', label: t('foundation.star') },
-            ]"
-          />
-          <ds-toggle [label]="t('foundation.notifications')" formControlName="notifications" />
-          <ds-button type="submit" [fullWidth]="true">{{ t('foundation.preview') }}</ds-button>
-        </form></ds-card
-      >
-    } @else {
-      <ds-card
-        ><p class="leading-7 text-slate">{{ t('foundation.upcoming') }}</p></ds-card
-      >
-    }
-    @if (sheet()) {
-      <ds-bottom-sheet [title]="t('foundation.preview')" (close)="sheet.set(false)"
-        ><p class="mb-5">{{ t('foundation.previewMessage') }}</p>
-        <ds-button [fullWidth]="true" (click)="confirm()">{{
-          t('common.done')
-        }}</ds-button></ds-bottom-sheet
-      >
-    }
-  </div>`,
+  templateUrl: './foundation-page.html',
 })
 export class FoundationPage {
   readonly page = inject(ActivatedRoute).snapshot.routeConfig?.path ?? 'home';
