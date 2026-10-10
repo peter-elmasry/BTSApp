@@ -1,13 +1,12 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { ReadCacheService } from '../offline/read-cache.service';
 import type { PublicBootstrap, PublicEvent, PublicMatch, PublicTeamView } from './public-types';
 
 @Injectable({ providedIn: 'root' })
 export class PublicApi {
+  private readonly cache = inject(ReadCacheService);
   async rpc<T>(name: string, args: Record<string, unknown> = {}): Promise<T> {
-    const { supabase } = await import('../supabase/client');
-    const { data, error } = await supabase.rpc(name, args);
-    if (error) throw error;
-    return data as T;
+    return this.cache.read<T>(name, args);
   }
   currentEvent() {
     return this.rpc<PublicEvent | null>('get_current_event');

@@ -1,0 +1,99 @@
+<section *transloco="let t" class="space-y-4 rounded-card bg-white p-4 shadow-card">
+  <h2 class="text-xl font-bold">
+    {{ t(scope() === 'MATCH' ? 'live.matchAdjustments' : 'live.eventAdjustments') }}
+  </h2>
+  @if (notice()) {
+    <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
+  }
+  @if (canAdd()) {
+    <form [formGroup]="form" (ngSubmit)="add()" class="space-y-3">
+      <label class="block space-y-1"
+        ><span>{{ t('live.team') }}</span
+        ><select class="ds-control w-full" formControlName="team">
+          @for (team of teams(); track team.id) {
+            <option [value]="team.id">{{ name(team, direction.language()) }}</option>
+          }
+        </select></label
+      >
+      <div class="block space-y-1">
+        <span>{{ t('live.points') }}</span
+        ><span class="flex gap-2"
+          ><button
+            class="ds-button ghost"
+            type="button"
+            [attr.aria-label]="t('live.decreasePoints')"
+            (click)="step(-1)"
+          >
+            −</button
+          ><input
+            type="number"
+            step="1"
+            class="ds-control min-w-0 flex-1"
+            formControlName="points"
+            [attr.aria-label]="t('live.points')"
+          /><button
+            class="ds-button ghost"
+            type="button"
+            [attr.aria-label]="t('live.increasePoints')"
+            (click)="step(1)"
+          >
+            +
+          </button></span
+        >
+      </div>
+      <p class="text-sm text-slate">
+        {{ t('live.remaining') }}: {{ allowance() === null ? t('live.unlimited') : allowance() }}
+      </p>
+      <label class="block space-y-1"
+        ><span>{{ t('live.reason') }}</span
+        ><textarea
+          class="ds-control min-h-24 w-full"
+          rows="3"
+          maxlength="500"
+          formControlName="reason"
+        ></textarea>
+      </label>
+      <button class="ds-button primary" [disabled]="saving()">{{ t('live.addAdjustment') }}</button>
+    </form>
+  }
+  @for (item of adjustments(); track item.id) {
+    <article class="space-y-2 border-t border-mist pt-3" [class.line-through]="!!item.revoked_at">
+      <p class="font-semibold">{{ teamName(item.team_id) }}</p>
+      <p class="tabular font-bold">{{ item.points > 0 ? '+' : '' }}{{ item.points }}</p>
+      <p class="break-words">{{ item.reason }}</p>
+      <p class="text-sm text-slate">
+        {{ t('player.givenBy') }} {{ name(item.given_by, direction.language()) }} ·
+        <time [attr.datetime]="item.created_at">{{ date(item.created_at) }}</time>
+      </p>
+      @if (item.revoked_at) {
+        <p class="text-sm">{{ t('live.revoked') }}: {{ item.revoke_reason }}</p>
+      }
+      @if (canRevoke(item)) {
+        <button class="ds-button ghost" (click)="openRevoke(item)">{{ t('live.revoke') }}</button>
+      }
+    </article>
+  } @empty {
+    <p class="text-slate">{{ t('player.noAdjustments') }}</p>
+  }
+  @if (revokeTarget()) {
+    <ds-bottom-sheet [title]="t('live.revokeTitle')" (close)="!saving() && revokeTarget.set(null)"
+      ><div class="space-y-3">
+        <label class="block space-y-1"
+          ><span>{{ t('live.reason') }}</span
+          ><textarea class="ds-control w-full" rows="3" [formControl]="revokeReason"></textarea>
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <button class="ds-button ghost" [disabled]="saving()" (click)="revokeTarget.set(null)">
+            {{ t('common.cancel') }}</button
+          ><button
+            class="ds-button danger"
+            [disabled]="saving() || revokeReason.invalid"
+            (click)="revoke()"
+          >
+            {{ t('live.revoke') }}
+          </button>
+        </div>
+      </div></ds-bottom-sheet
+    >
+  }
+</section>

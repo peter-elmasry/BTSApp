@@ -59,6 +59,7 @@ export class EventImportPage {
       !!this.parsed() &&
       this.report()?.valid === true &&
       !this.report()?.applied &&
+      !this.report()?.queued &&
       this.issues().length === 0 &&
       !this.busy(),
   );
@@ -201,7 +202,9 @@ export class EventImportPage {
       );
       this.report.set(report);
       this.confirmationOpen.set(false);
-      this.notice.set(report.applied ? 'import.success' : 'import.applyRejected');
+      this.notice.set(
+        report.queued ? 'live.queued' : report.applied ? 'import.success' : 'import.applyRejected',
+      );
       if (report.applied) {
         afterNextRender(() => this.reviewSetupLink()?.nativeElement.focus(), {
           injector: this.injector,
