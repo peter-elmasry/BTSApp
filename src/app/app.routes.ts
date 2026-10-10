@@ -1,5 +1,11 @@
 import { Routes } from '@angular/router';
-import { authGuard, eventRoleGuard, guestOnlyGuard, ownerGuard } from './core/auth/guards';
+import {
+  authGuard,
+  eventRoleGuard,
+  guestOnlyGuard,
+  ownerGuard,
+  scoringGuard,
+} from './core/auth/guards';
 import { teamChosenGuard } from './core/player/player.guards';
 
 export const routes: Routes = [
@@ -52,11 +58,26 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'ref',
+    canActivate: [authGuard, scoringGuard],
+    loadComponent: () => import('./features/referee/board-page').then((m) => m.RefereeBoardPage),
+  },
+  {
+    path: 'ref/match/:id',
+    canActivate: [authGuard, scoringGuard],
+    loadComponent: () =>
+      import('./features/referee/match-entry-page').then((m) => m.MatchEntryPage),
+  },
+  {
     path: 'manage/:eventId',
     canActivate: [authGuard, eventRoleGuard],
     data: { roles: ['EVENT_ADMIN'] },
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'setup' },
+      { path: '', pathMatch: 'full', redirectTo: 'live' },
+      {
+        path: 'live',
+        loadComponent: () => import('./features/manage/live-page').then((m) => m.LiveControlPage),
+      },
       {
         path: 'setup',
         loadComponent: () => import('./features/manage/setup-page').then((m) => m.EventSetupPage),

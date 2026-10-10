@@ -1,9 +1,11 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { AuthStore } from '../auth/auth.store';
-import { EventStore } from './event.store';
+import { EventStore, canSeeAllOutcomes, redactMatchOutcomes } from './event.store';
 import { PublicApi } from './public-api';
 import type { PublicEvent, PublicMatch } from './public-types';
+import { ReadCacheService } from '../offline/read-cache.service';
+import { EventChannelService } from '../realtime/event-channel.service';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -33,6 +35,8 @@ describe('public event state', () => {
       providers: [
         { provide: AuthStore, useValue: auth },
         { provide: PublicApi, useValue: api },
+        { provide: ReadCacheService, useValue: { updates: signal(0) } },
+        { provide: EventChannelService, useValue: { revision: signal(0) } },
       ],
     });
   });
@@ -118,5 +122,40 @@ describe('public event state', () => {
     api.schedule.mockResolvedValue([]);
     await store.initialize();
     expect(store.schedule()).toEqual([]);
+  });
+});
+
+describe('last-known outcome visibility', () => {
+  it('redacts a previously public schedule immediately when visibility is disabled', () => {
+    const event = { id: 'event', leaderboard_public: true } as PublicEvent;
+    const referee = { system_role: 'MEMBER', roles: [{ event_id: 'event', role: 'REFEREE' }] };
+    expect(canSeeAllOutcomes(event, referee)).toBe(true);
+    event.leaderboard_public = false;
+    expect(canSeeAllOutcomes(event, referee)).toBe(false);
+    const matches = [
+      {
+        id: 'm1',
+        participants: [
+          { team_id: 't1', team_code: 'T01', side: 'A', outcome: 'WIN' },
+          { team_id: 't2', team_code: 'T02', side: 'B', outcome: 'LOSS' },
+        ],
+      },
+    ] as PublicMatch[];
+    expect(
+      redactMatchOutcomes(matches)[0].participants.every(
+        (participant) => !('outcome' in participant),
+      ),
+    ).toBe(true);
+    expect(
+      redactMatchOutcomes(matches, 'T01')[0].participants.map((participant) => participant.outcome),
+    ).toEqual(['WIN', undefined]);
+    expect(matches[0].participants[1].outcome).toBe('LOSS');
+    expect(canSeeAllOutcomes(event, { system_role: 'OWNER', roles: [] })).toBe(true);
+    expect(
+      canSeeAllOutcomes(event, {
+        system_role: 'MEMBER',
+        roles: [{ event_id: 'other', role: 'EVENT_ADMIN' }],
+      }),
+    ).toBe(false);
   });
 });

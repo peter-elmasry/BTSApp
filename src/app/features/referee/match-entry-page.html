@@ -1,0 +1,151 @@
+<div *transloco="let t" class="space-y-5">
+  <header>
+    <a routerLink="/ref" class="inline-flex min-h-11 items-center font-semibold text-teal">{{
+      t('live.refereeTitle')
+    }}</a>
+    <h1 class="text-2xl font-extrabold">{{ t('live.enterResult') }}</h1>
+  </header>
+  @if (notice()) {
+    <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
+  }
+  @if (reader.loading()) {
+    <p role="status">{{ t('player.loading') }}</p>
+  }
+  @if (reader.error()) {
+    <section class="space-y-3 rounded-card bg-white p-4">
+      <p role="alert">{{ t(reader.error()) }}</p>
+      <button class="ds-button secondary" (click)="reader.refresh()">
+        {{ t('player.retry') }}
+      </button>
+    </section>
+  }
+  @if (reader.data(); as data) {
+    @if (match(); as item) {
+      <section class="rounded-card bg-white p-4 shadow-card">
+        <app-live-match-summary [snapshot]="data" [match]="item" />
+      </section>
+      @if (canEdit()) {
+        <section class="space-y-4 rounded-card bg-white p-4 shadow-card">
+          <h2 class="text-xl font-bold">
+            {{ t(item.status === 'COMPLETED' ? 'live.correctResult' : 'live.chooseResult') }}
+          </h2>
+          @if (round()?.type === 'OPENING') {
+            <p class="font-semibold">{{ t('live.winnerCount', { n: winners() }) }}</p>
+            <p class="text-sm text-slate">{{ t('live.openingHint') }}</p>
+            <ul class="space-y-3">
+              @for (team of teams(); track team.team_id) {
+                <li class="space-y-2 rounded-xl border border-mist p-3">
+                  <p class="font-semibold">{{ name(team.team, direction.language()) }}</p>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      class="ds-button"
+                      [class.primary]="opening()[team.team_id] === 'WIN'"
+                      [class.ghost]="opening()[team.team_id] !== 'WIN'"
+                      [attr.aria-pressed]="opening()[team.team_id] === 'WIN'"
+                      [disabled]="saving() || queued()"
+                      (click)="toggle(team.team_id, 'WIN')"
+                    >
+                      {{ t('live.winner') }}</button
+                    ><button
+                      class="ds-button"
+                      [class.danger]="opening()[team.team_id] === 'FORFEIT'"
+                      [class.ghost]="opening()[team.team_id] !== 'FORFEIT'"
+                      [attr.aria-pressed]="opening()[team.team_id] === 'FORFEIT'"
+                      [disabled]="saving() || queued()"
+                      (click)="toggle(team.team_id, 'FORFEIT')"
+                    >
+                      {{ t('player.outcome.FORFEIT') }}
+                    </button>
+                  </div>
+                </li>
+              }
+            </ul>
+          } @else {
+            <div class="grid gap-3">
+              @for (choice of primaryChoices; track choice) {
+                <button
+                  class="ds-button min-h-14"
+                  [class.primary]="regular.value === choice"
+                  [class.ghost]="regular.value !== choice"
+                  [attr.aria-pressed]="regular.value === choice"
+                  [disabled]="saving() || queued()"
+                  (click)="select(choice)"
+                >
+                  {{ t('live.choice.' + choice) }}
+                  @if (choice !== 'draw') {
+                    : {{ name(teams()[choice === 'aWins' ? 0 : 1]?.team, direction.language()) }}
+                  }
+                </button>
+              }
+            </div>
+            <details>
+              <summary class="min-h-11 cursor-pointer py-3 font-semibold">
+                {{ t('live.forfeitOptions') }}
+              </summary>
+              <div class="grid gap-2">
+                @for (choice of forfeitChoices; track choice) {
+                  <button
+                    class="ds-button ghost"
+                    [class.bg-gold-soft]="regular.value === choice"
+                    [attr.aria-pressed]="regular.value === choice"
+                    [disabled]="saving() || queued()"
+                    (click)="select(choice)"
+                  >
+                    {{ t('live.choice.' + choice) }}
+                  </button>
+                }
+              </div>
+            </details>
+          }
+          <button
+            class="ds-button primary w-full"
+            data-testid="review-result"
+            [disabled]="!queue.ready() || !valid() || saving() || queued()"
+            (click)="review()"
+          >
+            {{ t('live.reviewResult') }}
+          </button>
+        </section>
+      } @else {
+        <p class="rounded-card bg-white p-4">{{ t('live.readOnly') }}</p>
+      }
+      <app-adjustments-panel
+        [snapshot]="data"
+        [matchId]="item.id"
+        [disabled]="saving() || queued()"
+        (changed)="reader.refresh()"
+      />
+      @if (confirmation(); as outcomes) {
+        <ds-bottom-sheet [title]="t('ref.confirm')" (close)="!saving() && confirmation.set(null)"
+          ><div class="space-y-4">
+            <p>{{ t('live.confirmResultHint') }}</p>
+            <ul class="space-y-2">
+              @for (outcome of outcomes; track outcome.team_id) {
+                <li class="flex flex-wrap justify-between gap-2">
+                  <span class="font-semibold">{{ teamName(outcome.team_id) }}</span
+                  ><span>{{ t('player.outcome.' + outcome.outcome) }}</span>
+                </li>
+              }
+            </ul>
+            <div class="flex flex-wrap gap-3">
+              <button
+                class="ds-button ghost"
+                [disabled]="saving()"
+                (click)="confirmation.set(null)"
+              >
+                {{ t('common.cancel') }}</button
+              ><button
+                class="ds-button primary"
+                data-testid="confirm-result"
+                [disabled]="!queue.ready() || saving() || !canEdit()"
+                (click)="submit()"
+              >
+                {{ t(saving() ? 'live.saving' : 'ref.confirm') }}
+              </button>
+            </div>
+          </div></ds-bottom-sheet
+        >
+      }
+    }
+  }
+</div>

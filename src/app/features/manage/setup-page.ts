@@ -5,6 +5,8 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthStore } from '../../core/auth/auth.store';
 import { supabase } from '../../core/supabase/client';
+import { OpQueueService } from '../../core/offline/op-queue.service';
+import { ReadCacheService } from '../../core/offline/read-cache.service';
 import { availableTeamCodes, TEAM_AVATARS, validMatchSelection } from './setup-helpers';
 
 type Row = any;
@@ -29,6 +31,8 @@ type SetupTab = 'settings' | 'teams' | 'games' | 'rounds' | 'staff';
 })
 export class EventSetupPage {
   private readonly auth = inject(AuthStore);
+  private readonly queue = inject(OpQueueService);
+  private readonly cache = inject(ReadCacheService);
   private readonly route = inject(ActivatedRoute);
   readonly eventId = this.route.snapshot.paramMap.get('eventId') ?? '';
   readonly tabs: SetupTab[] = ['settings', 'teams', 'games', 'rounds', 'staff'];
@@ -168,12 +172,15 @@ export class EventSetupPage {
   async reload() {
     if (!this.eventId) return;
     this.loading.set(true);
-    const { data, error } = await supabase.rpc('get_event_setup', { p_event: this.eventId });
-    this.loading.set(false);
-    if (error) {
-      this.notice.set(`errors.${error.message}`);
+    let data: SetupData;
+    try {
+      data = await this.cache.read<SetupData>('get_event_setup', { p_event: this.eventId });
+    } catch (error) {
+      this.notice.set(`errors.${(error as { message?: string }).message || 'LOAD_FAILED'}`);
+      this.loading.set(false);
       return;
     }
+    this.loading.set(false);
     const value = data as SetupData;
     const teamCodes = new Map(value.teams.map((team) => [team.id, team.code]));
     const memberById = new Map((value.eligible_members ?? []).map((member) => [member.id, member]));
@@ -223,15 +230,18 @@ export class EventSetupPage {
   private async mutate(fn: string, args: Record<string, unknown>) {
     if (this.saving()) return false;
     this.saving.set(true);
-    const { error } = await supabase.rpc(fn, { p_op_id: crypto.randomUUID(), ...args });
-    this.saving.set(false);
-    if (error) {
-      this.notice.set(`errors.${error.message}`);
+    try {
+      const receipt = await this.queue.execute(fn, args);
+      this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'manage.saved');
+      if (receipt.status === 'sent') await this.reload();
+      return true;
+    } catch (error) {
+      const failure = error as { message?: string; code?: string };
+      this.notice.set(`errors.${failure.message || failure.code || 'SAVE_FAILED'}`);
       return false;
+    } finally {
+      this.saving.set(false);
     }
-    this.notice.set('manage.saved');
-    await this.reload();
-    return true;
   }
 
   async saveSettings() {

@@ -4,6 +4,8 @@ import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { supabase } from '../../core/supabase/client';
 import { DsButton } from '../../shared/ui/button';
+import { OpQueueService } from '../../core/offline/op-queue.service';
+import { ReadCacheService } from '../../core/offline/read-cache.service';
 
 type Member = {
   id: string;
@@ -34,6 +36,8 @@ type EventRow = {
 })
 export class OwnerPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly queue = inject(OpQueueService);
+  private readonly cache = inject(ReadCacheService);
   readonly section = this.route.snapshot.routeConfig?.path?.endsWith('events')
     ? 'events'
     : 'members';
@@ -71,13 +75,16 @@ export class OwnerPage implements OnInit {
     await this.reload();
   }
   async reload() {
-    const [members, events] = await Promise.all([
-      supabase.rpc('list_members'),
-      supabase.rpc('list_events'),
-    ]);
-    if (!members.error) this.members.set((members.data ?? []) as Member[]);
-    if (!events.error) this.events.set((events.data ?? []) as EventRow[]);
-    if (members.error || events.error) this.notice.set('errors.LOAD_FAILED');
+    try {
+      const [members, events] = await Promise.all([
+        this.cache.read<Member[]>('list_members', {}),
+        this.cache.read<EventRow[]>('list_events', {}),
+      ]);
+      this.members.set(members ?? []);
+      this.events.set(events ?? []);
+    } catch {
+      this.notice.set('errors.LOAD_FAILED');
+    }
   }
   async saveMember() {
     if (this.memberForm.invalid || this.busy()) return;
@@ -145,29 +152,21 @@ export class OwnerPage implements OnInit {
   }
   async createEvent() {
     if (this.eventForm.invalid || this.busy()) return;
-    this.busy.set(true);
     const v = this.eventForm.getRawValue();
-    const { error } = await supabase.rpc('create_event', {
-      p_op_id: crypto.randomUUID(),
+    const accepted = await this.mutate('create_event', {
       p_code: v.code.trim().toUpperCase(),
       p_name_en: v.name_en,
       p_name_ar: v.name_ar || null,
       p_starts_on: v.starts_on || null,
     });
-    this.busy.set(false);
-    this.notice.set(error ? `errors.${error.message}` : 'owner.eventSaved');
-    if (!error) {
+    if (accepted) {
       this.eventForm.reset({ code: '', name_en: '', name_ar: '', starts_on: '' });
-      await this.reload();
     }
   }
   async setCurrent(event: EventRow) {
-    const { error } = await supabase.rpc('set_current_event', {
-      p_op_id: crypto.randomUUID(),
+    await this.mutate('set_current_event', {
       p_event: event.id,
     });
-    this.notice.set(error ? `errors.${error.message}` : 'owner.eventSaved');
-    await this.reload();
   }
   selectAdmin(eventId: string, memberId: string) {
     this.adminSelection.update((v) => ({ ...v, [eventId]: memberId }));
@@ -178,22 +177,32 @@ export class OwnerPage implements OnInit {
       this.notice.set('owner.chooseMemberError');
       return;
     }
-    const { error } = await supabase.rpc('assign_event_admin', {
-      p_op_id: crypto.randomUUID(),
+    await this.mutate('assign_event_admin', {
       p_event: event.id,
       p_member: memberId,
     });
-    this.notice.set(error ? `errors.${error.message}` : 'owner.eventSaved');
-    await this.reload();
   }
   async removeAdmin(event: EventRow, memberId: string) {
-    const { error } = await supabase.rpc('remove_event_admin', {
-      p_op_id: crypto.randomUUID(),
+    await this.mutate('remove_event_admin', {
       p_event: event.id,
       p_member: memberId,
     });
-    this.notice.set(error ? `errors.${error.message}` : 'owner.eventSaved');
-    await this.reload();
+  }
+  private async mutate(name: string, args: Record<string, unknown>): Promise<boolean> {
+    if (this.busy()) return false;
+    this.busy.set(true);
+    try {
+      const receipt = await this.queue.execute(name, args);
+      this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'owner.eventSaved');
+      if (receipt.status === 'sent') await this.reload();
+      return true;
+    } catch (error) {
+      const failure = error as { message?: string; code?: string };
+      this.notice.set(`errors.${failure.message || failure.code || 'SAVE_FAILED'}`);
+      return false;
+    } finally {
+      this.busy.set(false);
+    }
   }
   memberLabel(id: string) {
     const m = this.members().find((x) => x.id === id);

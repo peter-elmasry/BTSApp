@@ -44,15 +44,23 @@ Run `npm run serve:dist` in one terminal and `npm run test:lighthouse` in anothe
 
 `npm run brand` regenerates PNG/WebP logo variants, favicon and install icons from the committed white source, plus 24 original SVG avatars. Visually check the mark-only crop after changing the source. Cairo Arabic/Latin weights 400/600/700/800 are self-hosted through Fontsource. Use only the plan's Tailwind tokens; gold text requires navy, and layout uses logical directions.
 
-The public app uses the current event selected by an owner. Players pick a team without signing in; staff use the existing sign-in and owner/event setup screens. Result entry and live operation controls arrive in Phase 5.
+The public app uses the current event selected by an owner. Players pick a team without signing in; staff sign in for owner, event setup and live operation screens.
 
 ## Player experience (Phase 4)
 
 Open `/` or `/home` to choose a team, then see its current and upcoming matches. Team choice is stored per event on the device. Printed links such as `/?team=T01` suggest a team and still require confirmation. The header avatar opens the switch-team confirmation. `/schedule` supports my-team, round and game views; `/teams/:code` and `/games/:code` show details; `/about` contains the agreed bilingual DST story.
 
-Migration `0007_phase4_public.sql` adds allowlisted public read RPCs. Hidden schedules omit outcomes; team detail returns the requested team's own outcomes, with opponent outcomes withheld unless the leaderboard is public or the caller is an owner/event administrator. Guide phone numbers appear only when enabled for the event. Domain tables remain private. The server-synchronized clock shows countdown/overtime without closing a round. Standings/ranks remain Phase 6; realtime refresh and offline data/operation queues remain Phase 5.
+Migration `0007_phase4_public.sql` adds allowlisted public read RPCs. Hidden schedules omit outcomes; team detail returns the requested team's own outcomes, with opponent outcomes withheld unless the leaderboard is public or the caller is an owner/event administrator. Guide phone numbers appear only when enabled for the event. Domain tables remain private. The server-synchronized clock shows countdown/overtime without closing a round. Standings/ranks remain Phase 6.
 
 Player browser checks use mocked RPCs for repeatable EN/AR mobile journeys. The new pgTAP suite independently checks actual database read permissions and privacy; run it through `npm run test:db` with Supabase running, or through GitHub CI. A missing current event displays an empty state; unavailable RPCs display a retry action.
+
+## Live operations (Phase 5)
+
+Referees open `/ref` for assigned matches in the active round, then confirm results at `/ref/match/:id`. Regular matches support win/draw and all forfeit combinations; opening matches allow any number of winners or all teams forfeiting. Owners/event administrators use `/manage/:eventId/live` to start, extend, close and reopen rounds, correct results, cancel/reset matches, and add or revoke adjustments. Closing a round is blocked until pending matches are completed or cancelled. Overtime keeps the round active until an administrator closes it.
+
+Migration `0008_phase5_live.sql` enforces assignments, round state, outcome combinations, caps, audit records and operation replay. Referee operational reads expose only assigned match outcomes; hidden public schedules stay hidden. Adjustment lists include giver, reason, Cairo time and revoked history for staff.
+
+Read snapshots and pending domain RPCs are stored in IndexedDB. A queued message means the change is saved on the device, not yet accepted by the server. Keep using the same staff account to sync its pending work; other accounts cannot upload it. Network failures retry automatically with the original operation ID. Permission/validation failures are shown for review and are not retried. If browser storage is unavailable, submissions fail visibly. Password/member Edge Function actions and image uploads require a connection and are never queued. Identifier-only realtime broadcasts refresh relevant views; jittered polling takes over if realtime is unavailable.
 
 ## Event setup import (Phase 3)
 

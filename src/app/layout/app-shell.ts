@@ -19,6 +19,9 @@ import { ServerClockService } from '../core/time/server-clock.service';
 import { DsAvatar } from '../shared/ui/avatar';
 import { DsBottomSheet } from '../shared/ui/bottom-sheet';
 import { RoundBanner } from './round-banner';
+import { OpQueueService } from '../core/offline/op-queue.service';
+import { ReadCacheService } from '../core/offline/read-cache.service';
+import { EventChannelService } from '../core/realtime/event-channel.service';
 
 @Component({
   selector: 'app-shell',
@@ -40,6 +43,9 @@ export class AppShell {
   readonly auth = inject(AuthStore);
   readonly events = inject(EventStore);
   readonly selection = inject(TeamSelectionStore);
+  readonly queue = inject(OpQueueService);
+  readonly cache = inject(ReadCacheService);
+  private readonly channel = inject(EventChannelService);
   readonly switchSheet = signal(false);
   private readonly clock = inject(ServerClockService);
   private readonly i18n = inject(TranslocoService);
@@ -64,6 +70,7 @@ export class AppShell {
   constructor() {
     void this.auth.initialize().then(() => this.events.initialize());
     void this.clock.synchronize();
+    effect(() => this.channel.watch(this.events.event()?.id ?? null));
     let previousIdentity: string | undefined;
     effect(() => {
       if (!this.auth.ready()) return;
@@ -81,6 +88,22 @@ export class AppShell {
     await this.auth.logout();
     await this.router.navigateByUrl('/home');
   }
+  lastUpdated() {
+    const stamp = this.cache.lastUpdated();
+    return stamp
+      ? new Intl.DateTimeFormat(this.direction.language() === 'ar' ? 'ar-EG' : 'en-GB', {
+          timeZone: 'Africa/Cairo',
+          hour: '2-digit',
+          minute: '2-digit',
+          numberingSystem: 'latn',
+        }).format(stamp)
+      : '';
+  }
+  queueError(code: string) {
+    const key = `errors.${code}`;
+    const translated = this.i18n.translate(key);
+    return translated === key ? this.i18n.translate('live.uploadFailed') : translated;
+  }
   readonly navigation = [
     { path: '/home', key: 'nav.home', icon: '⌂' },
     { path: '/schedule', key: 'nav.schedule', icon: '▦' },
@@ -92,13 +115,21 @@ export class AppShell {
     if (profile?.system_role === 'OWNER') {
       items.push({ path: '/owner/members', key: 'owner.title', icon: '♙' });
     }
-    const adminRole = profile?.roles.find((role) => role.role === 'EVENT_ADMIN');
-    if (adminRole) {
+    const eventId = this.events.event()?.id;
+    const adminRole = profile?.roles.find(
+      (role) => role.role === 'EVENT_ADMIN' && role.event_id === eventId,
+    );
+    const manageEvent = adminRole?.event_id ?? (profile?.system_role === 'OWNER' ? eventId : null);
+    if (manageEvent) {
       items.push({
-        path: `/manage/${adminRole.event_id}/setup`,
+        path: `/manage/${manageEvent}/live`,
         key: 'manage.title',
         icon: '⚙',
       });
+    } else if (
+      profile?.roles.some((role) => role.role === 'REFEREE' && role.event_id === eventId)
+    ) {
+      items.push({ path: '/ref', key: 'live.refereeTitle', icon: '⚑' });
     }
     return items;
   });

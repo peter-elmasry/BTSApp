@@ -54,6 +54,38 @@
     </p>
   </header>
   <app-round-banner />
+  @if (queue.pending() > 0 || queue.failures().length > 0 || cache.stale()) {
+    <aside class="mx-auto max-w-3xl space-y-2 px-4 pt-3" aria-live="polite">
+      @if (queue.pending() > 0) {
+        <div
+          class="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-gold-soft px-3 py-2"
+        >
+          <p class="font-semibold">{{ t('live.pending', { n: queue.pending() }) }}</p>
+          <button
+            class="min-h-11 rounded-xl border border-navy px-3 font-bold"
+            (click)="queue.flush()"
+          >
+            {{ t('live.retryUploads') }}
+          </button>
+        </div>
+      }
+      @for (failure of queue.failures(); track failure.opId) {
+        <p role="alert" class="rounded-xl border border-error bg-white p-3 text-error">
+          {{ queueError(failure.code) }}
+          <button
+            class="ms-2 min-h-11 min-w-11 rounded-xl border border-error px-3"
+            [attr.aria-label]="t('common.close')"
+            (click)="queue.dismissFailure(failure.opId)"
+          >
+            ×
+          </button>
+        </p>
+      }
+      @if (cache.stale()) {
+        <p class="text-sm text-slate">{{ t('live.lastUpdated', { time: lastUpdated() }) }}</p>
+      }
+    </aside>
+  }
   <main id="main" tabindex="-1" class="mx-auto max-w-3xl px-4 py-6"><router-outlet /></main>
   <nav
     [attr.aria-label]="t('common.navigation')"

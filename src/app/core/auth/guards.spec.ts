@@ -2,10 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router, UrlTree } from '@angular/router';
 import { signal } from '@angular/core';
 import { AuthStore } from './auth.store';
-import { authGuard, guestOnlyGuard, ownerGuard } from './guards';
+import { authGuard, guestOnlyGuard, ownerGuard, scoringGuard } from './guards';
 
 describe('staff route guards', () => {
-  const profile = signal<{ system_role: 'OWNER' | 'MEMBER' } | null>(null);
+  const profile = signal<{ system_role: 'OWNER' | 'MEMBER'; roles?: { role: string }[] } | null>(
+    null,
+  );
   const session = signal<unknown>(null);
   const auth = { profile, session, initialize: vi.fn(async () => {}) };
 
@@ -48,6 +50,20 @@ describe('staff route guards', () => {
     expect(await TestBed.runInInjectionContext(() => ownerGuard({} as never, {} as never))).toBe(
       true,
     );
+  });
+
+  it('allows scoring staff and rejects guide-only profiles', async () => {
+    for (const role of ['REFEREE', 'EVENT_ADMIN']) {
+      profile.set({ system_role: 'MEMBER', roles: [{ role }] });
+      expect(
+        await TestBed.runInInjectionContext(() => scoringGuard({} as never, {} as never)),
+      ).toBe(true);
+    }
+    profile.set({ system_role: 'MEMBER', roles: [{ role: 'GUIDE' }] });
+    const result = await TestBed.runInInjectionContext(() =>
+      scoringGuard({} as never, {} as never),
+    );
+    expect(TestBed.inject(Router).serializeUrl(result as UrlTree)).toBe('/home');
   });
 
   it('redirects signed-in staff away from the guest login route', async () => {

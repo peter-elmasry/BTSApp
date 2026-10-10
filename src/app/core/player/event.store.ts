@@ -1,7 +1,30 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
+import { ReadCacheService } from '../offline/read-cache.service';
+import { EventChannelService } from '../realtime/event-channel.service';
 import { AuthStore } from '../auth/auth.store';
 import { PublicApi } from './public-api';
 import type { PublicEvent, PublicGame, PublicMatch, PublicRound, PublicTeam } from './public-types';
+
+export function canSeeAllOutcomes(
+  event: PublicEvent | null,
+  profile: { system_role: string; roles: { event_id: string; role: string }[] } | null,
+): boolean {
+  return (
+    !!event?.leaderboard_public ||
+    profile?.system_role === 'OWNER' ||
+    !!profile?.roles.some((role) => role.event_id === event?.id && role.role === 'EVENT_ADMIN')
+  );
+}
+export function redactMatchOutcomes(matches: PublicMatch[], ownCode?: string): PublicMatch[] {
+  return matches.map((match) => ({
+    ...match,
+    participants: match.participants.map((participant) => {
+      if (ownCode && participant.team_code === ownCode) return participant;
+      const { outcome: _outcome, ...visible } = participant;
+      return visible;
+    }),
+  }));
+}
 
 @Injectable({ providedIn: 'root' })
 export class EventStore {
@@ -24,11 +47,28 @@ export class EventStore {
     ]),
   );
   // Permission changes hide an old response immediately, before the shell refresh effect runs.
-  readonly schedule = computed(() =>
-    this.responseContext() === this.authContext() ? this.matches() : [],
-  );
+  readonly schedule = computed(() => {
+    if (this.responseContext() !== this.authContext()) return [];
+    return canSeeAllOutcomes(this.event(), this.auth.profile())
+      ? this.matches()
+      : redactMatchOutcomes(this.matches());
+  });
   private generation = 0;
   private pending?: Promise<void>;
+
+  constructor() {
+    const cache = inject(ReadCacheService);
+    const realtime = inject(EventChannelService);
+    let previous = `${cache.updates()}:${realtime.revision()}`;
+    effect(() => {
+      const version = `${cache.updates()}:${realtime.revision()}`;
+      if (version === previous) return;
+      previous = version;
+      untracked(() => {
+        if (this.loaded()) void this.refresh();
+      });
+    });
+  }
 
   initialize(): Promise<void> {
     if (this.pending) return this.pending;

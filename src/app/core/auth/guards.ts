@@ -25,6 +25,18 @@ export const ownerGuard: CanActivateFn = async () => {
   return auth.profile()?.system_role === 'OWNER' ? true : router.createUrlTree(['/home']);
 };
 
+// Match IDs are resolved by the staff RPC, which enforces the exact event/game scope.
+export const scoringGuard: CanActivateFn = async () => {
+  const auth = inject(AuthStore);
+  const router = inject(Router);
+  await auth.initialize();
+  const profile = auth.profile();
+  const allowed =
+    profile?.system_role === 'OWNER' ||
+    profile?.roles.some((role) => role.role === 'REFEREE' || role.role === 'EVENT_ADMIN');
+  return allowed ? true : router.createUrlTree(['/home']);
+};
+
 export const eventRoleGuard: CanActivateFn = async (route) => {
   const auth = inject(AuthStore);
   const router = inject(Router);
