@@ -1,0 +1,47 @@
+<div *transloco="let t" class="space-y-5">
+  <header class="flex flex-wrap items-center justify-between gap-3">
+    <h1 class="text-2xl font-extrabold">{{ t('nav.schedule') }}</h1>
+    <button class="ds-button ghost" [disabled]="store.loading()" (click)="store.refresh()">
+      {{ t(store.loading() ? 'player.refreshing' : 'player.refresh') }}
+    </button>
+  </header>
+  <app-public-state>
+    <nav class="grid grid-cols-3 gap-2" [attr.aria-label]="t('player.scheduleViews')">
+      @for (item of tabs; track item) {
+        <button
+          class="min-h-11 rounded-xl px-2 py-2 text-sm font-semibold"
+          [class.bg-navy]="tab() === item"
+          [class.text-white]="tab() === item"
+          [class.bg-white]="tab() !== item"
+          [attr.aria-pressed]="tab() === item"
+          (click)="tab.set(item)"
+        >
+          {{ t('player.' + item) }}
+        </button>
+      }
+    </nav>
+    @if (teamView.error()) {
+      <div class="flex flex-wrap items-center gap-2 rounded-xl bg-white p-3">
+        <p role="status">{{ t('player.resultsError') }}</p>
+        <button class="ds-button ghost" (click)="teamView.refresh()">
+          {{ t('player.retry') }}
+        </button>
+      </div>
+    }
+    @for (group of groups(); track group.id) {
+      <section class="space-y-3">
+        <h2 class="text-xl font-bold">
+          {{
+            group.title ||
+              (group.opening ? t('round.opening') : t('player.roundNumber', { n: group.round }))
+          }}
+        </h2>
+        @for (match of group.matches; track match.id) {
+          <app-public-match-card [match]="match" [selectedCode]="selection.selectedCode() ?? ''" />
+        }
+      </section>
+    } @empty {
+      <p class="rounded-card bg-white p-5">{{ t('player.noMatches') }}</p>
+    }
+  </app-public-state>
+</div>

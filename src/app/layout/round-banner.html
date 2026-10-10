@@ -1,0 +1,24 @@
+<ng-container *transloco="let t">
+  @if (activeRound(); as round) {
+    <aside
+      class="px-4 py-3 text-white"
+      [class.bg-error]="overtime()"
+      [class.bg-teal]="!overtime()"
+      [attr.aria-label]="t('round.live', { n: round.number })"
+    >
+      <div class="mx-auto flex max-w-3xl items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="font-bold">
+            {{ t(round.type === 'OPENING' ? 'round.opening' : 'round.live', { n: round.number }) }}
+          </p>
+          @if (overtime()) {
+            <p class="text-sm">{{ t('round.overtime') }}</p>
+          }
+        </div>
+        <span class="tabular shrink-0 text-xl font-extrabold" dir="ltr" role="timer">{{
+          timer()
+        }}</span>
+      </div>
+    </aside>
+  }
+</ng-container>

@@ -44,7 +44,15 @@ Run `npm run serve:dist` in one terminal and `npm run test:lighthouse` in anothe
 
 `npm run brand` regenerates PNG/WebP logo variants, favicon and install icons from the committed white source, plus 24 original SVG avatars. Visually check the mark-only crop after changing the source. Cairo Arabic/Latin weights 400/600/700/800 are self-hosted through Fontsource. Use only the plan's Tailwind tokens; gold text requires navy, and layout uses logical directions.
 
-The home page currently provides a foundation control preview. Schedule and About are placeholders for Phase 4. Phase 1 implementation now adds staff sign-in and owner member/event management; it still requires local runtime and hosted acceptance before deployment. There is no live event, team selection or result-entry UI yet; do not interpret the preview as saved event data.
+The public app uses the current event selected by an owner. Players pick a team without signing in; staff use the existing sign-in and owner/event setup screens. Result entry and live operation controls arrive in Phase 5.
+
+## Player experience (Phase 4)
+
+Open `/` or `/home` to choose a team, then see its current and upcoming matches. Team choice is stored per event on the device. Printed links such as `/?team=T01` suggest a team and still require confirmation. The header avatar opens the switch-team confirmation. `/schedule` supports my-team, round and game views; `/teams/:code` and `/games/:code` show details; `/about` contains the agreed bilingual DST story.
+
+Migration `0007_phase4_public.sql` adds allowlisted public read RPCs. Hidden schedules omit outcomes; team detail returns the requested team's own outcomes, with opponent outcomes withheld unless the leaderboard is public or the caller is an owner/event administrator. Guide phone numbers appear only when enabled for the event. Domain tables remain private. The server-synchronized clock shows countdown/overtime without closing a round. Standings/ranks remain Phase 6; realtime refresh and offline data/operation queues remain Phase 5.
+
+Player browser checks use mocked RPCs for repeatable EN/AR mobile journeys. The new pgTAP suite independently checks actual database read permissions and privacy; run it through `npm run test:db` with Supabase running, or through GitHub CI. A missing current event displays an empty state; unavailable RPCs display a retry action.
 
 ## Event setup import (Phase 3)
 

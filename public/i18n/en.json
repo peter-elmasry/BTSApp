@@ -283,5 +283,68 @@
     "previewMessage": "Your preview is ready. Teams will appear when event setup is complete.",
     "saved": "Preview complete",
     "upcoming": "We’re getting this page ready for event day."
+  },
+  "player": {
+    "loading": "Getting your event ready…",
+    "loadError": "We could not load the event. Check your connection and try again.",
+    "retry": "Try again",
+    "noEvent": "No event is available yet. Check back soon!",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing…",
+    "chooseHint": "Find your team, then confirm your choice. You can switch teams any time.",
+    "searchTeams": "Search teams",
+    "noTeams": "The teams are being prepared. Check back soon!",
+    "noSearchResults": "No teams match your search.",
+    "selectedTeam": "Your team",
+    "confirmTeamTitle": "Is this your team?",
+    "confirmTeamHint": "Confirm to see your team’s matches and updates.",
+    "invalidTeamLink": "This team is not available in the current event. Please choose a team below.",
+    "myTeam": "My team",
+    "currentMatch": "Your current match",
+    "noCurrentMatch": "No match is live for your team right now.",
+    "nextMatches": "Next matches",
+    "fullSchedule": "Full schedule",
+    "noNextMatches": "No more matches are scheduled for your team yet.",
+    "roundNumber": "Round {{n}}",
+    "scheduleViews": "Schedule views",
+    "byRound": "By round",
+    "byGame": "By game",
+    "noMatches": "No matches scheduled yet.",
+    "resultsError": "We could not load this team’s results. Please try again.",
+    "teamDetails": "Team details",
+    "teamSchedule": "Team schedule and results",
+    "adjustments": "Bonuses and penalties",
+    "givenBy": "Given by",
+    "noAdjustments": "No bonuses or penalties yet.",
+    "teamNotFound": "This team is not available in the current event.",
+    "gameDetails": "Game details",
+    "gameNotFound": "This game is not available in the current event.",
+    "matchStatus": {
+      "SCHEDULED": "Scheduled",
+      "COMPLETED": "Completed",
+      "VOID": "Cancelled"
+    },
+    "outcome": {
+      "PENDING": "Awaiting result",
+      "WIN": "Win",
+      "LOSS": "Loss",
+      "DRAW": "Draw",
+      "FORFEIT": "Forfeit"
+    },
+    "adjustmentScope": {
+      "MATCH": "Match",
+      "EVENT": "Event"
+    },
+    "about": {
+      "title": "DST | Demiana Sports Team",
+      "paragraphs": [
+        {
+          "text": "Founded in 2011, Demiana Sports Team (DST) is a Christian sports ministry serving the youth of St. Demiana Church in Haram. We believe that sports are more than just games or competitions; they are a powerful way to build character, strengthen relationships, and reflect Christian values in everyday life. Through sports, we aim to create an environment where young people grow in faith, discipline, teamwork, responsibility, respect, and love. Our mission is not simply to develop better athletes, but to inspire better people who demonstrate the spirit of Christ both on and off the field. Guided by one simple question, \"",
+          "highlight": "What Would Jesus Do?",
+          "after": "\", we strive to make every game, every challenge, and every interaction an opportunity to live out our faith, support one another, and lead by example."
+        }
+      ],
+      "mottos": ["ONE TEAM. ONE SPIRIT."]
+    }
   }
 }

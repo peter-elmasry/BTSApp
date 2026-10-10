@@ -1,12 +1,40 @@
 import { Routes } from '@angular/router';
 import { authGuard, eventRoleGuard, guestOnlyGuard, ownerGuard } from './core/auth/guards';
+import { teamChosenGuard } from './core/player/player.guards';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'home' },
-  ...['home', 'schedule', 'about'].map((path) => ({
-    path,
-    loadComponent: () => import('./layout/foundation-page').then((m) => m.FoundationPage),
-  })),
+  {
+    path: '',
+    pathMatch: 'full',
+    canActivate: [teamChosenGuard],
+    loadComponent: () => import('./features/public/home-page').then((m) => m.HomePage),
+  },
+  {
+    path: 'home',
+    canActivate: [teamChosenGuard],
+    loadComponent: () => import('./features/public/home-page').then((m) => m.HomePage),
+  },
+  {
+    path: 'choose-team',
+    loadComponent: () => import('./features/public/choose-team-page').then((m) => m.ChooseTeamPage),
+  },
+  {
+    path: 'schedule',
+    canActivate: [teamChosenGuard],
+    loadComponent: () => import('./features/public/schedule-page').then((m) => m.SchedulePage),
+  },
+  {
+    path: 'teams/:code',
+    loadComponent: () => import('./features/public/team-detail-page').then((m) => m.TeamDetailPage),
+  },
+  {
+    path: 'games/:code',
+    loadComponent: () => import('./features/public/game-detail-page').then((m) => m.GameDetailPage),
+  },
+  {
+    path: 'about',
+    loadComponent: () => import('./features/public/about-page').then((m) => m.AboutPage),
+  },
   {
     path: 'login',
     canActivate: [guestOnlyGuard],

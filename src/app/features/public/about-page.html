@@ -1,0 +1,31 @@
+<div *transloco="let t" class="space-y-5">
+  <h1 class="text-2xl font-extrabold">{{ t('nav.about') }}</h1>
+  <article class="space-y-6 rounded-card bg-navy p-6 text-white shadow-card">
+    <img
+      src="/brand/dst-logo-full-white.webp"
+      alt="DST | Demiana Sports Team"
+      class="mx-auto h-auto w-full max-w-80"
+      width="320"
+      height="170"
+    />
+    @if (content(); as about) {
+      <h2 class="text-xl font-bold">
+        <span class="text-gold font-bold">{{ about.title }}</span>
+      </h2>
+      @for (paragraph of about.paragraphs; track $index) {
+        <p class="leading-8">
+          {{ paragraph.text }}
+          @if (paragraph.highlight) {
+            <span class="text-gold font-bold">{{ paragraph.highlight }}</span>
+          }
+          {{ paragraph.after }}
+        </p>
+      }
+      @for (motto of about.mottos; track motto) {
+        <p class="text-lg">
+          <span class="text-gold font-bold">{{ motto }}</span>
+        </p>
+      }
+    }
+  </article>
+</div>

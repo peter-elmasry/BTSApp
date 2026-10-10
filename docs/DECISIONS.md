@@ -85,3 +85,9 @@ The local dependency audit reports two moderate findings through ExcelJS's uuid 
 ## D022 — Vercel asset header uses a non-capturing extension group
 
 Vercel rejected the hashed-asset header source because its custom parameter pattern contained the capturing group `(js|css)`. Use `(?:js|css)` inside the existing `:file(...)` parameter. This preserves the exact asset selection and one-year immutable cache policy required by §15; HTML and service-worker files retain `no-cache`. Vercel's [routing utilities](https://github.com/vercel/vercel/tree/main/packages/routing-utils) use path-to-regexp to parse these sources. Hosted redeployment is a separate verification step; this configuration correction does not change Supabase credentials or application permissions.
+
+## D023 — Public reads expose explicit fields and scoped outcomes
+
+Phase 4 public RPCs use explicit JSON field lists without granting domain-table reads. No current event returns JSON null; unknown event/team parameters raise `NOT_FOUND`. Hidden schedules omit the outcome key entirely for anonymous players, guides and referees, following D005. Team views return only the requested team's outcomes plus non-revoked adjustments with giver names; opponent outcomes remain hidden unless `can_see_results` passes. Anonymous callers can request any team's view, preserving the accepted suspense limitation in §6.6. Guides are shown only while active, with phone omitted unless `show_guide_phone` is enabled. Internal JSON builders are not client-callable.
+
+Team selection is event-scoped, validated against the current roster and written only after confirmation, including QR suggestions. Public schedule responses are discarded on superseding requests or authentication changes; changing identity hides previous privileged outcomes before refetch. The round banner derives overtime from synchronized server time and never changes round state. Standings computation remains in Phase 6 as planned.

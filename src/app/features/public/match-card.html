@@ -1,0 +1,67 @@
+<article
+  *transloco="let t"
+  class="min-w-0 space-y-3 overflow-hidden rounded-card border border-mist bg-white shadow-card"
+>
+  @if (game(); as item) {
+    @if (image(item.image_path)) {
+      <img
+        [src]="image(item.image_path)"
+        alt=""
+        class="h-36 w-full object-cover"
+        loading="lazy"
+        width="480"
+        height="144"
+      />
+    }
+  }
+  <div class="space-y-3 p-4">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <p class="text-sm font-semibold text-teal">
+        @if (round()?.type === 'OPENING') {
+          {{ t('round.opening') }}
+        } @else {
+          {{ t('player.roundNumber', { n: round()?.number ?? '—' }) }}
+        }
+      </p>
+      <span class="rounded-lg bg-ivory px-2 py-1 text-sm">{{
+        t('player.matchStatus.' + match().status)
+      }}</span>
+    </div>
+    @if (game(); as item) {
+      <h3 class="text-lg font-bold">
+        <a class="inline-flex min-h-11 items-center" [routerLink]="['/games', item.code]">{{
+          name(item, direction.language())
+        }}</a>
+      </h3>
+      @if (location(item, direction.language())) {
+        <p class="text-sm text-slate">{{ location(item, direction.language()) }}</p>
+      }
+    }
+    <ul class="space-y-2">
+      @for (participant of teams(); track participant.team_id) {
+        <li
+          class="flex min-w-0 flex-wrap items-center gap-2 rounded-xl p-2"
+          [class.bg-ivory]="participant.team_code === selectedCode()"
+        >
+          @if (participant.team; as team) {
+            <ds-avatar [avatarKey]="team.avatar_key" [color]="team.color_hex" [size]="44" /><a
+              class="flex min-h-11 min-w-0 flex-1 items-center break-words font-semibold"
+              [routerLink]="['/teams', team.code]"
+              >{{ name(team, direction.language()) }}</a
+            >
+          } @else {
+            <span class="font-semibold">{{ participant.team_code }}</span>
+          }
+          @if (participant.outcome; as outcome) {
+            <span
+              class="rounded-lg bg-ivory px-2 py-1 text-sm font-semibold"
+              [class.text-success]="outcome === 'WIN'"
+              [class.text-error]="outcome === 'LOSS' || outcome === 'FORFEIT'"
+              >{{ t('player.outcome.' + outcome) }}</span
+            >
+          }
+        </li>
+      }
+    </ul>
+  </div>
+</article>

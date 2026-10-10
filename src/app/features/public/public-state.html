@@ -1,0 +1,21 @@
+<ng-container *transloco="let t">
+  @if (store.loading() && !store.event()) {
+    <p role="status" class="rounded-card bg-white p-5">{{ t('player.loading') }}</p>
+  } @else if (store.error()) {
+    <section class="space-y-3 rounded-card bg-white p-5">
+      <p role="alert">{{ t('player.loadError') }}</p>
+      <button class="ds-button secondary" [disabled]="store.loading()" (click)="store.refresh()">
+        {{ t('player.retry') }}
+      </button>
+    </section>
+  } @else if (!store.event()) {
+    <section class="space-y-3 rounded-card bg-white p-5">
+      <p>{{ t('player.noEvent') }}</p>
+      <button class="ds-button ghost" [disabled]="store.loading()" (click)="store.refresh()">
+        {{ t('player.refresh') }}
+      </button>
+    </section>
+  } @else {
+    <ng-content />
+  }
+</ng-container>
