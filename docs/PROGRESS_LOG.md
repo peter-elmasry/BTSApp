@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — Publish Phase 5 and verify cloud CI — STARTED
+
+- **Requested by:** Gendy authorized opening the Phase 5 PR after the publication/CI request.
+- **Preflight:** Clean `codex/phase-5-live-operations` at `79faecf`; refreshed origin, master remains `90c7791`. Reviewed the 54-file feature/database/test/documentation diff and whitespace; no history rewriting.
+- **Scope/next:** Push branch, create/attach PR against master, run/fix cloud checks. Local evidence: 86 unit tests, all 16 browser checks across runs, build (364.10 kB), TypeScript, formatting, whitespace and Lighthouse accessibility 100 pass. Database runtime remains pending with 551 expected assertions. No merge or hosted deployment authorized.
+
 ## 2026-10-10 — Phase 5 live operations — HANDOFF
 
 - **Requested by:** Gendy; continue the next phase, retaining the earlier divide-and-conquer, DRY and KISS direction.
