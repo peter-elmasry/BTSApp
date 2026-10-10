@@ -2,6 +2,25 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — Publish Vercel header fix — HANDOFF
+
+- **Requested by:** Peter authorized proceeding with publication/merge and reporting when ready to deploy.
+- **Preflight:** Clean `fix/vercel-cache-pattern` at `0d6e330`; refreshed origin and confirmed no newer master commits. Reviewed the three-file configuration/documentation diff.
+- **Scope:** Publish the validated fix, create a PR, verify CI, merge after passing checks and report deployment readiness. Vercel may automatically deploy the merge if its GitHub connection is active.
+- **Validation retained:** Vercel routing parser reproduces the old failure and accepts the corrected configuration; hashed/unhashed asset selection, formatting and whitespace checks passed.
+- **Publication:** Pushed `fix/vercel-cache-pattern` and opened [PR #6](https://github.com/peter-elmasry/BTSApp/pull/6). Explicitly selected the existing `peter-elmasry` Git credential to bypass an account-selection prompt. No credential values were exposed or stored.
+- **Milestone:** Vercel's `bts-app` preview deploy succeeds, confirming the invalid-source deployment blocker is resolved. Frontend CI passes on initial PR head `a9962ae`; database CI is still running at this documentation milestone. This final documentation update must receive its own head checks before merge.
+- **Next:** Inspect current PR #6 checks and merge state; merge the verified head once CI passes. An active Vercel GitHub connection should deploy updated `master` automatically; verify the production deployment and owner login separately. Hosted authentication and login acceptance are not claimed here.
+
+## 2026-10-10 — Vercel asset header pattern — HANDOFF
+
+- **Requested by:** Peter; confirm the Supabase URL and fix Vercel's invalid header source error.
+- **Preflight:** Working tree clean; fetched origin and based `fix/vercel-cache-pattern` on latest `master` (`d121e55`, including merged Phase 3). Prior local documentation remains preserved on `docs/hosted-deployment-handoff`.
+- **Scope:** Correct the nested capturing group in `vercel.json`; preserve hashed-asset caching and service-worker/HTML revalidation. Update decisions and validate route parsing. No schema, permissions or credentials changed.
+- **Changes:** Replaced `(js|css)` with `(?:js|css)` in the hashed-asset source; recorded D022. Peter reports hosted owners were created successfully; hosted owner sign-in and Vercel acceptance remain unverified.
+- **Validation:** Vercel routing-utils 6.5.0 reproduces the original invalid configuration and accepts every corrected header/rewrite. Its path-to-regexp parser matches hashed JS/CSS and excludes unhashed assets, HTML and service-worker files. Changed-file Prettier and whitespace checks pass. The validator was installed only under ignored `artifacts/`; application dependencies are unchanged. An initial check used the wrong wrapper signature; the corrected validator invocation passed.
+- **Next/publication:** Fix committed locally on `fix/vercel-cache-pattern`; not pushed per AGENTS.md. Publish/review/merge this branch when requested, then redeploy Vercel from updated `master` and test owner login. No hosted deployment was run during this fix.
+
 ## 2026-10-10 — Publish Phase 3 and verify cloud CI — DONE
 
 - **Requested by:** Gendy explicitly authorized pushing the ready phase and creating a PR.
