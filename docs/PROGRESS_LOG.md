@@ -76,7 +76,7 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Final frontend checks:** All 46 unit tests pass using bundled Node 24 and one thread worker; system Node 22 worker startup timed out without running tests. Production build passes after mobile-header visual correction (340.25 kB initial), app/spec TypeScript checks pass, all changed files pass Prettier and whitespace checks. All nine browser checks pass across runs: eight in the combined run, then the existing English XLSX journey alone (25.2 s) with a 15 s local assertion window after cold-load/download timeouts. Local timing overrides remain ignored; CI configuration is unchanged. Both player screenshots were inspected; no mobile overflow or axe violations in checked EN/AR pages.
 - **Handoff/next:** Implementation is committed locally on `codex/phase-4-player-experience`, not pushed. Publish this branch/open its Phase 4 PR when authorized, then run/fix cloud CI (expected 397 pgTAP assertions across five suites, including 87 new). Do not mark Phase 4 accepted until database runtime checks pass. No Docker installation, hosted database changes or deployment performed.
 
-## 2026-10-10 — Publish Vercel header fix — HANDOFF
+## 2026-10-10 — Publish Vercel header fix — DONE
 
 - **Requested by:** Peter authorized proceeding with publication/merge and reporting when ready to deploy.
 - **Preflight:** Clean `fix/vercel-cache-pattern` at `0d6e330`; refreshed origin and confirmed no newer master commits. Reviewed the three-file configuration/documentation diff.
@@ -85,6 +85,8 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Publication:** Pushed `fix/vercel-cache-pattern` and opened [PR #6](https://github.com/peter-elmasry/BTSApp/pull/6). Explicitly selected the existing `peter-elmasry` Git credential to bypass an account-selection prompt. No credential values were exposed or stored.
 - **Milestone:** Vercel's `bts-app` preview deploy succeeds, confirming the invalid-source deployment blocker is resolved. Frontend CI passes on initial PR head `a9962ae`; database CI is still running at this documentation milestone. This final documentation update must receive its own head checks before merge.
 - **Next:** Inspect current PR #6 checks and merge state; merge the verified head once CI passes. An active Vercel GitHub connection should deploy updated `master` automatically; verify the production deployment and owner login separately. Hosted authentication and login acceptance are not claimed here.
+- **Final verification:** Final head `d7149c8` passes frontend/database CI run `38059628721` and Vercel preview. PR #6 merged as `30e6da0`. Vercel automatically deployed that master commit; GitHub's Vercel status and Production deployment `6982234229` both report success. No manual redeploy is needed. Owner login is the next user acceptance check.
+- **Documentation handoff:** This final result is committed locally on `docs/vercel-production-handoff`; not published. The application fix and earlier progress record are already merged into master.
 
 ## 2026-10-10 — Vercel asset header pattern — HANDOFF
 
