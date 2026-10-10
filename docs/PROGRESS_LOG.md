@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — Publish Phase 4 and verify cloud CI — STARTED
+
+- **Requested by:** Gendy explicitly authorized pushing Phase 4, opening its PR and running/fixing cloud CI.
+- **Preflight:** Clean `codex/phase-4-player-experience` at `b48330b`; refreshed origin, master remains `30e6da0`. Reviewed the 48-file feature/database/test/documentation diff. No history rewriting.
+- **Scope/next:** Publish branch, create/attach PR against master, inspect both CI jobs, repair failures and rerun as needed. Local build, 46 unit tests, all nine browser checks across runs, app/spec TypeScript, formatting and whitespace pass. Database runtime remains pending, with 397 assertions expected. No merge or hosted deployment authorized.
+
 ## 2026-10-10 — Phase 4 public player experience — HANDOFF
 
 - **Requested by:** Gendy; continue the next phase, retaining the earlier divide-and-conquer, DRY and KISS direction.
