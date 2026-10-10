@@ -3,6 +3,7 @@ import { App } from './app';
 import { appConfig } from './app.config';
 import { provideTransloco, TranslocoLoader } from '@jsverse/transloco';
 import { of } from 'rxjs';
+import { PublicApi } from './core/player/public-api';
 
 class TestLoader implements TranslocoLoader {
   getTranslation() {
@@ -20,6 +21,13 @@ describe('App', () => {
       imports: [App],
       providers: [
         ...appConfig.providers,
+        {
+          provide: PublicApi,
+          useValue: {
+            currentEvent: async () => null,
+            serverNow: async () => new Date().toISOString(),
+          },
+        },
         provideTransloco({
           config: {
             availableLangs: ['ar', 'en'],

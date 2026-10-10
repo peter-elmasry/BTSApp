@@ -53,7 +53,8 @@ for (const lang of ['en', 'ar']) {
         return;
       }
       const path = new URL(route.request().url()).pathname;
-      let body: unknown = {};
+      let body: unknown = null;
+      if (path.endsWith('/server_now')) body = new Date().toISOString();
       if (path.endsWith('/get_my_profile'))
         body = {
           id: 'test-member',

@@ -4,14 +4,28 @@
     <div class="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
       <a
         routerLink="/home"
-        class="flex min-h-11 min-w-11 items-center"
+        class="me-auto flex min-h-11 min-w-11 items-center sm:me-0"
         [attr.aria-label]="t('nav.home')"
         ><img src="/brand/dst-mark-white.webp" alt="DST" width="75" height="32" class="h-8 w-auto"
       /></a>
-      <div class="min-w-0 flex-1" [class.hidden]="auth.profile()" [class.sm:block]="auth.profile()">
-        <p class="text-sm font-extrabold">{{ t('app.title') }}</p>
+      <div class="hidden min-w-0 flex-1 sm:block">
+        <p class="truncate text-sm font-extrabold">{{ eventName() }}</p>
         <p class="text-xs text-gold">ONE TEAM. ONE SPIRIT.</p>
       </div>
+      @if (selection.selectedTeam(); as team) {
+        <button
+          class="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full"
+          (click)="switchSheet.set(true)"
+          [attr.aria-label]="t('team.switch') + ': ' + teamName()"
+        >
+          <ds-avatar
+            [avatarKey]="team.avatar_key"
+            [color]="team.color_hex"
+            [label]="teamName()"
+            [size]="36"
+          />
+        </button>
+      }
       @if (auth.profile(); as profile) {
         <span class="hidden max-w-28 truncate text-xs sm:block">{{ profile.full_name_en }}</span>
         <button
@@ -23,7 +37,7 @@
       } @else {
         <a
           routerLink="/login"
-          class="flex min-h-11 items-center rounded-xl border border-white/30 px-3 text-sm font-bold"
+          class="flex min-h-11 shrink-0 items-center rounded-xl border border-white/30 px-3 text-sm font-bold"
           >{{ t('auth.login') }}</a
         >
       }
@@ -35,7 +49,11 @@
         {{ direction.language() === 'ar' ? 'EN' : 'ع' }}
       </button>
     </div>
+    <p class="mx-auto max-w-3xl truncate px-4 pb-3 text-sm font-bold sm:hidden">
+      {{ eventName() }}
+    </p>
   </header>
+  <app-round-banner />
   <main id="main" tabindex="-1" class="mx-auto max-w-3xl px-4 py-6"><router-outlet /></main>
   <nav
     [attr.aria-label]="t('common.navigation')"
@@ -58,4 +76,12 @@
     </div>
   </nav>
   <ds-toast />
+  @if (switchSheet()) {
+    <ds-bottom-sheet [title]="t('team.switch')" (close)="switchSheet.set(false)">
+      <p class="mb-5">{{ t('team.switch.confirm') }}</p>
+      <button class="ds-button primary w-full" (click)="switchTeam()">
+        {{ t('team.switch') }}
+      </button>
+    </ds-bottom-sheet>
+  }
 </div>

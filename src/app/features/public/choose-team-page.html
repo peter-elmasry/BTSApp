@@ -1,0 +1,72 @@
+<div *transloco="let t" class="space-y-5">
+  <header class="space-y-2">
+    <h1 class="text-2xl font-extrabold">{{ t('team.choose.title') }}</h1>
+    <p class="text-slate">{{ t('player.chooseHint') }}</p>
+  </header>
+  @if (notice()) {
+    <p role="alert" class="rounded-xl bg-white p-4 text-error">{{ t(notice()) }}</p>
+  }
+  <app-public-state>
+    @if (store.teams().length > 12) {
+      <label class="block space-y-1"
+        ><span class="font-semibold">{{ t('player.searchTeams') }}</span
+        ><input type="search" class="ds-control w-full" [formControl]="search" autocomplete="off"
+      /></label>
+    }
+    @if (!store.teams().length) {
+      <p class="rounded-card bg-white p-5">{{ t('player.noTeams') }}</p>
+    } @else if (!filteredTeams().length) {
+      <p role="status">{{ t('player.noSearchResults') }}</p>
+    } @else {
+      <div class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+        @for (team of filteredTeams(); track team.id) {
+          <button
+            type="button"
+            class="team-card relative flex min-w-0 flex-col items-center gap-3 overflow-hidden rounded-card border-2 border-mist bg-white p-4 text-center shadow-card"
+            [class.selected]="pendingCode() === team.code"
+            [style.--team-color]="team.color_hex"
+            [attr.aria-pressed]="selection.selectedCode() === team.code"
+            [attr.data-testid]="'team-card-' + team.code"
+            (click)="preview(team)"
+          >
+            <ds-avatar [avatarKey]="team.avatar_key" [color]="team.color_hex" [size]="72" />
+            <span class="break-words text-lg font-bold">{{
+              name(team, direction.language())
+            }}</span>
+            <span class="text-sm text-slate" dir="ltr">{{ team.code }}</span>
+            @if (team.guide) {
+              <span class="break-words text-sm"
+                >{{ t('team.guide') }}: {{ name(team.guide, direction.language()) }}</span
+              >
+            }
+            @if (selection.selectedCode() === team.code) {
+              <span class="rounded-lg bg-ivory px-2 py-1 text-sm font-semibold">{{
+                t('player.selectedTeam')
+              }}</span>
+            }
+          </button>
+        }
+      </div>
+    }
+  </app-public-state>
+  @if (pending(); as team) {
+    <ds-bottom-sheet [title]="t('player.confirmTeamTitle')" (close)="pendingCode.set(null)">
+      <div class="space-y-4 text-center">
+        <ds-avatar [avatarKey]="team.avatar_key" [color]="team.color_hex" [size]="96" />
+        <p class="text-2xl font-extrabold">{{ name(team, direction.language()) }}</p>
+        @if (selection.selectedCode() && selection.selectedCode() !== team.code) {
+          <p>{{ t('team.switch.confirm') }}</p>
+        } @else {
+          <p>{{ t('player.confirmTeamHint') }}</p>
+        }
+        <div class="flex flex-wrap justify-center gap-3">
+          <button class="ds-button ghost" (click)="pendingCode.set(null)">
+            {{ t('common.cancel') }}</button
+          ><button class="ds-button primary" data-testid="confirm-team" (click)="confirm()">
+            {{ t('team.choose.confirm') }}
+          </button>
+        </div>
+      </div>
+    </ds-bottom-sheet>
+  }
+</div>

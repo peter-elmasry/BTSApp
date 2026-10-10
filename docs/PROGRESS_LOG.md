@@ -2,6 +2,18 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-10 — Phase 4 public player experience — HANDOFF
+
+- **Requested by:** Gendy; continue the next phase, retaining the earlier divide-and-conquer, DRY and KISS direction.
+- **Preflight:** Clean Phase 3 branch; fetched origin, confirmed PR #5 merged and its 310 database assertions passed. New `codex/phase-4-player-experience` starts at latest master `30e6da0`, preserving the Vercel fix and colleague's handoff.
+- **Scope/owners:** Database agent owns migration/public read RPCs and pgTAP; UI agent owns public feature pages and `player` translations; state agent owns event/team-selection/server-clock stores, guards and focused tests. Primary owns shared types/API, shell/routes, browser checks, integration, docs and commit.
+- **Contract:** Public reads use `get_current_event`, `get_bootstrap(p_event)`, `get_schedule(p_event)` and `get_team_view(p_event,p_team_code)`. Explicit field allowlists; hidden schedule omits outcome keys for anonymous/referee/guide callers, while team view returns only the requested team's outcomes. Guide phone follows the event flag. No direct table grants or mutations added.
+- **Acceptance/next:** Confirmed team choice/deep links, event-scoped persistence and switching, mobile EN/AR pages, server-derived countdown/overtime and visibility-safe reads. Local Docker remains unavailable; no installation. Implement, run frontend checks and prepare database verification on GitHub. Commit completed work; no new phase publication/merge/deployment authorized by this request.
+- **Integration milestone:** All three delegated scopes delivered: six public pages and shared match/state UI, typed read API, event/team stores, guards and clock, four public RPCs and 87 expected pgTAP assertions. Shell now shows the current event/team and live round banner; retired the demo route/components. D023 records visibility and stale-response behavior; README describes the player flow.
+- **Checks in progress:** Production build passes (340.01 kB initial). New EN/AR player journeys, QR/overtime checks, no-event accessibility and offline shell pass. Existing Arabic XLSX check passes; English download hit a local 30 s timeout and will be rerun alone. Unit suite compiled after a nullable-label correction but its worker timed out before executing; rerunning without the competing workload. Database runtime remains unrun pending GitHub CI publication.
+- **Final frontend checks:** All 46 unit tests pass using bundled Node 24 and one thread worker; system Node 22 worker startup timed out without running tests. Production build passes after mobile-header visual correction (340.25 kB initial), app/spec TypeScript checks pass, all changed files pass Prettier and whitespace checks. All nine browser checks pass across runs: eight in the combined run, then the existing English XLSX journey alone (25.2 s) with a 15 s local assertion window after cold-load/download timeouts. Local timing overrides remain ignored; CI configuration is unchanged. Both player screenshots were inspected; no mobile overflow or axe violations in checked EN/AR pages.
+- **Handoff/next:** Implementation is committed locally on `codex/phase-4-player-experience`, not pushed. Publish this branch/open its Phase 4 PR when authorized, then run/fix cloud CI (expected 397 pgTAP assertions across five suites, including 87 new). Do not mark Phase 4 accepted until database runtime checks pass. No Docker installation, hosted database changes or deployment performed.
+
 ## 2026-10-10 — Publish Vercel header fix — HANDOFF
 
 - **Requested by:** Peter authorized proceeding with publication/merge and reporting when ready to deploy.

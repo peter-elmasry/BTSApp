@@ -1,0 +1,48 @@
+<div *transloco="let t" class="space-y-5">
+  <header>
+    <a routerLink="/schedule" class="inline-flex min-h-11 items-center font-semibold text-teal">{{
+      t('player.fullSchedule')
+    }}</a>
+    <h1 class="text-2xl font-extrabold">{{ t('player.gameDetails') }}</h1>
+  </header>
+  <app-public-state>
+    @if (game(); as item) {
+      <section class="overflow-hidden rounded-card bg-white shadow-card">
+        @if (image(item.image_path)) {
+          <img
+            [src]="image(item.image_path)"
+            [alt]="name(item, direction.language())"
+            class="h-52 w-full object-cover"
+            width="640"
+            height="208"
+          />
+        }
+        <div class="space-y-2 p-5">
+          <h2 class="text-2xl font-extrabold">{{ name(item, direction.language()) }}</h2>
+          @if (location(item, direction.language())) {
+            <p class="text-slate">{{ location(item, direction.language()) }}</p>
+          }
+        </div>
+      </section>
+      @for (group of groups(); track group.round.id) {
+        <section class="space-y-3">
+          <h2 class="text-xl font-bold">
+            {{
+              name(group.round, direction.language()) ||
+                (group.round.type === 'OPENING'
+                  ? t('round.opening')
+                  : t('player.roundNumber', { n: group.round.number }))
+            }}
+          </h2>
+          @for (match of group.matches; track match.id) {
+            <app-public-match-card [match]="match" />
+          }
+        </section>
+      } @empty {
+        <p class="rounded-card bg-white p-5">{{ t('player.noMatches') }}</p>
+      }
+    } @else {
+      <p class="rounded-card bg-white p-5">{{ t('player.gameNotFound') }}</p>
+    }
+  </app-public-state>
+</div>
