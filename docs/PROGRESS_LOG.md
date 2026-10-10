@@ -2,11 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-10 — Publish Phase 5 and verify cloud CI — STARTED
+## 2026-10-10 — Publish Phase 5 and verify cloud CI — DONE
 
 - **Requested by:** Gendy authorized opening the Phase 5 PR after the publication/CI request.
 - **Preflight:** Clean `codex/phase-5-live-operations` at `79faecf`; refreshed origin, master remains `90c7791`. Reviewed the 54-file feature/database/test/documentation diff and whitespace; no history rewriting.
 - **Scope/next:** Push branch, create/attach PR against master, run/fix cloud checks. Local evidence: 86 unit tests, all 16 browser checks across runs, build (364.10 kB), TypeScript, formatting, whitespace and Lighthouse accessibility 100 pass. Database runtime remains pending with 551 expected assertions. No merge or hosted deployment authorized.
+- **Publication milestone:** Published `42ae9cb` and opened/attached [PR #8](https://github.com/peter-elmasry/BTSApp/pull/8). Connector PR creation returned 403; existing local Git authentication created it without exposing credentials. [CI run 38076718415](https://github.com/peter-elmasry/BTSApp/actions/runs/38076718415) is queued; both job results remain pending.
+- **Cloud milestone:** Frontend job `114285122162` passes formatting, unit tests, production build, browser checks and Lighthouse using standard CI settings. Supabase startup succeeds; database reset/migration and pgTAP results remain pending.
+- **Validation passed:** [CI run 38076718415](https://github.com/peter-elmasry/BTSApp/actions/runs/38076718415) on `42ae9cb` passes both jobs. Fresh Supabase startup/reset applies `0008_phase5_live.sql`; all 551 pgTAP assertions across six suites pass, including 154 new live-operation assertions, plus owner seed/auth smoke checks. Frontend passes 86 unit tests, all 16 browser checks in one standard CI run, formatting, build (364.10 kB initial) and Lighthouse (accessibility 100, best practices 96, performance 70). No cloud repair was needed.
+- **Handoff:** Phase 5 is implemented and verified, ready for review in [PR #8](https://github.com/peter-elmasry/BTSApp/pull/8). Publish this final verification record and confirm its head checks. No merge or hosted deployment performed. Phase 6 follows review/merge; Phase 0 hosted acceptance remains separate.
 
 ## 2026-10-10 — Phase 5 live operations — HANDOFF
 
