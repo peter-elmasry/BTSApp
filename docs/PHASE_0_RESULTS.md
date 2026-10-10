@@ -1,6 +1,6 @@
 # Phase 0 — Foundations acceptance
 
-Branch: `phase-0-foundations`. [Draft PR #1](https://github.com/peter-elmasry/BTSApp/pull/1). Phase 0 is **pending external acceptance**; do not start Phase 1.
+Branch: `phase-0-foundations`. [Draft PR #1](https://github.com/peter-elmasry/BTSApp/pull/1). Phase 0 remains **pending external acceptance**. Phase 1 implementation started on `codex/phase-1-auth-owner` at the product owner's explicit direction; this does not change Phase 0's acceptance status or authorize deployment.
 
 ## Delivered
 

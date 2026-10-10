@@ -3,18 +3,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 @Component({
   selector: 'ds-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<button
-    [type]="type()"
-    [disabled]="disabled() || loading()"
-    [attr.aria-busy]="loading()"
-    [class]="'ds-button ' + variant() + ' ' + size()"
-    [class.w-full]="fullWidth()"
-  >
-    <span [class.opacity-50]="loading()"><ng-content /></span>
-    @if (loading()) {
-      <span class="ms-2" aria-hidden="true">…</span>
-    }
-  </button>`,
+  templateUrl: './button.html',
   host: { '[class.block]': 'fullWidth()' },
 })
 export class DsButton {

@@ -43,26 +43,7 @@ abstract class ValueControl<T> implements ControlValueAccessor {
   imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => DsInput), multi: true }],
-  template: `<label [for]="id" class="mb-2 block font-semibold">{{ label() }}</label>
-    <div class="flex items-center gap-2">
-      <ng-content select="[prefix]" /><input
-        class="ds-control min-w-0 flex-1"
-        [id]="id"
-        [type]="type()"
-        [value]="value()"
-        [disabled]="disabled()"
-        [attr.autocomplete]="autocomplete()"
-        [attr.aria-invalid]="!!error()"
-        [attr.aria-describedby]="hint() || error() ? id + '-help' : null"
-        (input)="update($any($event.target).value)"
-        (blur)="touched()"
-      /><ng-content select="[suffix]" />
-    </div>
-    @if (hint() || error()) {
-      <p [id]="id + '-help'" class="mt-1 text-sm" [class.text-error]="!!error()">
-        {{ error() ? (error() | transloco) : hint() }}
-      </p>
-    }`,
+  templateUrl: './controls-input.html',
   host: { class: 'block' },
 })
 export class DsInput extends ValueControl<string> {
@@ -76,26 +57,7 @@ export class DsInput extends ValueControl<string> {
   imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => DsSelect), multi: true }],
-  template: `<label [for]="id" class="mb-2 block font-semibold">{{ label() }}</label
-    ><select
-      class="ds-control w-full"
-      [id]="id"
-      [value]="value()"
-      [disabled]="disabled()"
-      [attr.aria-invalid]="!!error()"
-      [attr.aria-describedby]="hint() || error() ? id + '-help' : null"
-      (change)="update($any($event.target).value)"
-      (blur)="touched()"
-    >
-      @for (option of options(); track option.value) {
-        <option [value]="option.value">{{ option.label }}</option>
-      }
-    </select>
-    @if (hint() || error()) {
-      <p [id]="id + '-help'" class="mt-1 text-sm" [class.text-error]="!!error()">
-        {{ error() ? (error() | transloco) : hint() }}
-      </p>
-    }`,
+  templateUrl: './controls-select.html',
   host: { class: 'block' },
 })
 export class DsSelect extends ValueControl<string> {
@@ -108,27 +70,7 @@ export class DsSelect extends ValueControl<string> {
   imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => DsToggle), multi: true }],
-  template: `<label
-      class="flex min-h-11 cursor-pointer items-center justify-between gap-4"
-      [for]="id"
-      ><span>{{ label() }}</span
-      ><input
-        class="h-11 w-11 accent-teal"
-        type="checkbox"
-        role="switch"
-        [id]="id"
-        [checked]="value()"
-        [disabled]="disabled()"
-        [attr.aria-invalid]="!!error()"
-        [attr.aria-describedby]="hint() || error() ? id + '-help' : null"
-        (change)="update($any($event.target).checked)"
-        (blur)="touched()"
-    /></label>
-    @if (hint() || error()) {
-      <p [id]="id + '-help'" class="mt-1 text-sm" [class.text-error]="!!error()">
-        {{ error() ? (error() | transloco) : hint() }}
-      </p>
-    }`,
+  templateUrl: './controls-toggle.html',
 })
 export class DsToggle extends ValueControl<boolean> {
   readonly value = signal(false);

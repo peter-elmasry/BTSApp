@@ -15,26 +15,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
   selector: 'ds-bottom-sheet',
   imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<dialog
-    #dialog
-    class="ds-sheet rounded-t-card border-0 bg-ivory p-5 text-navy"
-    [attr.aria-label]="title()"
-    (cancel)="close.emit()"
-    (click)="backdrop($event)"
-  >
-    <div class="mb-4 flex items-center justify-between gap-4">
-      <h2 class="text-xl font-bold">{{ title() }}</h2>
-      <button
-        autofocus
-        class="min-h-11 min-w-11 rounded-lg"
-        [attr.aria-label]="'common.close' | transloco"
-        (click)="close.emit()"
-      >
-        ×
-      </button>
-    </div>
-    <ng-content />
-  </dialog>`,
+  templateUrl: './bottom-sheet.html',
 })
 export class DsBottomSheet implements OnDestroy {
   readonly title = input.required<string>();

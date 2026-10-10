@@ -1,0 +1,19 @@
+<label class="flex min-h-11 cursor-pointer items-center justify-between gap-4" [for]="id"
+  ><span>{{ label() }}</span
+  ><input
+    class="h-11 w-11 accent-teal"
+    type="checkbox"
+    role="switch"
+    [id]="id"
+    [checked]="value()"
+    [disabled]="disabled()"
+    [attr.aria-invalid]="!!error()"
+    [attr.aria-describedby]="hint() || error() ? id + '-help' : null"
+    (change)="update($any($event.target).checked)"
+    (blur)="touched()"
+/></label>
+@if (hint() || error()) {
+  <p [id]="id + '-help'" class="mt-1 text-sm" [class.text-error]="!!error()">
+    {{ error() ? (error() | transloco) : hint() }}
+  </p>
+}
