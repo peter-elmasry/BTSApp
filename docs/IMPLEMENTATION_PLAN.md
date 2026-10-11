@@ -522,7 +522,7 @@ Guards read `AuthStore` (profile loaded once after session restore; guards await
 
 ### 9.3 Layout (mobile-first)
 - Design at **360×740 first**, then `md:` (≥768) and `lg:` (≥1024) enhancements.
-- **Header** (Deep Navy): white DST mark (left in LTR / right in RTL), event name, language toggle `EN | ع`, team avatar chip (players) or user menu (staff).
+- **Header** (Gold, updated at Gendy's request on 2026-10-11): navy DST mark (left in LTR / right in RTL), navy text and language-toggle border, navy auth buttons with white text, event name, language toggle `EN | ع`, team avatar chip (players) or user menu (staff).
 - **Bottom nav** (players): Home · Schedule · Leaderboard (hidden when not visible) · About. Staff get an extra "Referee" or "Manage" tab.
 - Touch targets ≥ 44×44 px; primary actions in thumb zone (bottom); safe-area insets respected.
 - Live round banner under header on every page: "الجولة 3 شغالة · 12:41" (teal) / overtime (red, pulsing).

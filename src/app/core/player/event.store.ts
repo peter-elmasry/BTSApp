@@ -16,7 +16,7 @@ export function canSeeAllOutcomes(
   );
 }
 export function redactMatchOutcomes(matches: PublicMatch[], ownCode?: string): PublicMatch[] {
-  return matches.map((match) => ({
+  return matches.map(({ result_entered_at: _timestamp, ...match }) => ({
     ...match,
     participants: match.participants.map((participant) => {
       if (ownCode && participant.team_code === ownCode) return participant;

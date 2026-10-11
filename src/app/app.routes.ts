@@ -6,7 +6,7 @@ import {
   ownerGuard,
   scoringGuard,
 } from './core/auth/guards';
-import { teamChosenGuard } from './core/player/player.guards';
+import { leaderboardVisibleGuard, teamChosenGuard } from './core/player/player.guards';
 
 export const routes: Routes = [
   {
@@ -36,6 +36,17 @@ export const routes: Routes = [
   {
     path: 'games/:code',
     loadComponent: () => import('./features/public/game-detail-page').then((m) => m.GameDetailPage),
+  },
+  {
+    path: 'leaderboard',
+    canActivate: [leaderboardVisibleGuard],
+    loadComponent: () =>
+      import('./features/standings/leaderboard-page').then((m) => m.LeaderboardPage),
+  },
+  {
+    path: 'display',
+    canActivate: [leaderboardVisibleGuard],
+    loadComponent: () => import('./features/standings/display-page').then((m) => m.DisplayPage),
   },
   {
     path: 'about',
@@ -77,6 +88,11 @@ export const routes: Routes = [
       {
         path: 'live',
         loadComponent: () => import('./features/manage/live-page').then((m) => m.LiveControlPage),
+      },
+      {
+        path: 'standings',
+        loadComponent: () =>
+          import('./features/standings/manage-standings-page').then((m) => m.ManageStandingsPage),
       },
       {
         path: 'setup',

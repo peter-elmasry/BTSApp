@@ -52,7 +52,7 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('header img')?.getAttribute('src')).toBe(
-      '/brand/dst-mark-white.webp',
+      '/brand/dst-mark-navy.webp',
     );
     expect(compiled.querySelectorAll('nav a').length).toBe(3);
   });

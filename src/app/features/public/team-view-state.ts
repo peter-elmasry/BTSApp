@@ -29,7 +29,8 @@ export class TeamViewState {
     if (this.responseContext() !== this.context()) return null;
     const result = this.result();
     if (!result || canSeeAllOutcomes(this.eventStore.event(), this.auth.profile())) return result;
-    return { ...result, matches: redactMatchOutcomes(result.matches, this.code()) };
+    const { standing: _standing, ...visible } = result;
+    return { ...visible, matches: redactMatchOutcomes(result.matches, this.code()) };
   });
   readonly loading = signal(false);
   readonly error = signal(false);

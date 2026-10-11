@@ -5,6 +5,8 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { EventStore } from '../../core/player/event.store';
 import { DsAvatar } from '../../shared/ui/avatar';
+import { currencyLabel } from '../standings/rank-motion';
+import { CountUp } from '../standings/count-up';
 import { PublicMatchCard } from './match-card';
 import { localizedName } from './public-helpers';
 import { PublicState } from './public-state';
@@ -12,7 +14,7 @@ import { TeamViewState } from './team-view-state';
 
 @Component({
   selector: 'app-team-detail-page',
-  imports: [RouterLink, TranslocoDirective, DsAvatar, PublicMatchCard, PublicState],
+  imports: [RouterLink, TranslocoDirective, DsAvatar, PublicMatchCard, PublicState, CountUp],
   providers: [TeamViewState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './team-detail-page.html',
@@ -37,6 +39,7 @@ export class TeamDetailPage {
     );
   });
   readonly name = localizedName;
+  readonly currency = currencyLabel;
   constructor() {
     void this.store.initialize();
     effect(() => this.teamView.code.set(this.code()));

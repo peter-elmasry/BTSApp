@@ -15,6 +15,17 @@
               {{ name(item, direction.language()) }}
             </h2>
             <p class="text-sm text-slate" dir="ltr">{{ item.code }}</p>
+            @if (teamView.view()?.standing; as row) {
+              @if (store.event(); as event) {
+                <p class="mt-2 font-bold tabular" data-testid="team-standing">
+                  {{ t('standings.rank', { n: row.rank }) }} · <app-count-up [value]="row.total" />
+                  {{ currency(row.total, event, direction.language()) }}
+                  @if (row.is_tied) {
+                    <span>· {{ t('standings.tied') }}</span>
+                  }
+                </p>
+              }
+            }
           </div>
         </div>
         @if (item.guide; as guide) {

@@ -32,6 +32,17 @@
           @if (team.guide) {
             <p>{{ t('team.guide') }}: {{ name(team.guide, direction.language()) }}</p>
           }
+          @if (ownStanding(); as row) {
+            @if (store.event(); as event) {
+              <p class="mt-2 font-bold tabular" data-testid="home-standing">
+                {{ t('standings.rank', { n: row.rank }) }} · <app-count-up [value]="row.total" />
+                {{ currency(row.total, event, direction.language()) }}
+                @if (row.is_tied) {
+                  <span>· {{ t('standings.tied') }}</span>
+                }
+              </p>
+            }
+          }
         </div>
       </section>
       <section class="space-y-3">
@@ -59,7 +70,33 @@
           <p class="rounded-card bg-white p-4">{{ t('player.noNextMatches') }}</p>
         }
       </section>
-      @if (!store.event()?.leaderboard_public) {
+      @if (standings.allowed() && store.event(); as event) {
+        <section class="space-y-3" aria-labelledby="home-standings-title">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 id="home-standings-title" class="text-xl font-bold">{{ t('nav.leaderboard') }}</h2>
+            <a
+              routerLink="/leaderboard"
+              class="inline-flex min-h-11 items-center font-semibold text-teal"
+              >{{ t('nav.leaderboard') }} →</a
+            >
+          </div>
+          @if (standings.error()) {
+            <p role="status">{{ t(standings.error()!) }}</p>
+            <button class="ds-button ghost" (click)="standings.refresh()">
+              {{ t('player.retry') }}
+            </button>
+          } @else if (standings.loading() && !preview().length) {
+            <p role="status">{{ t('player.loading') }}</p>
+          } @else {
+            <app-standings-list
+              [rows]="preview()"
+              [event]="event"
+              [selectedCode]="team.code"
+              [compact]="true"
+            />
+          }
+        </section>
+      } @else {
         <p class="rounded-card bg-gold-soft p-4">{{ t('leaderboard.hidden') }}</p>
       }
     } @else {

@@ -1,0 +1,91 @@
+<div *transloco="let t" class="display-screen">
+  <header class="display-header">
+    <img src="/brand/dst-mark-white.webp" width="96" height="42" alt="DST" />
+    <div class="min-w-0">
+      <p class="event-name">{{ name(events.event(), direction.language()) }}</p>
+      <h1>{{ t('standings.displayTitle') }}</h1>
+    </div>
+    <button
+      type="button"
+      class="display-button"
+      (click)="direction.toggle()"
+      [attr.aria-label]="t('standings.changeLanguage')"
+    >
+      {{ direction.language() === 'ar' ? 'EN' : 'ع' }}
+    </button>
+  </header>
+  <app-round-banner />
+  @if (standings.allowed() && events.event(); as event) {
+    <div class="display-controls" role="group" [attr.aria-label]="t('standings.displayViews')">
+      <button
+        type="button"
+        class="display-button"
+        [attr.aria-pressed]="view() === 'standings'"
+        (click)="view.set('standings')"
+      >
+        {{ t('standings.title') }}
+      </button>
+      <button
+        type="button"
+        class="display-button"
+        [attr.aria-pressed]="view() === 'results'"
+        (click)="view.set('results')"
+      >
+        {{ t('standings.latestResults') }}
+      </button>
+      <button
+        type="button"
+        class="display-button"
+        [attr.aria-pressed]="cycling()"
+        (click)="toggleCycle()"
+      >
+        {{ t(cycling() ? 'standings.pauseCycle' : 'standings.resumeCycle') }}
+      </button>
+    </div>
+    @if (standings.error(); as error) {
+      <div class="display-message" role="alert">
+        <p>{{ t(error) }}</p>
+        <button type="button" class="display-button" (click)="refresh()">
+          {{ t('standings.retry') }}
+        </button>
+      </div>
+    } @else if (standings.loading() && !standings.rows().length) {
+      <p class="display-message" role="status">{{ t('standings.loading') }}</p>
+    } @else if (view() === 'standings') {
+      <section class="display-board" [attr.aria-label]="t('standings.title')">
+        <app-standings-list [rows]="standings.rows()" [event]="event" [display]="true" />
+      </section>
+      <aside class="results-ticker" [attr.aria-label]="t('standings.latestResults')">
+        <h2>{{ t('standings.latestResults') }}</h2>
+        @for (match of results(); track match.id) {
+          <p>
+            @for (participant of match.participants; track participant.team_id) {
+              <span
+                >{{ teamName(participant.team_id) || participant.team_code }} ·
+                {{ t('player.outcome.' + participant.outcome) }}</span
+              >
+            }
+          </p>
+        } @empty {
+          <p>{{ t('standings.noResults') }}</p>
+        }
+      </aside>
+    } @else {
+      <section class="display-results">
+        <h2>{{ t('standings.latestResults') }}</h2>
+        <div class="result-grid">
+          @for (match of results(); track match.id) {
+            <app-public-match-card [match]="match" />
+          } @empty {
+            <p>{{ t('standings.noResults') }}</p>
+          }
+        </div>
+      </section>
+    }
+  } @else {
+    <div class="display-message">
+      <p>{{ t(events.event() ? 'leaderboard.hidden' : 'player.noEvent') }}</p>
+      <a routerLink="/home" class="display-button">{{ t('nav.home') }}</a>
+    </div>
+  }
+</div>
