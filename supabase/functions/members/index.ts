@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient } from '@supabase/supabase-js';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -27,12 +27,72 @@ Deno.serve(async (request) => {
     });
     const { data: userData, error: userError } = await caller.auth.getUser();
     if (userError || !userData.user) return fail('UNAUTHORIZED', 401);
-    const { data: isOwner, error: ownerError } = await caller.rpc('is_owner');
-    if (ownerError || !isOwner) return fail('FORBIDDEN', 403);
     const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
       auth: { persistSession: false },
     });
     const body = await request.json();
+    if (body?.action === 'change_own_password') {
+      if (typeof body.password !== 'string' || body.password.length < 12)
+        return fail('INVALID_PASSWORD', 400);
+      const { data: member, error: memberError } = await admin
+        .from('members')
+        .select('id, auth_user_id, username, is_active')
+        .eq('auth_user_id', userData.user.id)
+        .maybeSingle();
+      if (memberError) return fail('MEMBER_READ_FAILED', 503);
+      if (!member?.is_active) return fail('FORBIDDEN', 403);
+      if (body.password.toLowerCase().includes(member.username.toLowerCase()))
+        return fail('PASSWORD_TOO_WEAK', 400);
+
+      const operationId = crypto.randomUUID();
+      const { data: intent, error: intentError } = await admin.rpc('member_admin_begin', {
+        p_op_id: operationId,
+        p_actor: userData.user.id,
+        p_member: member.id,
+        p_action: 'change_own_password',
+      });
+      if (intentError || !intent) return fail('AUDIT_WRITE_FAILED', 503);
+      const pending = (id = operationId) =>
+        json(
+          {
+            member_id: member.id,
+            ok: false,
+            status: 'needs_review',
+            operation_id: id,
+            error: 'PASSWORD_CHANGE_NEEDS_REVIEW',
+          },
+          202,
+        );
+      if (intent.status !== 'STARTED') return pending(intent.id);
+      const finish = async (status: string, reason: string | null = null) => {
+        try {
+          const { error } = await admin.rpc('member_admin_finish', {
+            p_op_id: operationId,
+            p_status: status,
+            p_auth_user: userData.user.id,
+            p_reason: reason,
+          });
+          return !error;
+        } catch {
+          return false;
+        }
+      };
+      try {
+        const { error } = await admin.auth.admin.updateUserById(userData.user.id, {
+          password: body.password,
+        });
+        if (error) {
+          await finish('NEEDS_REVIEW', 'PASSWORD_UPDATE_FAILED');
+          return pending();
+        }
+        return (await finish('SUCCEEDED')) ? json({ member_id: member.id, ok: true }) : pending();
+      } catch {
+        await finish('NEEDS_REVIEW', 'TRANSPORT_FAILED');
+        return pending();
+      }
+    }
+    const { data: isOwner, error: ownerError } = await caller.rpc('is_owner');
+    if (ownerError || !isOwner) return fail('FORBIDDEN', 403);
     const action = body?.action;
     if (!['create', 'update', 'set_password', 'deactivate', 'reactivate'].includes(action))
       return fail('INVALID_ACTION', 400);

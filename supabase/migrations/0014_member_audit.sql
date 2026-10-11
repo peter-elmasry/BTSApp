@@ -4,7 +4,7 @@ create table public.member_admin_operations (
   id uuid primary key,
   actor_id uuid not null references public.members(id),
   member_id uuid not null,
-  action text not null check (action in ('create', 'set_password', 'deactivate', 'reactivate')),
+  action text not null check (action in ('create', 'set_password', 'deactivate', 'reactivate', 'change_own_password')),
   status text not null default 'STARTED' check (status in ('STARTED', 'SUCCEEDED', 'FAILED', 'NEEDS_REVIEW')),
   auth_user_id uuid,
   reason text,
@@ -71,14 +71,18 @@ create function public.member_admin_begin(p_op_id uuid, p_actor uuid, p_member u
 returns jsonb language plpgsql security definer set search_path = public, pg_temp as $$
 declare v_actor uuid; v_pending uuid;
 begin
-  select id into v_actor from public.members where auth_user_id = p_actor and is_active and system_role = 'OWNER';
+  if p_action not in ('create', 'set_password', 'deactivate', 'reactivate', 'change_own_password') or p_action is null then raise exception 'INVALID_ACTION'; end if;
+  select id into v_actor from public.members
+   where auth_user_id = p_actor and is_active
+     and ((p_action = 'change_own_password' and id = p_member)
+       or (p_action <> 'change_own_password' and system_role = 'OWNER'));
   if v_actor is null then raise exception 'FORBIDDEN'; end if;
-  if p_action not in ('create', 'set_password', 'deactivate', 'reactivate') or p_action is null then raise exception 'INVALID_ACTION'; end if;
   perform pg_advisory_xact_lock(hashtextextended(p_member::text, 1));
   select id into v_pending from public.member_admin_operations where member_id = p_member and status in ('STARTED', 'NEEDS_REVIEW');
   if found then return jsonb_build_object('id', v_pending, 'status', 'NEEDS_REVIEW'); end if;
   if p_action <> 'create' and not exists(select 1 from public.members where id = p_member) then raise exception 'NOT_FOUND'; end if;
-  insert into public.member_admin_operations(id, actor_id, member_id, action) values(p_op_id, v_actor, p_member, p_action);
+  insert into public.member_admin_operations(id, actor_id, member_id, action, auth_user_id)
+    values(p_op_id, v_actor, p_member, p_action, case when p_action = 'change_own_password' then p_actor end);
   insert into public.audit_log(actor_id, action, entity, entity_id, after)
     values(v_actor, 'MEMBER_AUTH_REQUESTED', 'member', p_member, jsonb_build_object('operation_id', p_op_id, 'action', p_action, 'status', 'STARTED'));
   return jsonb_build_object('id', p_op_id, 'status', 'STARTED');
@@ -98,9 +102,20 @@ begin
     if v_op.status = p_status then return; end if;
     raise exception 'OP_ALREADY_FINISHED';
   end if;
+  if p_status = 'SUCCEEDED' and v_op.action = 'change_own_password' then
+    update public.members
+       set must_change_password = false, updated_at = now()
+     where id = v_op.member_id
+       and auth_user_id = coalesce(p_auth_user, v_op.auth_user_id)
+       and is_active;
+    if not found then raise exception 'MEMBER_NOT_ACTIVE'; end if;
+  end if;
   update public.member_admin_operations set status = p_status, auth_user_id = coalesce(p_auth_user, auth_user_id), reason = p_reason, updated_at = now() where id = p_op_id;
   insert into public.audit_log(actor_id, action, entity, entity_id, after)
-    values(v_op.actor_id, case when p_status = 'SUCCEEDED' and v_op.action = 'set_password' then 'MEMBER_PASSWORD_SET' else 'MEMBER_AUTH_' || p_status end,
+    values(v_op.actor_id, case
+        when p_status = 'SUCCEEDED' and v_op.action = 'set_password' then 'MEMBER_PASSWORD_SET'
+        when p_status = 'SUCCEEDED' and v_op.action = 'change_own_password' then 'MEMBER_PASSWORD_CHANGED'
+        else 'MEMBER_AUTH_' || p_status end,
       'member', v_op.member_id, jsonb_build_object('operation_id', p_op_id, 'action', v_op.action, 'status', p_status, 'auth_user_id', p_auth_user, 'reason', p_reason));
 end $$;
 

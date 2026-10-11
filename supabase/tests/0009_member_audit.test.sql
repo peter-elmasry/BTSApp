@@ -5,6 +5,8 @@ select no_plan();
 insert into auth.users(id) values ('19000000-0000-0000-0000-000000000001'), ('19000000-0000-0000-0000-000000000002');
 insert into public.members(id, auth_user_id, username, full_name_en, system_role)
 values ('29000000-0000-0000-0000-000000000001', '19000000-0000-0000-0000-000000000001', 'audit_owner', 'Audit Owner', 'OWNER');
+insert into public.members(id, auth_user_id, username, full_name_en, must_change_password)
+values ('29000000-0000-0000-0000-000000000003', '19000000-0000-0000-0000-000000000002', 'audit_member', 'Audit Member', true);
 
 create function public.test_fail_member_audit() returns trigger language plpgsql as $$
 begin
@@ -63,6 +65,26 @@ select public.member_admin_finish('89000000-0000-0000-0000-000000000002', 'NEEDS
 select public.member_admin_finish('89000000-0000-0000-0000-000000000002', 'SUCCEEDED', '19000000-0000-0000-0000-000000000002', 'OPERATOR_VERIFIED');
 select public.member_admin_finish('89000000-0000-0000-0000-000000000002', 'SUCCEEDED');
 select public.member_admin_write(gen_random_uuid(), '19000000-0000-0000-0000-000000000001', 'deactivate', '29000000-0000-0000-0000-000000000002');
+select throws_ok($$select public.member_admin_begin(gen_random_uuid(), '19000000-0000-0000-0000-000000000002', '29000000-0000-0000-0000-000000000002', 'change_own_password')$$, 'P0001', 'FORBIDDEN', 'member cannot change another account password');
+select set_config('test.fail_member_audit', 'yes', true);
+select throws_ok($$select public.member_admin_begin('89000000-0000-0000-0000-000000000003', '19000000-0000-0000-0000-000000000002', '29000000-0000-0000-0000-000000000003', 'change_own_password')$$, 'P0001', 'TEST_AUDIT_FAILED', 'self password intent and audit are atomic');
+reset role;
+select is((select count(*) from public.member_admin_operations where id = '89000000-0000-0000-0000-000000000003'), 0::bigint, 'failed self password audit leaves no intent');
+select is((select must_change_password from public.members where id = '29000000-0000-0000-0000-000000000003'), true, 'failed self password intent preserves forced-change flag');
+select set_config('test.fail_member_audit', 'no', true);
+set local role service_role;
+select public.member_admin_begin('89000000-0000-0000-0000-000000000003', '19000000-0000-0000-0000-000000000002', '29000000-0000-0000-0000-000000000003', 'change_own_password');
+select set_config('test.fail_member_audit', 'yes', true);
+select throws_ok($$select public.member_admin_finish('89000000-0000-0000-0000-000000000003', 'SUCCEEDED', '19000000-0000-0000-0000-000000000002')$$, 'P0001', 'TEST_AUDIT_FAILED', 'failed self password completion rolls back the flag');
+reset role;
+select is((select status from public.member_admin_operations where id = '89000000-0000-0000-0000-000000000003'), 'STARTED', 'failed self password completion remains recoverable');
+select is((select must_change_password from public.members where id = '29000000-0000-0000-0000-000000000003'), true, 'failed self password audit preserves forced-change flag');
+select set_config('test.fail_member_audit', 'no', true);
+set local role service_role;
+select public.member_admin_finish('89000000-0000-0000-0000-000000000003', 'SUCCEEDED', '19000000-0000-0000-0000-000000000002');
+reset role;
+select is((select must_change_password from public.members where id = '29000000-0000-0000-0000-000000000003'), false, 'successful self password change clears the forced-change flag');
+select is((select count(*) from public.audit_log where entity_id = '29000000-0000-0000-0000-000000000003' and action = 'MEMBER_PASSWORD_CHANGED'), 1::bigint, 'self password completion is audited');
 select set_config('test.fail_member_audit', 'yes', true);
 select throws_ok($$select public.member_admin_write(gen_random_uuid(), '19000000-0000-0000-0000-000000000001', 'reactivate', '29000000-0000-0000-0000-000000000002')$$, 'P0001', 'TEST_AUDIT_FAILED', 'failed audit aborts reactivation');
 reset role;

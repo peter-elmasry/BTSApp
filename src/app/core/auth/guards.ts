@@ -2,13 +2,18 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthStore } from './auth.store';
 
+export const PASSWORD_URL = '/account/password';
+
 export const authGuard: CanActivateFn = async (_route, state) => {
   const auth = inject(AuthStore);
   const router = inject(Router);
   await auth.initialize();
-  return auth.session()
-    ? true
-    : router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+  if (!auth.session())
+    return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+  // A temporary (owner-set) password must be replaced before any staff screen opens.
+  if (auth.profile()?.must_change_password && !state.url.startsWith(PASSWORD_URL))
+    return router.createUrlTree([PASSWORD_URL]);
+  return true;
 };
 
 export const guestOnlyGuard: CanActivateFn = async () => {

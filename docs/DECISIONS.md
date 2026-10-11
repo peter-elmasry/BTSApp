@@ -4,8 +4,13 @@
 
 Member creation, edits, login links and activation state use a service-only RPC
 that rechecks the active owner actor and writes the row, audit and payload-bound
-receipt in one transaction. Audit failure rolls back that database mutation.
-Passwords never enter these RPCs or their receipts.
+receipt in one transaction. Member-initiated password changes use a separate
+service-only RPC path that requires an active, self-matched actor and atomically
+clears the forced-change flag with its audit. Audit failure rolls back that
+database mutation. Passwords never enter these RPCs or their receipts.
+Edge Functions use the package's bare `@supabase/supabase-js` import; the shared
+`supabase/functions/deno.json` maps it to the Deno npm resolver while TypeScript
+resolves the installed package.
 
 Auth administration spans an external service and cannot share the database
 transaction. Before touching Auth, the Edge handler persists an operation intent
@@ -177,3 +182,15 @@ Export is an online, admin-only, allowlisted STABLE RPC that returns standings, 
 ## D028 — Gold shared header with navy contrast
 
 Gendy requested a gold header on 2026-10-11, superseding the original navy shared header in §9.3. Use the existing gold background and navy mark/text/control borders; auth actions use navy backgrounds with white text. This preserves the brand palette and navy/gold contrast. Display mode retains its separate navy presentation heading. English/Arabic shell and accessibility checks cover the shared header.
+
+## D029 — Arabic setup workbook v3 is the import contract's front end
+
+The downloadable setup workbook is Arabic-first and right-to-left, is generated from the live event setup, and is the only accepted upload format (`_meta.template_version = 3`). The schedule is a round × game grid: two team cells per game, both empty means that game has a break in that round. Each entity has one name, stored in both `name_en` and `name_ar`; the opening round is set on the event sheet. Teams, games, members and colours are chosen by name from dropdowns and resolved to codes/usernames by the parser, so the server payload and `import_event_setup` are unchanged. Clearing a team or game name removes it from the upload only — UPSERT never deletes; use REPLACE or the setup screens to delete.
+
+## D030 — Owner-set passwords are temporary
+
+Any password an owner sets (create or set_password) marks the member `must_change_password`; the member must choose a new password (≥12 characters, not containing the username) at `/account/password` before staff routes open. Self-service changes go through the `members` Edge Function action `change_own_password`. This accepts that bulk-created accounts use a predictable username-based temporary password until first login.
+
+## D031 — A team may have several guides
+
+The `one_guide_per_team` index is dropped (migration `0011`): any number of guides may be assigned to one team, while a member still guides at most one team per event. Public team JSON keeps `guide` (first guide by name, for older clients) and adds `guides` (all of them); players see every guide. Standings payloads carry neither. This supersedes the Phase 2 criterion "second guide on same team rejected".

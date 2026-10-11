@@ -2,6 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Resolve members Edge merge conflict — HANDOFF
+
+- **Branch:** `codex/phase-7-readiness`.
+- **Changed:** Resolved and staged `supabase/functions/members/index.ts`, retaining audited member-admin writes and adding first-login password change through durable member operation RPCs. Extended the in-progress member-audit migration/test; mapped the bare client import in `supabase/functions/deno.json`. Updated D032, AuthStore/page handling, and EN/AR pending notices so uncertain outcomes clear the form and are not shown as success.
+- **Checks passed:** `npm run test:edge` (56 mocked checks); focused AuthStore unit test (6 passed); `npm run build` (372.01 kB initial bundle); `npm run test:i18n` (582 matching keys); Prettier; `git diff --check`; TypeScript resolves `@supabase/supabase-js`; editor diagnostics report no errors in the Edge handler.
+- **Blocked:** `npm run test:db` could not connect to local Postgres at `127.0.0.1:54322`; SQL behavior remains unverified at runtime. Deno CLI is unavailable, so no standalone `deno check` was run.
+- **Handoff:** Conflict is resolved in the index; supporting migration/tests and docs remain in the shared worktree. No commit or push was made to avoid bundling this change with the other staged work. Next, run `npm run test:db` once local Supabase is available, then commit the coordinated changes.
+
 ## 2026-10-11 — A02 login lockout and A03 member audit reliability — HANDOFF
 
 - **Requested by:** Gendy; proceed with the next two audit fixes, continuing with Astra.
@@ -44,6 +52,23 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Delivered:** Browser install lifecycle retained by the shell, gesture-triggered About install card with EN/AR manual instructions, strict 500 kB build error budget, event-day runbook and D029. No domain/permission changes.
 - **Checks passed:** Production build (369.49 kB initial), app/spec TypeScript, translation audit (555 matching paths), changed-file Prettier and whitespace. Two install lifecycle unit tests pass using existing ignored serial thread configuration; default forks timed out before executing tests. Two production EN/AR browser journeys pass with mocked install events/RPCs, axe and 360 px overflow checks; Arabic screenshot inspected. Browser teardown required stopping only its test-owned preview server. No claim of native device install or 3G timing verification.
 - **Handoff/next:** First slice committed locally on `codex/phase-7-readiness`; no push, merge or deployment. Implement once-per-event/team result celebrations and printable admin team QR sheets next, then complete motion, real-device install/offline and 3G performance checks. Phase 7 and Phase 0 hosted acceptance remain pending. Database tests were not rerun because this slice changes no SQL and local Docker is unavailable.
+
+## 2026-10-11 — Usernames in exported setup and multiple guides — HANDOFF
+
+- **Requested by:** Peter: the exported setup showed no English usernames; several guides must be allowed on one team. `nesro` confirmed as نسرين نبيل, so no extra account is needed.
+- **Cause and fix (usernames):** ExcelJS writes formulas without cached values and no recalculation flag, so Excel/phone viewers left formula cells (staff usernames, game headers) blank. The workbook now sets `fullCalcOnLoad` and writes cached results for staff usernames and schedule game headers.
+- **Multiple guides:** Migration `0011` drops `one_guide_per_team`, returns `guides` (all) alongside `guide` (first) in public team JSON and strips both from standings. Client validator and workbook no longer flag a second guide; team pages list every guide. pgTAP expectations in suites `0003`/`0004` changed from rejection to acceptance (D031).
+- **Checks:** 117 unit tests (22 files), TypeScript and i18n audit pass; pgTAP not run locally (no Docker) — confirm in CI.
+- **Next:** Push to `feat/import-template-v3`, open the PR, confirm CI, merge.
+
+## 2026-10-11 — Arabic setup template v3 and temporary passwords — HANDOFF
+
+- **Requested by:** Peter: Arabic-first RTL, colourful setup workbook exported with live data; up to 20 pre-coloured teams the admin removes; a round × game schedule grid where an empty pair is a game break; one name per event/team/game/location/round/member; DST members created with username-based temporary passwords and a later password change.
+- **Template v3 (`import-workbook.ts`, `template-catalog.ts`):** Sheets ابدأ هنا (live readiness tiles), الحدث (opening game/duration moved here), الفرق (20 defaults, palette/avatar dropdowns, live match/rest counts), الألعاب, الجدول (grid → rounds + matches; red conflicts, grey breaks, team-colour cells), الطاقم (member by name, one referee row per game), الأعضاء/الألوان والشعارات (read-only), `_meta` (very hidden, `template_version` 3). Download now exports the current setup (`get_event_setup`, incl. `eligible_members`) and re-imports by code. Parser emits the unchanged server payload (single name → both `name_en`/`name_ar`; referee rows grouped to comma `game_codes`), so `import_event_setup` is unchanged. Old templates are rejected with `OLD_TEMPLATE`.
+- **Passwords:** Migration `0010` adds `members.must_change_password`, exposes it in `get_my_profile` and flags non-owner logins created from 2026-10-11 19:30 UTC. `members` Edge Function: owner create/set_password set the flag; new `change_own_password` for any active member (≥12 chars, must not contain the username) clears it. `authGuard` sends flagged members to `/account/password`; header has a 🔑 change-password link.
+- **Members created (hosted, via the owner page):** 109 DST members from Peter's list (excluding Peter and Gendy, who exist) with Arabic names, no phones, temporary passwords following the agreed username-based rule (value not recorded here). `نسرين نبيل` was not created pending confirmation that she is the existing `nesro` account.
+- **Checks:** 116 unit tests (22 files), i18n audit (567 keys), changed-file Prettier and production build (369.35 kB initial) pass. Import EN/AR browser journeys pass locally with axe; the offline service-worker shell journey fails locally on installability with the container's older Chromium (unrelated files untouched) — confirm in CI. pgTAP suite `0008` written, not run locally (no Docker).
+- **Next:** Publish the branch, confirm CI (DB + browser), merge so migration `0010` and the Edge Function deploy; until then the new accounts are not forced to change their temporary password.
 
 ## 2026-10-11 — Phase 6 cloud acceptance — DONE
 
@@ -119,7 +144,7 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Final frontend checks:** All 46 unit tests pass using bundled Node 24 and one thread worker; system Node 22 worker startup timed out without running tests. Production build passes after mobile-header visual correction (340.25 kB initial), app/spec TypeScript checks pass, all changed files pass Prettier and whitespace checks. All nine browser checks pass across runs: eight in the combined run, then the existing English XLSX journey alone (25.2 s) with a 15 s local assertion window after cold-load/download timeouts. Local timing overrides remain ignored; CI configuration is unchanged. Both player screenshots were inspected; no mobile overflow or axe violations in checked EN/AR pages.
 - **Handoff/next:** Implementation is committed locally on `codex/phase-4-player-experience`, not pushed. Publish this branch/open its Phase 4 PR when authorized, then run/fix cloud CI (expected 397 pgTAP assertions across five suites, including 87 new). Do not mark Phase 4 accepted until database runtime checks pass. No Docker installation, hosted database changes or deployment performed.
 
-## 2026-10-10 — Publish Vercel header fix — HANDOFF
+## 2026-10-10 — Publish Vercel header fix — DONE
 
 - **Requested by:** Peter authorized proceeding with publication/merge and reporting when ready to deploy.
 - **Preflight:** Clean `fix/vercel-cache-pattern` at `0d6e330`; refreshed origin and confirmed no newer master commits. Reviewed the three-file configuration/documentation diff.
@@ -128,6 +153,8 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Publication:** Pushed `fix/vercel-cache-pattern` and opened [PR #6](https://github.com/peter-elmasry/BTSApp/pull/6). Explicitly selected the existing `peter-elmasry` Git credential to bypass an account-selection prompt. No credential values were exposed or stored.
 - **Milestone:** Vercel's `bts-app` preview deploy succeeds, confirming the invalid-source deployment blocker is resolved. Frontend CI passes on initial PR head `a9962ae`; database CI is still running at this documentation milestone. This final documentation update must receive its own head checks before merge.
 - **Next:** Inspect current PR #6 checks and merge state; merge the verified head once CI passes. An active Vercel GitHub connection should deploy updated `master` automatically; verify the production deployment and owner login separately. Hosted authentication and login acceptance are not claimed here.
+- **Final verification:** Final head `d7149c8` passes frontend/database CI run `38059628721` and Vercel preview. PR #6 merged as `30e6da0`. Vercel automatically deployed that master commit; GitHub's Vercel status and Production deployment `6982234229` both report success. No manual redeploy is needed. Owner login is the next user acceptance check.
+- **Documentation handoff:** This final result is committed locally on `docs/vercel-production-handoff`; not published. The application fix and earlier progress record are already merged into master.
 
 ## 2026-10-10 — Vercel asset header pattern — HANDOFF
 

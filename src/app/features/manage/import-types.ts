@@ -1,5 +1,6 @@
 export type ImportMode = 'UPSERT' | 'REPLACE';
-export type ImportSheet = 'Event' | 'Teams' | 'Games' | 'Rounds' | 'Matches' | 'Staff' | 'Workbook';
+export type ImportSheet =
+  'Event' | 'Teams' | 'Games' | 'Rounds' | 'Matches' | 'Schedule' | 'Staff' | 'Workbook';
 export interface ImportIssue {
   sheet: ImportSheet;
   row: number;

@@ -38,6 +38,7 @@
   "errors.AUTH_USER_CREATE_FAILED": "Could not create sign-in credentials.",
   "errors.AUTH_USER_LINK_FAILED": "Could not finish linking sign-in credentials.",
   "errors.PASSWORD_UPDATE_FAILED": "Could not update the password.",
+  "errors.PASSWORD_CHANGE_NEEDS_REVIEW": "The password change is being verified. Contact an event administrator before trying again.",
   "errors.AUTH_STATE_UPDATE_FAILED": "Could not update the account sign-in status.",
   "errors.INVALID_EVENT": "Enter a valid event code and English name.",
   "errors.MEMBER_NO_LOGIN": "Create sign-in credentials for this member before assigning them as an Event Admin.",
@@ -134,9 +135,9 @@
     "intro": "Upload an Excel workbook, review its rows, then confirm the import.",
     "backToSetup": "Back to event setup",
     "upload": "Upload workbook",
-    "downloadTemplate": "Download template",
+    "downloadTemplate": "Download current setup (Excel)",
     "downloading": "Preparing template…",
-    "templateHint": "The template contains sample teams and a match. Edit or remove the samples before uploading. Staff must already exist in the member directory.",
+    "templateHint": "The template is in Arabic and holds the event’s current setup: teams, games, the match schedule and staff. Edit it and upload it again. Staff must already exist in the member directory with a login.",
     "file": "Excel workbook",
     "fileHint": "Choose a non-empty .xlsx file, up to 5 MiB.",
     "mode": "Import mode",
@@ -211,7 +212,20 @@
       "GUIDE_HAS_GAMES": "Leave game_codes empty for a guide.",
       "REFEREE_HAS_TEAM": "Leave team_code empty for a referee.",
       "SHEET_TOO_LARGE": "This worksheet has too many rows or columns. Remove unused rows and extra columns.",
-      "OTHER": "This row is not valid. Check the template instructions and referenced values."
+      "OTHER": "This row is not valid. Check the template instructions and referenced values.",
+      "OLD_TEMPLATE": "This is an old template. Download the new template and move your data into it.",
+      "HALF_MATCH": "This match has only one team. Pick both teams, or leave both cells empty for a break.",
+      "DUPLICATE_COLOR": "Another team already uses this colour. Pick a different colour for each team."
+    },
+    "sheetName": {
+      "Event": "Event",
+      "Teams": "Teams",
+      "Games": "Games",
+      "Rounds": "Schedule",
+      "Matches": "Schedule",
+      "Schedule": "Schedule",
+      "Staff": "Staff",
+      "Workbook": "Workbook"
     }
   },
   "app": {
@@ -584,5 +598,16 @@
     "android": "Android: open the browser menu and choose Install app or Add to Home screen, when available.",
     "ios": "iPhone/iPad: open in Safari, tap Share, then Add to Home Screen.",
     "offline": "Open your team and schedule online first. Offline pages show the last saved data; staff changes need a connection to reach the server."
-  }
+  },
+  "account.changePassword": "Change password",
+  "account.hint": "Choose a new password of at least 12 characters.",
+  "account.forcedHint": "You signed in with a temporary password. Choose your own new password (at least 12 characters, not containing your username) to continue.",
+  "account.newPassword": "New password",
+  "account.confirmPassword": "Confirm password",
+  "account.save": "Save password",
+  "errors.PASSWORD_MISMATCH": "The passwords do not match.",
+  "errors.PASSWORD_TOO_WEAK": "The password cannot contain your username.",
+  "errors.DUPLICATE_ROUND_NUMBER": "This round number already exists. Pick another number or edit the existing round.",
+  "errors.DUPLICATE_TEAM_CODE": "This team code already exists.",
+  "errors.DUPLICATE_GAME_CODE": "This game code already exists."
 }

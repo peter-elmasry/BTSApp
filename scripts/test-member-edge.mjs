@@ -11,7 +11,7 @@ function fixture(options = {}) {
   const writes = [];
   const client = {
     auth: {
-      getUser: async () => ({ data: { user: { id: actorId } } }),
+      getUser: async () => ({ data: { user: { id: options.userId ?? actorId } } }),
       admin: {
         async createUser(args) {
           calls.push(['auth.create', args]);
@@ -40,7 +40,8 @@ function fixture(options = {}) {
         maybeSingle: async () => ({
           data: {
             id: memberId,
-            auth_user_id: options.noLogin ? null : authId,
+            auth_user_id: options.noLogin ? null : (options.userId ?? authId),
+            username: 'fixture_guide',
             is_active: options.active !== false,
           },
         }),
@@ -202,6 +203,47 @@ await check('invalid password rejected before durable intent', async () => {
   assert.equal(response.status, 400);
   assert.equal(f.intents.size, 0);
 });
+await check('member changes own password through the audited Auth workflow', async () => {
+  const f = fixture({ userId: authId, owner: false });
+  const { response, body } = await f.request('change_own_password', { password });
+  assert.equal(response.status, 200);
+  assert.equal(body.ok, true);
+  assert.deepEqual(
+    f.calls
+      .filter(([name]) =>
+        ['member_admin_begin', 'auth.update', 'member_admin_finish'].includes(name),
+      )
+      .map(([name]) => name),
+    ['member_admin_begin', 'auth.update', 'member_admin_finish'],
+  );
+  assert.ok([...f.intents.values()].every((status) => status === 'SUCCEEDED'));
+  assert.equal(f.writes.length, 0);
+});
+await check('self password containing username is rejected before creating intent', async () => {
+  const f = fixture({ userId: authId, owner: false });
+  const { response, body } = await f.request('change_own_password', {
+    password: 'Fixture_Guide--123',
+  });
+  assert.equal(response.status, 400);
+  assert.equal(body.error, 'PASSWORD_TOO_WEAK');
+  assert.equal(f.intents.size, 0);
+});
+await check('inactive member cannot change own password', async () => {
+  const f = fixture({ userId: authId, owner: false, active: false });
+  const { response } = await f.request('change_own_password', { password });
+  assert.equal(response.status, 403);
+  assert.equal(f.intents.size, 0);
+});
+for (const option of ['authError', 'authThrow']) {
+  await check(`${option}: self password outcome is held for review`, async () => {
+    const f = fixture({ userId: authId, owner: false, [option]: true });
+    const { body } = await f.request('change_own_password', { password });
+    assert.equal(body.status, 'needs_review');
+    assert.equal(body.error, 'PASSWORD_CHANGE_NEEDS_REVIEW');
+    assert.equal(f.intents.get(body.operation_id), 'NEEDS_REVIEW');
+    assert.equal(f.calls.filter(([name]) => name === 'auth.update').length, 1);
+  });
+}
 await check('create with password audits row, creates Auth, then audits link', async () => {
   const f = fixture();
   const { body } = await f.request('create', { password });

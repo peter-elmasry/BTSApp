@@ -36,7 +36,7 @@
             <span class="text-sm text-slate" dir="ltr">{{ team.code }}</span>
             @if (team.guide) {
               <span class="break-words text-sm"
-                >{{ t('team.guide') }}: {{ name(team.guide, direction.language()) }}</span
+                >{{ t('team.guide') }}: {{ guideNames(team, direction.language()) }}</span
               >
             }
             @if (selection.selectedCode() === team.code) {
