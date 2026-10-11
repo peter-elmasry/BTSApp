@@ -81,6 +81,16 @@ Owners and event administrators can open **Import event setup** from the event s
 
 Migration `0006_phase3_import.sql` adds the import RPC; its pgTAP suite runs through `npm run test:db` and GitHub CI. Frontend browser tests mock the RPC boundary and exercise actual workbook generation/parsing; they do not replace database tests.
 
+## Readiness (Phase 7 in progress)
+
+About includes bilingual installation guidance and a browser install button when
+an install prompt is available. Installation always starts from a user action;
+only the browser's installation event confirms success. Open needed pages online
+before relying on cached data. Production builds enforce a 500 kB initial bundle
+limit. Follow [the event-day runbook](docs/EVENT_DAY_RUNBOOK.md) for rehearsal,
+offline recovery, final exports and the remaining hosted/device acceptance checks.
+Celebrations, printable QR sheets and measured 3G timing remain in progress.
+
 ## Hosting and deployment
 
 Import `peter-elmasry/BTSApp` into Vercel with the Angular preset. `vercel.json` sets the build and `dist/btsapp/browser` output. Configure `SUPABASE_URL`/`SUPABASE_ANON_KEY` for Production and Preview; Preview must point to a separate Supabase project. No production fallback is configured.

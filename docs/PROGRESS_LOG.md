@@ -2,6 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-11 — Phase 7 readiness kickoff — HANDOFF
+
+- **Requested by:** Gendy; start the next phase.
+- **Preflight:** Clean working tree; fetched origin and verified Phase 6 PR #9 merged at `50e6066`. New branch `codex/phase-7-readiness` starts from refreshed master.
+- **Scope:** First readiness slice: bilingual PWA install affordance/manual guidance, strict initial bundle budget, event-day runbook. Subsequent Phase 7 work includes celebrations, printable team QR sheets, motion review and measured 3G first-load acceptance.
+- **Delivered:** Browser install lifecycle retained by the shell, gesture-triggered About install card with EN/AR manual instructions, strict 500 kB build error budget, event-day runbook and D029. No domain/permission changes.
+- **Checks passed:** Production build (369.49 kB initial), app/spec TypeScript, translation audit (555 matching paths), changed-file Prettier and whitespace. Two install lifecycle unit tests pass using existing ignored serial thread configuration; default forks timed out before executing tests. Two production EN/AR browser journeys pass with mocked install events/RPCs, axe and 360 px overflow checks; Arabic screenshot inspected. Browser teardown required stopping only its test-owned preview server. No claim of native device install or 3G timing verification.
+- **Handoff/next:** First slice committed locally on `codex/phase-7-readiness`; no push, merge or deployment. Implement once-per-event/team result celebrations and printable admin team QR sheets next, then complete motion, real-device install/offline and 3G performance checks. Phase 7 and Phase 0 hosted acceptance remain pending. Database tests were not rerun because this slice changes no SQL and local Docker is unavailable.
+
 ## 2026-10-11 — Phase 6 cloud acceptance — DONE
 
 - **Requested by:** Gendy; finish Phase 6, fix Arabic translation keys, apply a contrasting gold header, and publish its checked PR.

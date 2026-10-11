@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { InstallCard } from '../../shared/ui/install-card';
 
 interface AboutContent {
   title: string;
@@ -9,7 +10,7 @@ interface AboutContent {
 }
 @Component({
   selector: 'app-about-page',
-  imports: [TranslocoDirective],
+  imports: [TranslocoDirective, InstallCard],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './about-page.html',
 })

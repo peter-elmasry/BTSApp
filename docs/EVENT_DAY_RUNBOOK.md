@@ -1,0 +1,100 @@
+# Event-day runbook
+
+Readiness is pending until the hosted checks below pass. Phase 7 is in progress;
+celebrations, printable team QR sheets and the measured 3G load target are not yet
+accepted. Phase 0 hosted acceptance remains separate.
+
+## The day before
+
+1. Confirm the intended commit is deployed to the production URL and all CI jobs
+   pass, including the database permission suite. Check the Supabase deployment
+   workflow independently of the frontend deployment. Do not assume a green
+   frontend means migrations or Edge Functions were deployed.
+2. Confirm the production Supabase project is awake and reachable. Check the
+   keepalive workflow; perform an actual app read even if its latest run passed.
+3. Sign in as an owner and verify the intended current event, names, points,
+   currency, caps and leaderboard visibility. Confirm teams, games, opening
+   match, round durations, schedule and referee/game assignments. Confirm guides
+   and the guide-phone visibility choice.
+4. Use a separate preview project/event to rehearse: choose team, referee result,
+   correction, opening winners, adjustment/revocation, overtime, close/reopen,
+   standings, tie resolution and XLSX export. Do not seed rehearsal results into
+   the live event. Confirm an unassigned referee cannot score another game.
+5. On an actual Android phone and iPhone, open the production URL online. Use
+   About for installation instructions. Open the chosen team and schedule, then
+   check offline reload and reconnect. Installation alone does not cache every
+   screen. Test the venue network/hotspot and a backup connection.
+6. Verify printed team links point to the production origin and suggest the
+   correct team through `/?team=T01`; confirmation is still required. Printable
+   QR generation is a remaining Phase 7 deliverable.
+7. Verify owner access and staff logins privately. Owners can reset staff
+   passwords; email recovery is disabled. Keep credentials and secret values out
+   of screenshots, exports, chat and repository documents.
+
+## Before the first round
+
+- Charge staff devices and backup power. Open the correct staff account and event
+  while online; verify assigned matches appear.
+- Check no device has pending uploads or unresolved failure messages. A queued
+  operation is saved on that device, not yet accepted by the server.
+- Confirm scoring/currency and caps with referees. Changing scoring recomputes
+  old results and clears manual tie orders. Decide when standings will be public.
+- Open `/display` on the venue screen if standings are public, or use an authorized
+  administrator session. Avoid exposing a staff session on a shared device.
+- Start the intended round through the administrator Live screen. Confirm referee
+  boards and player timers update before play begins.
+
+## During play
+
+- Referees submit and confirm assigned results; check the pending-upload indicator
+  clears. Correct mistakes through the same match entry. Administrators can
+  correct any match and review adjustment giver/reason/history.
+- Overtime does not close a round. Extend it when needed. Before closing, enter
+  every pending result or cancel the match with a reason. Cancelled matches must
+  be reset by an administrator before scoring again.
+- If connectivity fails, keep the same staff account and device. Leave the app's
+  saved data intact; reconnect and use Retry uploads. Do not clear browser storage,
+  uninstall, or switch accounts to fix a pending upload.
+- A server permission/validation failure needs review; automatic retry cannot
+  override it. Check assignment, round state and caps, then submit the corrected
+  action. If unsure whether a lost acknowledgment applied, reconnect and inspect
+  the match before entering a replacement on another device.
+- If realtime stalls, check the connection and wait for polling. Compare the
+  last-updated indicator with a connected staff device. Cached data may be stale.
+
+## Closing and results
+
+1. Confirm pending uploads are zero on every scoring device and all results are
+   accepted. Reconcile disputed results and revoked adjustments.
+2. Close the final round. Review computed standings and resolve complete tied
+   groups if required. Further scoring/roster changes invalidate manual ordering.
+3. Prepare a fresh export from the Standings administration screen. The preview
+   freezes the snapshot used by the workbook; return to live mode and prepare
+   again after changes. Check its Cairo timestamp and totals before sharing.
+4. Publish standings when approved by the event team. Check them anonymously on
+   a player device and on `/display`. Pause the display cycle if needed.
+5. Save the final workbook in the event team's approved location. Sign staff out
+   of shared devices after pending operations have synchronized.
+
+## Escalation and recovery
+
+- Owner: member activation/password resets, event selection and admin assignment.
+- Event administrator: schedule, lifecycle, scoring corrections, adjustments,
+  visibility and tie resolution. Preserve audit history; do not edit database
+  rows directly as an event-day workaround.
+- Deployment maintainer: inspect failed GitHub/Vercel/Supabase jobs and project
+  availability. Production secrets belong in the configured environment/secret
+  stores; record names and failure codes only. Deployment or rollback requires
+  separate authorization; this runbook does not grant it.
+- Record incident time in Africa/Cairo, event/round/match identifiers, visible
+  error code, affected devices and recovery outcome. Exclude credentials and
+  private contact data.
+
+## Acceptance record before release
+
+Record deployed commit, production URL, device/browser, network profile, date and
+outcome in `PROGRESS_LOG.md`. Required: initial bundle below 500 kB, measured
+3G first load below 4 seconds on the agreed mid-range Android profile, EN/AR
+mobile accessibility/reduced-motion review, installability/offline/reconnect,
+QR scans, result celebrations and the full database permission suite. Local
+mocked browser tests do not replace hosted acceptance or real-device timing.

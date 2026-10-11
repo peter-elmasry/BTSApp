@@ -1,5 +1,17 @@
 # Implementation decisions
 
+## D029 — Readiness installation and enforced bundle budget
+
+Phase 7 installation uses the browser-provided deferred prompt only after an
+explicit user gesture. A consumed prompt is never reused; dismissal/errors leave
+manual EN/AR guidance available on About. Only `appinstalled` or standalone
+launch confirms installation, not prompt acceptance. The shell initializes the
+listener so an offer received before About opens is retained. Existing service
+worker and IndexedDB behavior remain the offline mechanism; installation does
+not promise that every page is cached. Production builds now fail above 500 kB
+initial assets instead of allowing the previous 1 MB error ceiling. Real-device
+3G timing remains an independent Phase 7 acceptance check.
+
 The agreed implementation plan remains the source of truth. Checked 2026-10-09.
 
 ## D001 — Broadcast API verified

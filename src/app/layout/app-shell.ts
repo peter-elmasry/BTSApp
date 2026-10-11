@@ -24,6 +24,7 @@ import { RoundBanner } from './round-banner';
 import { OpQueueService } from '../core/offline/op-queue.service';
 import { ReadCacheService } from '../core/offline/read-cache.service';
 import { EventChannelService } from '../core/realtime/event-channel.service';
+import { InstallService } from '../core/pwa/install.service';
 
 @Component({
   selector: 'app-shell',
@@ -41,6 +42,7 @@ import { EventChannelService } from '../core/realtime/event-channel.service';
   templateUrl: './app-shell.html',
 })
 export class AppShell {
+  private readonly install = inject(InstallService);
   readonly direction = inject(DirectionService);
   readonly auth = inject(AuthStore);
   readonly events = inject(EventStore);

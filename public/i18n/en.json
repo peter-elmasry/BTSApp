@@ -572,5 +572,14 @@
       "games": "Games",
       "team": "Team"
     }
+  },
+  "pwa": {
+    "title": "Keep BTSApp on your phone",
+    "description": "Install for quick access on event day.",
+    "install": "Install app",
+    "installed": "BTSApp is running as an installed app.",
+    "android": "Android: open the browser menu and choose Install app or Add to Home screen, when available.",
+    "ios": "iPhone/iPad: open in Safari, tap Share, then Add to Home Screen.",
+    "offline": "Open your team and schedule online first. Offline pages show the last saved data; staff changes need a connection to reach the server."
   }
 }
