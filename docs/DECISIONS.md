@@ -119,3 +119,11 @@ Export is an online, admin-only, allowlisted STABLE RPC that returns standings, 
 ## D028 — Gold shared header with navy contrast
 
 Gendy requested a gold header on 2026-10-11, superseding the original navy shared header in §9.3. Use the existing gold background and navy mark/text/control borders; auth actions use navy backgrounds with white text. This preserves the brand palette and navy/gold contrast. Display mode retains its separate navy presentation heading. English/Arabic shell and accessibility checks cover the shared header.
+
+## D029 — Arabic setup workbook v3 is the import contract's front end
+
+The downloadable setup workbook is Arabic-first and right-to-left, is generated from the live event setup, and is the only accepted upload format (`_meta.template_version = 3`). The schedule is a round × game grid: two team cells per game, both empty means that game has a break in that round. Each entity has one name, stored in both `name_en` and `name_ar`; the opening round is set on the event sheet. Teams, games, members and colours are chosen by name from dropdowns and resolved to codes/usernames by the parser, so the server payload and `import_event_setup` are unchanged. Clearing a team or game name removes it from the upload only — UPSERT never deletes; use REPLACE or the setup screens to delete.
+
+## D030 — Owner-set passwords are temporary
+
+Any password an owner sets (create or set_password) marks the member `must_change_password`; the member must choose a new password (≥12 characters, not containing the username) at `/account/password` before staff routes open. Self-service changes go through the `members` Edge Function action `change_own_password`. This accepts that bulk-created accounts use a predictable username-based temporary password until first login.

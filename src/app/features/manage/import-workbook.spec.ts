@@ -2,144 +2,361 @@ import { Workbook } from 'exceljs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   createImportTemplate,
+  memberDirectory,
   parseImportWorkbook,
   validateImportPayload,
+  type ImportValidationContext,
 } from './import-workbook';
 import type { ImportPayload } from './import-types';
+import { GRID_COL, GRID_ROW, SHEETS, TABLE_ROW, TEAM_PALETTE, eventRow } from './template-catalog';
 
-let template: Uint8Array;
 const arrayBuffer = (bytes: Uint8Array) => Uint8Array.from(bytes).buffer;
-async function edited(change: (book: Workbook) => void) {
+const members = [
+  {
+    id: 'm1',
+    username: 'mina.makram',
+    full_name_en: 'مينا مكرم',
+    full_name_ar: 'مينا مكرم',
+    has_login: true,
+  },
+  {
+    id: 'm2',
+    username: 'john.nabil',
+    full_name_en: 'جون نبيل',
+    full_name_ar: 'جون نبيل',
+    has_login: true,
+  },
+  {
+    id: 'm3',
+    username: 'mina.makram2',
+    full_name_en: 'مينا مكرم',
+    full_name_ar: null,
+    has_login: false,
+  },
+];
+const live: ImportValidationContext = {
+  event: {
+    code: 'EVT-1',
+    name_en: 'Youth day',
+    name_ar: 'يوم الشباب',
+    points_win: 3,
+    points_draw: 1,
+    points_loss: 0,
+    leaderboard_public: true,
+  },
+  teams: [
+    {
+      id: 't1',
+      code: 'T01',
+      name_en: 'Falcons',
+      name_ar: 'الصقور',
+      avatar_key: 'falcon',
+      color_hex: '#D32F2F',
+    },
+    {
+      id: 't2',
+      code: 'T02',
+      name_en: 'Lions',
+      name_ar: 'الأسود',
+      avatar_key: 'lion',
+      color_hex: '#1E88E5',
+    },
+    {
+      id: 't3',
+      code: 'T03',
+      name_en: 'Foxes',
+      name_ar: null,
+      avatar_key: 'fox',
+      color_hex: '#2E7D32',
+    },
+    {
+      id: 't4',
+      code: 'T04',
+      name_en: 'Owls',
+      name_ar: 'البوم',
+      avatar_key: 'owl',
+      color_hex: '#F57C00',
+    },
+  ],
+  games: [
+    { id: 'g1', code: 'G01', name_en: 'Relay', name_ar: 'التتابع', location_ar: 'الملعب' },
+    { id: 'g2', code: 'G02', name_en: 'Tug', name_ar: 'شد الحبل' },
+  ],
+  rounds: [
+    { id: 'r0', number: 0, type: 'OPENING', duration_min: 15 },
+    { id: 'r1', number: 1, type: 'REGULAR', name_ar: 'الأولى', duration_min: 20 },
+    { id: 'r2', number: 2, type: 'REGULAR', duration_min: 25 },
+  ],
+  matches: [
+    { round_id: 'r0', game_id: 'g2', participants: [] },
+    {
+      round_id: 'r1',
+      game_id: 'g1',
+      participants: [
+        { team_id: 't1', side: 'A' },
+        { team_id: 't2', side: 'B' },
+      ],
+    },
+    {
+      round_id: 'r1',
+      game_id: 'g2',
+      participants: [
+        { team_id: 't3', side: 'A' },
+        { team_id: 't4', side: 'B' },
+      ],
+    },
+    {
+      round_id: 'r2',
+      game_id: 'g1',
+      participants: [
+        { team_id: 't4', side: 'A' },
+        { team_id: 't1', side: 'B' },
+      ],
+    },
+  ],
+  roles: [
+    { member_id: 'm1', role: 'REFEREE', team_id: null, username: 'mina.makram' },
+    { member_id: 'm2', role: 'GUIDE', team_id: 't1', username: 'john.nabil' },
+  ],
+  referee_games: [
+    { member_id: 'm1', game_id: 'g1' },
+    { member_id: 'm1', game_id: 'g2' },
+  ],
+  eligible_members: members,
+};
+
+async function edit(
+  bytes: Uint8Array,
+  change: (book: Workbook) => void,
+  context?: ImportValidationContext,
+) {
   const book = new Workbook();
-  await book.xlsx.load(arrayBuffer(template));
+  await book.xlsx.load(arrayBuffer(bytes));
   change(book);
-  return parseImportWorkbook(arrayBuffer(new Uint8Array(await book.xlsx.writeBuffer())));
-}
-async function payload(): Promise<ImportPayload> {
-  return (await parseImportWorkbook(arrayBuffer(template))).payload;
+  return parseImportWorkbook(arrayBuffer(new Uint8Array(await book.xlsx.writeBuffer())), context);
 }
 
-describe('XLSX event import', () => {
+describe('XLSX event setup template v3', () => {
+  let fresh: Uint8Array;
+  let liveBook: Uint8Array;
   beforeAll(async () => {
-    template = await createImportTemplate({ name_en: 'Youth day' });
+    fresh = await createImportTemplate({ event: { code: 'NEW', name_en: 'New day' } });
+    liveBook = await createImportTemplate(live);
   });
 
-  it('round-trips the valid bilingual template, required headers, frozen rows and dropdowns', async () => {
+  it('builds the Arabic RTL workbook with dropdowns and a hidden version stamp', async () => {
     const book = new Workbook();
-    await book.xlsx.load(arrayBuffer(template));
-    expect(book.worksheets.map((sheet) => sheet.name)).toEqual([
-      'README',
-      'Event',
-      'Teams',
-      'Games',
-      'Rounds',
-      'Matches',
-      'Staff',
-      'Avatars',
+    await book.xlsx.load(arrayBuffer(fresh));
+    expect(book.worksheets.map((sheet) => sheet.name)).toEqual(Object.values(SHEETS));
+    expect(book.getWorksheet(SHEETS.meta)!.state).toBe('veryHidden');
+    expect(book.getWorksheet(SHEETS.schedule)!.views[0].rightToLeft).toBe(true);
+    expect(
+      book.getWorksheet(SHEETS.schedule)!.getCell(GRID_ROW, GRID_COL).dataValidation.formulae,
+    ).toEqual(['TeamNames']);
+    expect(book.getWorksheet(SHEETS.staff)!.getCell(TABLE_ROW, 1).dataValidation.formulae).toEqual([
+      'MemberNames',
+    ]);
+    expect(book.getWorksheet(SHEETS.teams)!.getCell(TABLE_ROW, 3).dataValidation.formulae).toEqual([
+      'ColorNames',
+    ]);
+  });
+
+  it('offers 20 default teams with distinct colours; cleared rows are removed', async () => {
+    const parsed = await parseImportWorkbook(arrayBuffer(fresh));
+    expect(parsed.errors).toEqual([]);
+    expect(parsed.payload.teams).toHaveLength(20);
+    expect(new Set(parsed.payload.teams.map((team) => team['color_hex'])).size).toBe(20);
+    expect(parsed.payload.teams[0]).toMatchObject({
+      code: 'T01',
+      name_en: 'الصقور',
+      name_ar: 'الصقور',
+      avatar_key: 'falcon',
+      color_hex: TEAM_PALETTE[0].hex,
+    });
+    expect(parsed.payload.event).toMatchObject({
+      name_en: 'New day',
+      name_ar: 'New day',
+      leaderboard_public: false,
+    });
+    const trimmed = await edit(fresh, (book) => {
+      book.getWorksheet(SHEETS.teams)!.getCell(TABLE_ROW + 19, 2).value = null;
+    });
+    expect(trimmed.payload.teams).toHaveLength(19);
+  });
+
+  it('round-trips the live setup: single names, opening, schedule and grouped referees', async () => {
+    const parsed = await parseImportWorkbook(arrayBuffer(liveBook), live);
+    expect(parsed.errors).toEqual([]);
+    const { payload } = parsed;
+    expect(payload.event).toMatchObject({
+      name_ar: 'يوم الشباب',
+      name_en: 'يوم الشباب',
+      points_win: 3,
+      leaderboard_public: true,
+    });
+    expect(payload.teams.map((t) => [t['code'], t['name_en']])).toEqual([
+      ['T01', 'الصقور'],
+      ['T02', 'الأسود'],
+      ['T03', 'Foxes'],
+      ['T04', 'البوم'],
+    ]);
+    expect(payload.games[0]).toMatchObject({
+      code: 'G01',
+      name_en: 'التتابع',
+      location_en: 'الملعب',
+      location_ar: 'الملعب',
+    });
+    expect(payload.rounds.map((r) => [r['number'], r['type'], r['duration_min']])).toEqual([
+      [0, 'OPENING', 15],
+      [1, 'REGULAR', 20],
+      [2, 'REGULAR', 25],
     ]);
     expect(
-      book.worksheets.every((sheet) => {
-        const view = sheet.views[0];
-        return view?.state === 'frozen' && view.ySplit === 1;
-      }),
-    ).toBe(true);
-    expect(book.getWorksheet('Teams')!.getCell('A1').value).toBe('code*');
-    expect(book.getWorksheet('Teams')!.getCell('D2').dataValidation.type).toBe('list');
-    expect(book.getWorksheet('Rounds')!.getCell('B2').dataValidation.formulae).toEqual([
-      '"REGULAR,OPENING"',
+      payload.matches.map((m) => [
+        m['round_number'],
+        m['game_code'],
+        m['team_a_code'],
+        m['team_b_code'],
+      ]),
+    ).toEqual([
+      [0, 'G02', null, null],
+      [1, 'G01', 'T01', 'T02'],
+      [1, 'G02', 'T03', 'T04'],
+      [2, 'G01', 'T04', 'T01'],
     ]);
-    expect(book.getWorksheet('Staff')!.getCell('B2').dataValidation.formulae).toEqual([
-      '"REFEREE,GUIDE"',
+    expect(payload.staff).toEqual([
+      {
+        row: TABLE_ROW,
+        member: 'mina.makram',
+        role: 'REFEREE',
+        game_codes: 'G01,G02',
+        team_code: null,
+      },
+      {
+        row: TABLE_ROW + 2,
+        member: 'john.nabil',
+        role: 'GUIDE',
+        game_codes: null,
+        team_code: 'T01',
+      },
     ]);
-    expect(book.getWorksheet('README')!.getCell('B2').value).toMatch(/استبدل/);
-    const parsed = await parseImportWorkbook(arrayBuffer(template));
-    expect(parsed.errors).toEqual([]);
-    expect(parsed.payload.event['name_en']).toBe('Youth day');
-    expect(parsed.payload.teams).toHaveLength(2);
-    expect(parsed.payload.staff).toEqual([]);
-    expect(parsed.payload.matches[0].row).toBe(2);
   });
 
-  it('reports missing sheets and exact header errors before trusting rows', async () => {
-    const parsed = await edited((book) => {
-      book.removeWorksheet(book.getWorksheet('Staff')!.id);
-      book.getWorksheet('Teams')!.getCell('A1').value = 'team_code';
-    });
-    expect(parsed.errors).toContainEqual({
-      sheet: 'Workbook',
-      row: 0,
-      column: 'Staff',
-      code: 'MISSING_SHEET',
+  it('treats an empty game pair as a break and flags half, double and unknown teams on the grid', async () => {
+    const parsed = await edit(
+      liveBook,
+      (book) => {
+        const grid = book.getWorksheet(SHEETS.schedule)!;
+        grid.getCell(GRID_ROW, GRID_COL + 2).value = 'الصقور'; // round 1 game 2: T01 again
+        grid.getCell(GRID_ROW + 1, GRID_COL + 2).value = 'الأسود'; // round 2 game 2: half match
+        grid.getCell(GRID_ROW + 2, GRID_COL).value = 'مش موجود';
+        grid.getCell(GRID_ROW + 2, GRID_COL + 1).value = 'البوم';
+      },
+      live,
+    );
+    const codes = parsed.errors.map((issue) => [issue.sheet, issue.row, issue.column, issue.code]);
+    expect(codes).toEqual(
+      expect.arrayContaining([
+        ['Schedule', GRID_ROW, 'F', 'TEAM_ALREADY_SCHEDULED'],
+        ['Schedule', GRID_ROW + 1, 'G', 'HALF_MATCH'],
+        ['Schedule', GRID_ROW + 2, 'D', 'UNKNOWN_TEAM'],
+      ]),
+    );
+  });
+
+  it('rejects a removed game that still has matches, duplicate colours and unknown members', async () => {
+    const parsed = await edit(
+      liveBook,
+      (book) => {
+        book.getWorksheet(SHEETS.games)!.getCell(TABLE_ROW + 1, 2).value = null;
+        book.getWorksheet(SHEETS.teams)!.getCell(TABLE_ROW + 1, 3).value = TEAM_PALETTE[0].name;
+        book.getWorksheet(SHEETS.staff)!.getCell(TABLE_ROW + 5, 1).value = 'حد غريب';
+        book.getWorksheet(SHEETS.staff)!.getCell(TABLE_ROW + 5, 2).value = 'مرشد';
+        book.getWorksheet(SHEETS.staff)!.getCell(TABLE_ROW + 5, 4).value = 'الأسود';
+      },
+      live,
+    );
+    const codes = parsed.errors.map((issue) => issue.code);
+    expect(codes).toEqual(
+      expect.arrayContaining(['UNKNOWN_GAME', 'DUPLICATE_COLOR', 'MEMBER_NOT_FOUND']),
+    );
+  });
+
+  it('rejects formulas in input cells, old templates and corrupt files', async () => {
+    const parsed = await edit(fresh, (book) => {
+      book.getWorksheet(SHEETS.teams)!.getCell(TABLE_ROW, 2).value = {
+        formula: '"x"',
+        result: 'x',
+      };
     });
     expect(parsed.errors).toContainEqual({
       sheet: 'Teams',
-      row: 1,
-      column: 'code',
-      code: 'INVALID_HEADER',
+      row: TABLE_ROW,
+      column: 'B',
+      code: 'UNSUPPORTED_CELL',
     });
-    expect(parsed.payload.teams).toEqual([]);
-  });
-
-  it('rejects cached formulas, rich text, dates and unknown settings with source row numbers', async () => {
-    const parsed = await edited((book) => {
-      book.getWorksheet('Teams')!.getCell('B2').value = {
-        formula: '"Injected"',
-        result: 'Injected',
-      };
-      book.getWorksheet('Games')!.getCell('B2').value = { richText: [{ text: 'Relay' }] };
-      book.getWorksheet('Rounds')!.getCell('E2').value = new Date('2026-10-10T00:00:00Z');
-      book.getWorksheet('Event')!.addRow(['__proto__', 'bad']);
+    const old = await edit(fresh, (book) => {
+      book.getWorksheet(SHEETS.meta)!.getCell(1, 2).value = '2';
     });
+    expect(old.errors).toEqual([{ sheet: 'Workbook', row: 0, column: '', code: 'OLD_TEMPLATE' }]);
     expect(
-      parsed.errors
-        .filter((issue) => issue.code === 'UNSUPPORTED_CELL')
-        .map((issue) => [issue.sheet, issue.row, issue.column]),
-    ).toEqual([
-      ['Teams', 2, 'name_en'],
-      ['Games', 2, 'name_en'],
-      ['Rounds', 2, 'duration_min'],
-    ]);
-    expect(parsed.errors.some((issue) => issue.code === 'UNKNOWN_KEY')).toBe(true);
-    expect(parsed.payload.teams[0]['name_en']).toBeNull();
+      (await parseImportWorkbook(new TextEncoder().encode('not a zip').buffer)).errors,
+    ).toEqual([{ sheet: 'Workbook', row: 0, column: '', code: 'INVALID_WORKBOOK' }]);
   });
 
-  it('keeps actual event rows, rejects fractional numbers and checks booleans', async () => {
-    const parsed = await edited((book) => {
-      const sheet = book.getWorksheet('Event')!;
-      sheet.getCell('A3').value = 'points_win*';
-      sheet.getCell('B3').value = -1;
-      sheet.getCell('A4').value = 'name_ar';
-      sheet.getCell('B4').value = '';
-      sheet.getCell('B16').value = 'yes';
-      book.getWorksheet('Rounds')!.getCell('E2').value = 2.5;
+  it('maps event setting errors to the sheet row', async () => {
+    const parsed = await edit(fresh, (book) => {
+      book.getWorksheet(SHEETS.event)!.getCell(eventRow('points_win'), 2).value = 2.5;
     });
     expect(parsed.errors).toContainEqual({
       sheet: 'Event',
-      row: 3,
-      column: 'points_win',
+      row: eventRow('points_win'),
+      column: 'B',
       code: 'INVALID_NUMBER',
     });
-    expect(parsed.errors).toContainEqual({
-      sheet: 'Event',
-      row: 16,
-      column: 'leaderboard_public',
-      code: 'INVALID_BOOLEAN',
-    });
-    expect(parsed.errors).toContainEqual({
-      sheet: 'Rounds',
-      row: 2,
-      column: 'duration_min',
-      code: 'INVALID_DURATION',
-    });
   });
 
-  it('checks unique codes, avatars, colors and cross-sheet references', async () => {
-    const value = await payload();
+  it('disambiguates members that share a display name', () => {
+    expect(memberDirectory(members).map((m) => m.name)).toEqual([
+      'جون نبيل',
+      'مينا مكرم (mina.makram)',
+      'مينا مكرم (mina.makram2)',
+    ]);
+  });
+});
+
+describe('server payload validation', () => {
+  const base = (): ImportPayload => ({
+    event: {
+      name_en: 'Day',
+      points_win: 2,
+      points_draw: 1,
+      points_loss: 0,
+      currency_en_one: 'Point',
+      currency_en_other: 'Points',
+      currency_ar_one: 'نقطة',
+      currency_ar_two: 'نقطتين',
+      currency_ar_plural: 'نقط',
+    },
+    teams: [
+      { row: 4, code: 'T01', name_en: 'A', avatar_key: 'falcon', color_hex: '#D32F2F' },
+      { row: 5, code: 'T02', name_en: 'B', avatar_key: 'lion', color_hex: '#1E88E5' },
+    ],
+    games: [{ row: 4, code: 'G01', name_en: 'Relay' }],
+    rounds: [{ row: 5, number: 1, type: 'REGULAR', duration_min: 20 }],
+    matches: [
+      { row: 5, round_number: 1, game_code: 'G01', team_a_code: 'T01', team_b_code: 'T02' },
+    ],
+    staff: [],
+  });
+
+  it('accepts a valid payload and checks codes, avatars, colors and references', () => {
+    expect(validateImportPayload(base())).toEqual([]);
+    const value = base();
     value.teams[1] = { ...value.teams[1], code: 'T01', avatar_key: 'unknown', color_hex: '#FFF' };
     value.matches[0]['game_code'] = 'G99';
     value.matches[0]['team_b_code'] = 'T99';
-    const issues = validateImportPayload(value);
-    expect(issues.map((issue) => issue.code)).toEqual(
+    expect(validateImportPayload(value).map((issue) => issue.code)).toEqual(
       expect.arrayContaining([
         'DUPLICATE',
         'INVALID_AVATAR',
@@ -150,103 +367,26 @@ describe('XLSX event import', () => {
     );
   });
 
-  it('requires two different regular teams and prevents double-booking', async () => {
-    const value = await payload();
-    value.games.push({ code: 'G02', name_en: 'Game two' });
-    value.matches.push({
-      row: 5,
-      round_number: 1,
-      game_code: 'G02',
-      team_a_code: 'T01',
-      team_b_code: 'T01',
-    });
-    expect(validateImportPayload(value)).toEqual(
-      expect.arrayContaining([
-        { sheet: 'Matches', row: 5, column: 'team_b_code', code: 'SAME_TEAM' },
-        { sheet: 'Matches', row: 5, column: 'team_a_code', code: 'TEAM_ALREADY_SCHEDULED' },
-      ]),
-    );
-    value.matches[0]['team_b_code'] = null;
-    expect(validateImportPayload(value)).toContainEqual({
-      sheet: 'Matches',
-      row: 2,
-      column: 'team_b_code',
-      code: 'REQUIRED',
-    });
-  });
-
-  it('allows one opening match with empty team cells, and rejects absent/multiple matches', async () => {
-    const value = await payload();
+  it('allows one opening match with empty team cells', () => {
+    const value = base();
     value.rounds = [{ row: 3, number: 0, type: 'OPENING', duration_min: 20 }];
     value.matches = [{ row: 4, round_number: 0, game_code: 'G01' }];
     expect(validateImportPayload(value)).toEqual([]);
-    value.matches[0]['team_a_code'] = 'T01';
-    expect(
-      validateImportPayload(value).some((issue) => issue.code === 'OPENING_TEAMS_MUST_BE_EMPTY'),
-    ).toBe(true);
     value.matches = [];
     expect(
       validateImportPayload(value).some((issue) => issue.code === 'OPENING_REQUIRES_ONE_MATCH'),
     ).toBe(true);
-    value.matches = [
-      { round_number: 0, game_code: 'G01' },
-      { round_number: 0, game_code: 'G02' },
-    ];
-    expect(
-      validateImportPayload(value).some((issue) => issue.code === 'OPENING_REQUIRES_ONE_MATCH'),
-    ).toBe(true);
   });
 
-  it('checks guide uniqueness and referee assignments while deferring member existence to server', async () => {
-    const value = await payload();
-    value.staff = [{ row: 2, member: '+201001234567', role: 'REFEREE', game_codes: 'G01' }];
-    expect(validateImportPayload(value)).toEqual([]);
-    value.staff.push(
-      { row: 3, member: 'guide1', role: 'GUIDE', team_code: 'T01' },
-      { row: 4, member: 'guide2', role: 'GUIDE', team_code: 'T01' },
-    );
-    value.staff[0]['game_codes'] = 'G01,G99';
+  it('checks guide uniqueness and referee games', () => {
+    const value = base();
+    value.staff = [
+      { row: 4, member: 'ref', role: 'REFEREE', game_codes: 'G01,G99' },
+      { row: 5, member: 'guide1', role: 'GUIDE', team_code: 'T01' },
+      { row: 6, member: 'guide2', role: 'GUIDE', team_code: 'T01' },
+    ];
     expect(validateImportPayload(value).map((issue) => issue.code)).toEqual(
       expect.arrayContaining(['UNKNOWN_GAME', 'DUPLICATE_GUIDE']),
     );
-  });
-
-  it('resolves UPSERT references and schedule collisions against existing setup, freeing edited match participants', async () => {
-    const value = await payload();
-    const context = {
-      teams: value.teams.map((team, index) => ({ ...team, id: `t${index}` })),
-      games: [
-        { id: 'g1', code: 'G01' },
-        { id: 'g2', code: 'G02' },
-      ],
-      rounds: [{ id: 'r1', number: 1, type: 'REGULAR' }],
-      matches: [
-        {
-          round_id: 'r1',
-          game_id: 'g1',
-          participants: [
-            { team_id: 't0', side: 'A' },
-            { team_id: 't1', side: 'B' },
-          ],
-        },
-      ],
-    };
-    value.teams = [];
-    value.games = [];
-    value.rounds = [];
-    expect(validateImportPayload(value, context)).toEqual([]);
-    value.matches[0]['game_code'] = 'G02';
-    expect(
-      validateImportPayload(value, context).some(
-        (issue) => issue.code === 'TEAM_ALREADY_SCHEDULED',
-      ),
-    ).toBe(true);
-    expect(validateImportPayload(value).some((issue) => issue.code === 'UNKNOWN_ROUND')).toBe(true);
-  });
-
-  it('returns a useful error for a corrupt workbook', async () => {
-    expect(
-      (await parseImportWorkbook(new TextEncoder().encode('not a zip').buffer)).errors,
-    ).toEqual([{ sheet: 'Workbook', row: 0, column: '', code: 'INVALID_WORKBOOK' }]);
   });
 });

@@ -145,7 +145,11 @@ export class EventImportPage {
     try {
       const parsed = await this.workbook.parseImportWorkbook(
         await file.arrayBuffer(),
-        this.mode() === 'UPSERT' ? (this.setup() as ImportValidationContext) : undefined,
+        this.mode() === 'UPSERT'
+          ? (this.setup() as ImportValidationContext)
+          : {
+              eligible_members: (this.setup() as ImportValidationContext).eligible_members,
+            },
       );
       if (revision !== this.revision) return;
       this.parsed.set(parsed);
@@ -222,8 +226,8 @@ export class EventImportPage {
     if (!this.setup() || this.downloading()) return;
     this.downloading.set(true);
     try {
-      const event = this.setup()?.['event'] as Record<string, unknown> | undefined;
-      const bytes = await this.workbook.createImportTemplate(event);
+      const setup = this.setup() as ImportValidationContext;
+      const bytes = await this.workbook.createImportTemplate(setup);
       const url = URL.createObjectURL(
         new Blob([new Uint8Array(bytes)], {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -231,7 +235,9 @@ export class EventImportPage {
       );
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = 'DST-event-setup-template.xlsx';
+      const code = String(setup.event?.['code'] ?? 'event').replace(/[^A-Za-z0-9_-]/g, '');
+      const stamp = new Date().toISOString().slice(0, 10);
+      anchor.download = `DST-${code}-setup-${stamp}.xlsx`;
       anchor.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {
@@ -300,6 +306,9 @@ export class EventImportPage {
       'GUIDE_HAS_GAMES',
       'REFEREE_HAS_TEAM',
       'SHEET_TOO_LARGE',
+      'OLD_TEMPLATE',
+      'HALF_MATCH',
+      'DUPLICATE_COLOR',
     ];
     return `import.issue.${known.includes(code) ? code : 'OTHER'}`;
   }

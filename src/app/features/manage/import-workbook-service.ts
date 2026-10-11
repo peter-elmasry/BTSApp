@@ -7,8 +7,8 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class ImportWorkbookService {
-  createImportTemplate(event?: Record<string, unknown>) {
-    return createImportTemplate(event);
+  createImportTemplate(setup?: ImportValidationContext) {
+    return createImportTemplate(setup);
   }
 
   parseImportWorkbook(buffer: ArrayBuffer, context?: ImportValidationContext) {
