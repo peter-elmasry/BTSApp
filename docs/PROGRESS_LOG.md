@@ -2,6 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-11 — Usernames in exported setup and multiple guides — HANDOFF
+
+- **Requested by:** Peter: the exported setup showed no English usernames; several guides must be allowed on one team. `nesro` confirmed as نسرين نبيل, so no extra account is needed.
+- **Cause and fix (usernames):** ExcelJS writes formulas without cached values and no recalculation flag, so Excel/phone viewers left formula cells (staff usernames, game headers) blank. The workbook now sets `fullCalcOnLoad` and writes cached results for staff usernames and schedule game headers.
+- **Multiple guides:** Migration `0011` drops `one_guide_per_team`, returns `guides` (all) alongside `guide` (first) in public team JSON and strips both from standings. Client validator and workbook no longer flag a second guide; team pages list every guide. pgTAP expectations in suites `0003`/`0004` changed from rejection to acceptance (D031).
+- **Checks:** 117 unit tests (22 files), TypeScript and i18n audit pass; pgTAP not run locally (no Docker) — confirm in CI.
+- **Next:** Push to `feat/import-template-v3`, open the PR, confirm CI, merge.
+
 ## 2026-10-11 — Arabic setup template v3 and temporary passwords — HANDOFF
 
 - **Requested by:** Peter: Arabic-first RTL, colourful setup workbook exported with live data; up to 20 pre-coloured teams the admin removes; a round × game schedule grid where an empty pair is a game break; one name per event/team/game/location/round/member; DST members created with username-based temporary passwords and a later password change.

@@ -10,7 +10,7 @@ import { currencyLabel } from '../standings/rank-motion';
 import { StandingsList } from '../standings/standings-list';
 import { CountUp } from '../standings/count-up';
 import { PublicMatchCard } from './match-card';
-import { localizedName } from './public-helpers';
+import { guideNames, localizedName, teamGuides } from './public-helpers';
 import { PublicState } from './public-state';
 import { TeamViewState } from './team-view-state';
 
@@ -41,6 +41,8 @@ export class HomePage {
   );
   readonly preview = computed(() => this.standings.rows().slice(0, 5));
   readonly name = localizedName;
+  readonly guideNames = guideNames;
+  readonly teamGuides = teamGuides;
   readonly matches = computed(() => {
     const own = this.teamView.view()?.matches;
     return (

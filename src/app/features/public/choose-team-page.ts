@@ -16,7 +16,7 @@ import { TeamSelectionStore } from '../../core/player/team-selection.store';
 import type { PublicTeam } from '../../core/player/public-types';
 import { DsAvatar } from '../../shared/ui/avatar';
 import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
-import { localizedName } from './public-helpers';
+import { guideNames, localizedName, teamGuides } from './public-helpers';
 import { PublicState } from './public-state';
 
 @Component({
@@ -49,12 +49,17 @@ export class ChooseTeamPage {
       .filter(
         (team) =>
           !search ||
-          [team.code, team.name_en, team.name_ar, team.guide?.name_en, team.guide?.name_ar].some(
-            (value) => value?.toLocaleLowerCase().includes(search),
-          ),
+          [
+            team.code,
+            team.name_en,
+            team.name_ar,
+            ...teamGuides(team).flatMap((guide) => [guide.name_en, guide.name_ar]),
+          ].some((value) => value?.toLocaleLowerCase().includes(search)),
       );
   });
   readonly name = localizedName;
+  readonly guideNames = guideNames;
+  readonly teamGuides = teamGuides;
   private processedLink = '';
 
   constructor() {

@@ -802,7 +802,7 @@ Each phase = one branch + PR. Do not start a phase before the previous one's cri
 
 **Phase 2 — Event setup (manual)**
 - Settings (points, currency forms with live preview, caps, toggles), Teams, Games (+image upload), Rounds, match builder incl. opening match generation, Staff (event roles, referee↔games, guide↔team).
-- ✅ Cannot schedule a team twice in a round or two matches on one game in a round (DB constraint + friendly error); second guide on same team rejected.
+- ✅ Cannot schedule a team twice in a round or two matches on one game in a round (DB constraint + friendly error); several guides may share a team (D031).
 
 **Phase 3 — XLSX import**
 - Template download, parse, preview, dry-run, all-or-nothing import, UPSERT/REPLACE.
