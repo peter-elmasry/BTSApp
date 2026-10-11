@@ -2,6 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-11 — A02 login lockout and A03 member audit reliability — STARTED
+
+- **Requested by:** Gendy; proceed with the next two audit fixes, continuing with Astra.
+- **Preflight:** Clean `codex/phase-7-readiness` at `e437171`; no publication or deployment requested.
+- **Scope/owners:** Primary owns A02 login handler, migration `0010`, lockout tests and shared documentation/CI integration. Astra owns A03 member handler, migration `0011` and member audit tests. Separate logical commits; preserve all shared work.
+- **Acceptance:** Full ten-minute lockout after the fifth failure, including concurrent attempts and failed persistence; member actions must have a reliable audit boundary. No secrets in audit payloads. Run local handler regressions and available SQL checks; local Docker remains unavailable, so cloud database execution may remain pending.
+- **2026-10-12 resume:** Previous session stopped on a usage-limit interruption, including automatic approval review. Saved work is intact. Resumed with Astra on A03. Local database retry now executes but cannot connect to `127.0.0.1:54322`; SQL and real Auth/database concurrency acceptance remain pending. A02 mocked handler checks pass 22/22.
+- **A02 implementation milestone:** Persisted deadline/admission RPCs in `0010`, 24 pgTAP assertions and a localhost handler/Auth integration extension cover full duration, expired reservations, atomic recording and concurrent admission/completion. Handler checks pass 22/22; new `test:edge` CI step runs them. SQL/real Auth execution remains pending; no hosted changes or publication.
+
 ## 2026-10-11 — A01 privileged screen session isolation — DONE
 
 - **Requested by:** Gendy; proceed with audit remediation, beginning with the cross-tab logout privacy finding.

@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { verifyLocalLogin } from './test-local-login.mjs';
 
 // CI-only local Supabase status file. Never echo its credentials or JWTs.
 const path = process.env.SUPABASE_ENV_FILE;
@@ -90,3 +91,4 @@ for (const member of first) {
 console.log(
   'Local GoTrue: both synthetic-email owners authenticate; seed rerun preserves IDs/passwords; owner RPC recognizes JWTs.',
 );
+await verifyLocalLogin(url, values.ANON_KEY, values.SERVICE_ROLE_KEY);

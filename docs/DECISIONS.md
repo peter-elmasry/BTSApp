@@ -1,5 +1,20 @@
 # Implementation decisions
 
+## D031 — Persisted login deadlines and concurrent admission
+
+The login Edge Function uses service-only database RPCs to reserve an attempt and
+record its outcome. Five failures within ten minutes persist a deadline ten minutes
+after the fifth completion. Requests during the lock neither authenticate nor
+extend it. The deadline survives aging-out history and Edge instance restarts.
+An identifier row lock serializes admission and completion; pending attempts
+reserve the remaining slots so parallel callers cannot bypass the threshold.
+Reservations expire after 60 seconds; an expired or failed completion never
+releases credentials. Transient saturation/storage failures return `AUTH_UNAVAILABLE`;
+persisted lockouts return `LOCKED_OUT`. Successful attempts do not reset failures
+inside the window because the requirement counts failures, not consecutive failures.
+Existing applicable locks are backfilled from history during migration `0010`.
+No password or token is stored in admission tables or history.
+
 ## D030 — Open staff screens belong to one permission context
 
 Route activation guards remain the entry check; a shared session outlet also owns

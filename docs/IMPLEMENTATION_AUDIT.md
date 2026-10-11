@@ -110,6 +110,16 @@ expected. Phone/username normalization probes pass.
 Fix direction: persist/derive a lockout deadline independently of the moving
 threshold count and test spread-out attempts plus concurrent threshold crossing.
 
+**Remediation update (2026-10-12):** Migration `0010` persists lockout deadlines
+and reserves concurrent attempt capacity. The actual login handler passes 22
+mocked-transport checks, including normalization, inactive accounts, admission
+errors and refusal to return tokens after failed/expired persistence. New pgTAP
+cases cover the aged-out-history regression, deadlines, expiry, grants and atomic
+failure recording. The localhost Auth runner now exercises the handler against
+real Auth/database clients plus parallel admission/completion RPCs. These database
+and Auth checks are wired into existing CI but remain unexecuted locally because
+port 54322 refuses connections; A02 runtime acceptance is pending cloud execution.
+
 ### A03 — P2: member mutation reports success after its audit write fails
 
 Requirement: §7.2, member actions write the audit trail. At

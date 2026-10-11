@@ -37,28 +37,30 @@ Deno.serve(async (request) => {
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
 
-    const { data: attempts, error: attemptsError } = await admin
-      .from('login_attempts')
-      .select('attempted_at, success')
-      .eq('identifier', identifier)
-      .eq('success', false)
-      .gte('attempted_at', new Date(Date.now() - 10 * 60_000).toISOString())
-      .order('attempted_at', { ascending: false })
-      .limit(5);
-    if (attemptsError) return json({ error: 'AUTH_UNAVAILABLE' }, 503);
-    if ((attempts?.length ?? 0) >= 5) {
-      const latestFailure = Date.parse(attempts![0].attempted_at);
-      if (Date.now() < latestFailure + 10 * 60_000) return json({ error: 'LOCKED_OUT' }, 429);
-    }
+    const { data: admission, error: admissionError } = await admin.rpc('begin_login_attempt', {
+      p_identifier: identifier,
+    });
+    if (admissionError) return json({ error: 'AUTH_UNAVAILABLE' }, 503);
+    if (admission?.status === 'locked') return json({ error: 'LOCKED_OUT' }, 429);
+    if (admission?.status !== 'allowed' || !admission.attempt_id)
+      return json({ error: 'AUTH_UNAVAILABLE' }, 503);
+    const finish = async (success: boolean) => {
+      const { data, error } = await admin.rpc('finish_login_attempt', {
+        p_attempt: admission.attempt_id,
+        p_success: success,
+      });
+      return !error && data === true;
+    };
 
     const column = identifier.startsWith('+') ? 'phone' : 'username';
-    const { data: member } = await admin
+    const { data: member, error: memberError } = await admin
       .from('members')
       .select('id, auth_user_id, is_active')
       .eq(column, identifier)
       .maybeSingle();
+    if (memberError) return json({ error: 'AUTH_UNAVAILABLE' }, 503);
     if (!member?.is_active || !member.auth_user_id) {
-      await admin.from('login_attempts').insert({ identifier, success: false });
+      if (!(await finish(false))) return json({ error: 'AUTH_UNAVAILABLE' }, 503);
       return invalid();
     }
     const email = `m-${member.id}@members.dst-bts.app`;
@@ -66,13 +68,13 @@ Deno.serve(async (request) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
     const { data, error } = await userClient.auth.signInWithPassword({ email, password });
-    await admin.from('login_attempts').insert({ identifier, success: !error });
+    if (!(await finish(!error && !!data.session))) return json({ error: 'AUTH_UNAVAILABLE' }, 503);
     if (error || !data.session) return invalid();
     return json({
       access_token: data.session.access_token,
       refresh_token: data.session.refresh_token,
     });
   } catch {
-    return invalid();
+    return json({ error: 'AUTH_UNAVAILABLE' }, 503);
   }
 });
