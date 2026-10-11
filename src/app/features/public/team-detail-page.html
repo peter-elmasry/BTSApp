@@ -28,7 +28,7 @@
             }
           </div>
         </div>
-        @if (item.guide; as guide) {
+        @for (guide of teamGuides(item); track $index) {
           <div>
             <p class="font-semibold">
               {{ t('team.guide') }}: {{ name(guide, direction.language()) }}

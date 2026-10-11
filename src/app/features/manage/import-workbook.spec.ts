@@ -316,6 +316,28 @@ describe('XLSX event setup template v3', () => {
     });
   });
 
+  it('exports usernames with cached values and accepts two guides on one team', async () => {
+    const book = new Workbook();
+    await book.xlsx.load(arrayBuffer(liveBook));
+    const staff = book.getWorksheet(SHEETS.staff)!;
+    expect((staff.getCell(TABLE_ROW, 5).value as { result?: unknown }).result).toBe('mina.makram');
+    expect((staff.getCell(TABLE_ROW + 2, 5).value as { result?: unknown }).result).toBe(
+      'john.nabil',
+    );
+    const parsed = await edit(
+      liveBook,
+      (edited) => {
+        const sheet = edited.getWorksheet(SHEETS.staff)!;
+        sheet.getCell(TABLE_ROW + 3, 1).value = 'مينا مكرم (mina.makram2)';
+        sheet.getCell(TABLE_ROW + 3, 2).value = 'مرشد';
+        sheet.getCell(TABLE_ROW + 3, 4).value = 'الصقور';
+      },
+      live,
+    );
+    expect(parsed.errors).toEqual([]);
+    expect(parsed.payload.staff.filter((row) => row['team_code'] === 'T01')).toHaveLength(2);
+  });
+
   it('disambiguates members that share a display name', () => {
     expect(memberDirectory(members).map((m) => m.name)).toEqual([
       'جون نبيل',
@@ -378,15 +400,14 @@ describe('server payload validation', () => {
     ).toBe(true);
   });
 
-  it('checks guide uniqueness and referee games', () => {
+  it('allows several guides on one team and still checks referee games', () => {
     const value = base();
     value.staff = [
       { row: 4, member: 'ref', role: 'REFEREE', game_codes: 'G01,G99' },
       { row: 5, member: 'guide1', role: 'GUIDE', team_code: 'T01' },
       { row: 6, member: 'guide2', role: 'GUIDE', team_code: 'T01' },
     ];
-    expect(validateImportPayload(value).map((issue) => issue.code)).toEqual(
-      expect.arrayContaining(['UNKNOWN_GAME', 'DUPLICATE_GUIDE']),
-    );
+    const codes = validateImportPayload(value).map((issue) => issue.code);
+    expect(codes).toEqual(['UNKNOWN_GAME']);
   });
 });

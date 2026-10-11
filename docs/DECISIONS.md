@@ -127,3 +127,7 @@ The downloadable setup workbook is Arabic-first and right-to-left, is generated 
 ## D030 — Owner-set passwords are temporary
 
 Any password an owner sets (create or set_password) marks the member `must_change_password`; the member must choose a new password (≥12 characters, not containing the username) at `/account/password` before staff routes open. Self-service changes go through the `members` Edge Function action `change_own_password`. This accepts that bulk-created accounts use a predictable username-based temporary password until first login.
+
+## D031 — A team may have several guides
+
+The `one_guide_per_team` index is dropped (migration `0011`): any number of guides may be assigned to one team, while a member still guides at most one team per event. Public team JSON keeps `guide` (first guide by name, for older clients) and adds `guides` (all of them); players see every guide. Standings payloads carry neither. This supersedes the Phase 2 criterion "second guide on same team rejected".

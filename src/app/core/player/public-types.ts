@@ -32,6 +32,7 @@ export interface PublicTeam extends LocalizedName {
   color_hex: string;
   sort_order: number;
   guide: PublicGuide | null;
+  guides?: PublicGuide[];
 }
 export interface PublicGame extends LocalizedName {
   id: string;

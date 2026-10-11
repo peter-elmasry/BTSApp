@@ -8,7 +8,7 @@ import { DsAvatar } from '../../shared/ui/avatar';
 import { currencyLabel } from '../standings/rank-motion';
 import { CountUp } from '../standings/count-up';
 import { PublicMatchCard } from './match-card';
-import { localizedName } from './public-helpers';
+import { guideNames, localizedName, teamGuides } from './public-helpers';
 import { PublicState } from './public-state';
 import { TeamViewState } from './team-view-state';
 
@@ -39,6 +39,8 @@ export class TeamDetailPage {
     );
   });
   readonly name = localizedName;
+  readonly guideNames = guideNames;
+  readonly teamGuides = teamGuides;
   readonly currency = currencyLabel;
   constructor() {
     void this.store.initialize();
