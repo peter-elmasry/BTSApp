@@ -6,7 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { NavigationEnd, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { TranslocoDirective } from '@jsverse/transloco';
@@ -24,6 +24,7 @@ import { RoundBanner } from './round-banner';
 import { OpQueueService } from '../core/offline/op-queue.service';
 import { ReadCacheService } from '../core/offline/read-cache.service';
 import { EventChannelService } from '../core/realtime/event-channel.service';
+import { SessionOutlet } from '../core/auth/session-outlet';
 import { InstallService } from '../core/pwa/install.service';
 
 @Component({
@@ -31,7 +32,7 @@ import { InstallService } from '../core/pwa/install.service';
   imports: [
     RouterLink,
     RouterLinkActive,
-    RouterOutlet,
+    SessionOutlet,
     TranslocoDirective,
     DsToast,
     DsAvatar,

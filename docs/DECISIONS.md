@@ -1,5 +1,17 @@
 # Implementation decisions
 
+## D030 — Open staff screens belong to one permission context
+
+Route activation guards remain the entry check; a shared session outlet also owns
+the lifetime of all owner, manage and referee screens. Losing access removes the
+routed component tree and returns to Home. Changing the authenticated user,
+member, system role, event roles or assigned games recreates an otherwise allowed
+staff screen, discarding local forms and preventing late reads from restoring the
+previous screen's DOM. Same-actor token refresh and equivalent profiles preserve
+drafts. Public screens retain their existing scoped read-state behavior. Server
+RPC/RLS authorization and actor-bound offline operations remain authoritative;
+this closes the component-state gap found in audit A01.
+
 ## D029 — Readiness installation and enforced bundle budget
 
 Phase 7 installation uses the browser-provided deferred prompt only after an

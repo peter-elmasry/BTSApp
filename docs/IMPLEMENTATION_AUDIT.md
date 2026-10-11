@@ -84,6 +84,16 @@ in-flight reads when it changes. Review setup and other privileged pages for the
 same pattern. This finding concerns stale browser data; it does not establish a
 server authorization bypass.
 
+**Remediation update (2026-10-11):** D030 adds a shared session outlet that destroys
+owner/manage/referee routed component trees when access is lost and recreates
+them on actor or permission changes. Nine focused lifecycle tests pass, including
+late-read suppression, account draft isolation, event-role revocation, token
+refresh and public-page preservation. Eight real two-tab browser regressions
+cover every privileged route and pass; these are now part of normal frontend CI.
+The full browser suite passes 35/35; the focused lifecycle/guard suite passes 15/15.
+The original audit observations above remain the historical baseline. Other
+findings remain open.
+
 ### A02 — P2: lockout can expire before ten minutes after the fifth failure
 
 Requirement: §6.8 / Phase 1, five failed attempts within ten minutes trigger a

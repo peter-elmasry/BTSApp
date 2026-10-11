@@ -2,6 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-11 — A01 privileged screen session isolation — DONE
+
+- **Requested by:** Gendy; proceed with audit remediation, beginning with the cross-tab logout privacy finding.
+- **Preflight:** Clean `codex/phase-7-readiness` at `31a8a00`; no push/deployment requested.
+- **Scope:** Shared routed-screen lifecycle boundary for owner, manage and referee areas; destroy previous actor/permission-context views, including forms and late read responses. Add normal-CI regression coverage and update audit evidence.
+- **Validation plan:** Focused lifecycle unit tests, real two-tab browser logout coverage, TypeScript/build, translations and changed-file formatting. Database permissions remain unchanged; local Docker remains unavailable.
+- **Milestone:** Shared session outlet integrated; all nine lifecycle unit tests and eight real cross-tab logout tests pass. Every owner/manage/referee route is covered in normal CI; token refresh preserves drafts, account changes discard them, and revoked access destroys the view. Build passes at 370.84 kB; app/spec TypeScript and 555-key translations pass. Final focused run passes 15/15 unit tests (nine lifecycle and six guard tests); full Node 24 browser regression passes 35/35, including all 27 existing cases and eight new logout cases.
+
+- **Final review/handoff:** Astra reviewed the shared lifecycle boundary and regressions. Changed-file Prettier and whitespace checks pass; no SQL changes or database rerun (local Docker unavailable). A01 is complete and committed locally on `codex/phase-7-readiness`, without pushing. Other audit findings remain open. Next: A02, enforce the full ten-minute lockout after the fifth failure, then A03, handle failed audit writes.
+
 ## 2026-10-11 — Full requirements and application audit — DONE
 
 - **Requested by:** Gendy; review all plans/docs and test the application against them.
