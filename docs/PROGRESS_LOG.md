@@ -2,6 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-11 — Phase 6 cloud acceptance — DONE
+
+- **Requested by:** Gendy; finish Phase 6, fix Arabic translation keys, apply a contrasting gold header, and publish its checked PR.
+- **Verified code:** `4bad347` on `codex/phase-6-standings`; [PR #9](https://github.com/peter-elmasry/BTSApp/pull/9). Both jobs pass in [CI run 38139075290](https://github.com/peter-elmasry/BTSApp/actions/runs/38139075290).
+- **Database passed:** Fresh Supabase startup/reset applies migration `0009`; owner seed/auth smoke and all 704 pgTAP assertions across seven suites pass, including 153 new standings/visibility/tie/export assertions. No local Docker installation or hosted database change was needed.
+- **Frontend passed:** Standard CI passes 114 unit tests across 22 files, all 25 browser journeys, 547-path translation audit, formatting and build (368.50 kB initial). Lighthouse accessibility 100, best practices 96, performance 71. Local EN/AR mobile and landscape screenshots were inspected; TypeScript and source-integrity checks passed.
+- **Repairs:** Privacy assertion now matches actual private JSON keys instead of the safe `show_guide_phone` flag; Arabic setup regression waits for translated options to render. Standings entrance motion keeps full text contrast. No assertions were removed and CI timeouts remain unchanged.
+- **Handoff:** Phase 6 is ready for review in PR #9, including gold/navy shared header and missing choose/delete/remove labels. Publish this final verification record and confirm its head checks; do not merge or deploy without a further request. Phase 7 polish/readiness and Phase 0 hosted acceptance remain separate.
+
 ## 2026-10-10 — Phase 6 standings, visibility, export and display — HANDOFF
 
 - **Requested by:** Gendy; implement the next phase, continuing the established divide-and-conquer, DRY and KISS direction.
