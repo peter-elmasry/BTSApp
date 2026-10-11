@@ -1,5 +1,24 @@
 # Implementation decisions
 
+## D032 — Atomic member audits and durable Auth operation recovery
+
+Member creation, edits, login links and activation state use a service-only RPC
+that rechecks the active owner actor and writes the row, audit and payload-bound
+receipt in one transaction. Audit failure rolls back that database mutation.
+Passwords never enter these RPCs or their receipts.
+
+Auth administration spans an external service and cannot share the database
+transaction. Before touching Auth, the Edge handler persists an operation intent
+and audit atomically. It appends a completion audit after success. Failed or
+ambiguous Auth/link/completion outcomes retain `STARTED` or `NEEDS_REVIEW`, block
+another external operation for that member and return HTTP 202 with `ok:false`,
+`status:needs_review` and an operation reference. The owner UI shows a review
+warning, clears submitted password fields and does not announce success. It never
+automatically retries a password write or deletes an uncertain Auth account.
+The runbook describes explicit operator reconciliation; successful outcomes are
+recorded only after verification. This makes partial completion recoverable but
+does not claim distributed atomicity. Apply migrations before deploying handlers.
+
 ## D031 — Persisted login deadlines and concurrent admission
 
 The login Edge Function uses service-only database RPCs to reserve an attempt and

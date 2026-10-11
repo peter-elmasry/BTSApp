@@ -131,6 +131,22 @@ Fix direction: establish a reliable mutation/audit write boundary, handle audit
 failures explicitly, and cover compensation/retry behavior. Merely returning an
 error after an already-applied mutation also needs recovery semantics.
 
+**Remediation update (2026-10-12):** Migration `0011` makes database member writes,
+their audit entries and replay receipts atomic. External Auth operations have a
+durable intent before execution and an audited completion; uncertain outcomes
+remain pending and prevent repeat external actions. HTTP 202 `needs_review`
+shows an owner warning/reference rather than success. D032 and the event-day
+runbook define reconciliation without automatic password retries. All 29 mocked
+member-handler regressions pass. New pgTAP coverage and localhost real Auth/member
+integration are wired into CI; their runtime acceptance remains pending because
+local Supabase is unavailable.
+
+Frontend verification: three focused owner unit tests and ten browser journeys
+pass, including EN/AR review notices and all eight privileged logout routes.
+Build, app/spec TypeScript, translation parity (558 keys), changed-file formatting
+and whitespace checks pass. This update does not claim the complete frontend
+suite or new SQL assertions have run successfully against the changed backend.
+
 ### A04 — P2: required administrator audit-log reader and screen are missing
 
 Requirements: §2.3, §8 `get_audit_log(p_event,p_limit,p_before)`, §10.3 filterable

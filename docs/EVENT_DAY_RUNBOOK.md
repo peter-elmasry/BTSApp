@@ -90,6 +90,34 @@ accepted. Phase 0 hosted acceptance remains separate.
   error code, affected devices and recovery outcome. Exclude credentials and
   private contact data.
 
+## Member operation needs review
+
+If the owner screen shows an operation reference, record that reference and stop
+repeating the member/password action. An Auth change may have applied even if
+its completion could not be recorded. The original audit intent is retained;
+the operation is blocked from automatic replay.
+
+A deployment maintainer with authorized service/operator access should:
+
+1. Inspect `member_admin_operations` for the reference or `STARTED`/`NEEDS_REVIEW`
+   rows. Read member/action/status/Auth ID/reason/time; never copy credentials into
+   an incident record.
+2. Compare the member row with the Auth account, using its recorded Auth ID or
+   the deterministic synthetic email `m-<member_id>@members.dst-bts.app` if the
+   process stopped before recording the Auth ID. Verify account existence, member
+   link and active/ban state. Do not infer a password change from account metadata.
+3. Where necessary and authorized, repair links/activation through
+   `member_admin_write`, with an active owner's Auth UUID and a fresh operation
+   UUID. This preserves atomic database audits; avoid direct row edits.
+4. Use service-only `member_admin_finish` with `SUCCEEDED` only for a verified
+   outcome. If the intended outcome cannot be confirmed, coordinate recovery with
+   the owner, close the old operation as `FAILED` with `OPERATOR_RECONCILED`, and
+   obtain an explicit new password reset if needed. Never automatically replay
+   or guess an old password. Finishing appends an audit atomically; if it fails,
+   leave the pending operation for retry after database recovery.
+
+Reconciliation is an operator procedure until an owner recovery UI is implemented.
+
 ## Acceptance record before release
 
 Record deployed commit, production URL, device/browser, network profile, date and

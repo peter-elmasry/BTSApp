@@ -1,8 +1,8 @@
 import { mockLiveEvent } from './live-fixtures';
 import { eventId } from './public-fixtures';
 
-export async function mockOwner(page: import('@playwright/test').Page) {
-  await mockLiveEvent(page, { role: 'EVENT_ADMIN', lang: 'ar' });
+export async function mockOwner(page: import('@playwright/test').Page, lang: 'en' | 'ar' = 'ar') {
+  await mockLiveEvent(page, { role: 'EVENT_ADMIN', lang });
   const member = {
     id: 'fixture-member',
     username: 'fixture_person',

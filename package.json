@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
     "test:i18n": "node scripts/check-translations.mjs",
-    "test:edge": "node scripts/test-login-edge.mjs",
+    "test:edge": "node scripts/test-login-edge.mjs && node scripts/test-member-edge.mjs",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
     "brand": "node scripts/brand-assets.mjs && node scripts/avatars.mjs",

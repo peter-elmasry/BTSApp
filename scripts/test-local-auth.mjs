@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { verifyLocalLogin } from './test-local-login.mjs';
+import { verifyLocalMembers } from './test-local-members.mjs';
 
 // CI-only local Supabase status file. Never echo its credentials or JWTs.
 const path = process.env.SUPABASE_ENV_FILE;
@@ -83,6 +84,15 @@ for (const member of first) {
   );
   if (checked(await client.rpc('is_owner')) !== true)
     throw new Error('Seeded Auth JWT does not grant owner permission');
+  if (member.id === first[0].id) {
+    const { data } = await client.auth.getSession();
+    await verifyLocalMembers(
+      url,
+      values.ANON_KEY,
+      values.SERVICE_ROLE_KEY,
+      data.session.access_token,
+    );
+  }
   checked(await client.auth.signOut());
   const recovery = await client.auth.resetPasswordForEmail(`m-${member.id}@members.dst-bts.app`);
   if (!recovery.error || !recovery.error.message.includes('EMAIL_DISABLED'))

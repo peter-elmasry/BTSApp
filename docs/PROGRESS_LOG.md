@@ -2,7 +2,7 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-11 — A02 login lockout and A03 member audit reliability — STARTED
+## 2026-10-11 — A02 login lockout and A03 member audit reliability — HANDOFF
 
 - **Requested by:** Gendy; proceed with the next two audit fixes, continuing with Astra.
 - **Preflight:** Clean `codex/phase-7-readiness` at `e437171`; no publication or deployment requested.
@@ -10,6 +10,9 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Acceptance:** Full ten-minute lockout after the fifth failure, including concurrent attempts and failed persistence; member actions must have a reliable audit boundary. No secrets in audit payloads. Run local handler regressions and available SQL checks; local Docker remains unavailable, so cloud database execution may remain pending.
 - **2026-10-12 resume:** Previous session stopped on a usage-limit interruption, including automatic approval review. Saved work is intact. Resumed with Astra on A03. Local database retry now executes but cannot connect to `127.0.0.1:54322`; SQL and real Auth/database concurrency acceptance remain pending. A02 mocked handler checks pass 22/22.
 - **A02 implementation milestone:** Persisted deadline/admission RPCs in `0010`, 24 pgTAP assertions and a localhost handler/Auth integration extension cover full duration, expired reservations, atomic recording and concurrent admission/completion. Handler checks pass 22/22; new `test:edge` CI step runs them. SQL/real Auth execution remains pending; no hosted changes or publication.
+- **A03 implementation milestone:** Astra delivered atomic member/audit writes, payload-bound receipts, durable external Auth intents/completion and explicit owner review notices. Added 29 passing mocked handler checks, 27 pgTAP assertions and localhost real Auth/member integration. D032/runbook describe pending-operation reconciliation. A02 committed locally as `71929b6`; A03 frontend validation is in progress. No push or deployment.
+- **Final checks (2026-10-12):** Both actual-handler suites pass 51/51 with simulated transport. Three owner Angular unit tests pass after correcting the Supabase getter mock; ten browser journeys pass (new EN/AR pending notices plus all eight privileged logout routes). Production build passes at 370.84 kB; app/spec TypeScript, 558-key translation audit, changed-file Prettier, script syntax and whitespace pass. Test-owned preview server stopped. No full frontend-suite rerun claimed for this focused change.
+- **Handoff:** A02 and A03 implementations are committed locally as separate fixes; nothing pushed or deployed. Added 51 SQL assertions (expected suite total 755) and real localhost Auth/member/concurrent-login checks are prepared for CI, but not runtime-verified because local database port 54322 refuses connections. Publish when requested and verify both CI jobs before accepting these database changes. Next feature gap is A04, the administrator audit viewer; other audit/Phase 7 requirements remain open.
 
 ## 2026-10-11 — A01 privileged screen session isolation — DONE
 

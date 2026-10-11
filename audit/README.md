@@ -22,9 +22,16 @@ node scripts/audit-performance.mjs
 For an existing local preview on another port, set `BTS_AUDIT_URL` to its origin.
 The browser/performance diagnostics reject non-local origins. The browser suite
 uses synthetic members and mocked RPC/Auth requests. The Edge probe transpiles
-and executes the actual handlers with a simulated clock/database/Auth transport;
+and executes the actual handlers with a simulated database/Auth transport;
 it never reads credentials or sends requests. These do not replace real Supabase
 permission tests, Edge integration or hosted acceptance.
+
+The A02/A03 handler regressions now also run in CI through `npm run test:edge`.
+Lockout deadlines/concurrency and atomic member/audit writes are covered by new
+pgTAP suites and the existing localhost Auth runner's handler integrations.
+Those require a running local Supabase instance. The original failing Edge probe
+command above delegates to the maintained regression suites; historical failure
+evidence remains in the audit report. Browser/performance gaps remain open.
 
 The performance diagnostic measures a cold team-picker render under an explicit
 400 ms latency, 1.6 Mbps down / 750 kbps up and 4× CPU slowdown at 390×844. It
