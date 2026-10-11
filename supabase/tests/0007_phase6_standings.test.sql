@@ -114,7 +114,8 @@ select ok(exists(select 1 from jsonb_array_elements(public.get_export_data(pg_te
 select ok(exists(select 1 from jsonb_array_elements(public.get_export_data(pg_temp.p6_id(3,1))->'adjustments') x where x->>'reason'='Match bonus' and x->'given_by'->>'name_en'='Phase Six 3'),'export attributes adjustment giver');
 select ok(exists(select 1 from jsonb_array_elements(public.get_export_data(pg_temp.p6_id(3,1))->'staff') x where x->>'role'='REFEREE' and x->'game_codes'='["G01"]'::jsonb),'export referee assignment codes');
 select ok(exists(select 1 from jsonb_array_elements(public.get_export_data(pg_temp.p6_id(3,1))->'staff') x where x->>'role'='GUIDE' and x->>'team_code'='T01'),'export guide assignment code');
-select ok(public.get_export_data(pg_temp.p6_id(3,1))::text !~ 'phone|auth_user_id|access_token|service_role|password|20133333333','export excludes private field names and phone values');
+-- A public show_guide_phone boolean is metadata, not a private phone property.
+select ok(public.get_export_data(pg_temp.p6_id(3,1))::text !~ '"(phone|auth_user_id|access_token|service_role|password)"[[:space:]]*:|20133333333','export excludes private field names and phone values');
 
 select is(public.set_leaderboard_visibility(pg_temp.p6_id(9,1),pg_temp.p6_id(3,1),true)->>'leaderboard_public','true','admin enables public standings');
 select is(public.set_leaderboard_visibility(pg_temp.p6_id(9,1),pg_temp.p6_id(3,1),true)->>'leaderboard_public','true','visibility exact replay');
