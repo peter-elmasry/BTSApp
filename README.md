@@ -26,6 +26,11 @@ Passwords must have at least 12 characters. The script creates `masry` and `gend
 
 ## Checks
 
+The [2026-10-11 requirements audit](docs/IMPLEMENTATION_AUDIT.md) maps the app to
+the agreed plan and records passing checks, confirmed defects and blocked
+acceptance. [Opt-in audit diagnostics](audit/README.md) reproduce the remaining
+contract failures separately from the normal test suite.
+
 ```sh
 node scripts/set-env.mjs --allow-empty
 npm run format:check

@@ -2,6 +2,18 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-11 — Full requirements and application audit — DONE
+
+- **Requested by:** Gendy; review all plans/docs and test the application against them.
+- **Preflight:** Clean `codex/phase-7-readiness` at `72a4436`; preserve the local Phase 7 slice. No publication or deployment requested.
+- **Scope:** Read repository requirements/decisions/runbook/history; map implemented behavior and tests to the plan; execute frontend/unit/browser/accessibility/build/translation/format and available database checks. Add focused audit regressions for uncovered requirements when useful, without implementing unrelated features.
+- **Evidence rule:** Separate fresh passes, existing cloud evidence, confirmed gaps, and blocked hosted/device checks. Record findings in a committed audit report and update this entry before handoff.
+- **Milestone:** Build, TypeScript and 555-key translation check pass. Initial Node 22 run: 115/116 unit tests (ExcelJS cold-start timeout; focused retry passes 4/4), 25/27 browser tests (Node-side workbook import failure). Node 24 browser rerun passes all 27 tests after test-owned server teardown; full unit rerun still times out one export case. Database rerun reaches localhost but fails ECONNREFUSED at 54322; repo-wide formatting flags 31 existing files.
+- **Confirmed contract findings:** Offline handler probes execute actual Edge source with simulated transport/clock: 10/12 pass. Lockout expires early after five spread-out failures; member writes return success even when audit insertion fails. Static review also finds missing audit-log RPC/UI, absent game resize/conversion, untyped setup RPCs and remaining documented Phase 7 features. No product changes made.
+- **Final audit evidence:** Opt-in committed browser diagnostics reproduce four failures: owner member phone remains visible after real cross-tab logout (P1), 8.91×24 px owner remove-admin control, English team names in Arabic setup, PNG upload rejection. Both 390×844 EN/AR reduced-motion/axe probes pass. Handler diagnostics remain 10/12 passing. Lighthouse a11y 100 / best practices 96 / performance 68. Explicit local 3G/4×CPU diagnostic measures 8.120 s EN and 7.606 s AR on uncompressed assets; hosted/physical-device timing remains unverified. Fresh npm audit confirms two documented moderate ExcelJS/uuid entries, zero high/critical.
+- **Database evidence:** Re-read GitHub run `38139075290`: both jobs succeeded; DB log confirms 704 assertions across seven suites. Current SQL matches verified `4bad347`; this is prior cloud evidence, not a fresh local/hosted run. Missing direct delete-RPC test coverage and absent Edge login integration are documented.
+- **Handoff:** Full traceability/findings are in `docs/IMPLEMENTATION_AUDIT.md`; reproducible opt-in failing browser/Edge/performance diagnostics are committed separately from normal CI. Product code and acceptance criteria unchanged. Audit files pass changed-file formatting/whitespace and diagnostic parse checks; confirmed failures remain intentionally red. Commit locally on `codex/phase-7-readiness`, no push. Next: fix A01 privileged component state on actor changes, then lockout/audit failures, missing requirements and coverage before release.
+
 ## 2026-10-11 — Phase 7 readiness kickoff — HANDOFF
 
 - **Requested by:** Gendy; start the next phase.
