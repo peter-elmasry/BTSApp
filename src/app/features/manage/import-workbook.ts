@@ -271,9 +271,10 @@ function input(sheet: Worksheet, r1: number, r2: number, c1: number, c2: number,
     }
 }
 
-function computed(sheet: Worksheet, r: number, c: number, formula: string) {
+function computed(sheet: Worksheet, r: number, c: number, formula: string, result?: CellValue) {
   const cell = sheet.getCell(r, c);
-  cell.value = { formula };
+  // A cached result keeps values visible in viewers that do not recalculate (phone previews).
+  cell.value = (result === undefined ? { formula } : { formula, result }) as CellValue;
   cell.fill = solid(READONLY);
   cell.font = { name: FONT, size: 11, bold: true, color: { argb: argb(NAVY) } };
   cell.alignment = CENTER;
@@ -433,6 +434,8 @@ export async function createImportTemplate(
   const { default: ExcelJS } = await import('exceljs');
   const book = new ExcelJS.Workbook();
   book.creator = 'BTSApp';
+  // ExcelJS writes no cached formula values; make Excel recalculate everything when opened.
+  book.calcProperties.fullCalcOnLoad = true;
   priority = 1;
   const data = prefill(setup);
   const stamp = new Intl.DateTimeFormat('ar-EG', {
@@ -542,7 +545,7 @@ export async function createImportTemplate(
     ],
     [
       SHEETS.staff,
-      'اختار العضو والدور: حكم ← اللعبة، مرشد ← الفريق. مرشد واحد لكل فريق.',
+      'اختار العضو والدور: حكم ← اللعبة، مرشد ← الفريق. ممكن أكتر من مرشد لنفس الفريق.',
       '00897B',
     ],
     [
@@ -807,7 +810,10 @@ export async function createImportTemplate(
     const c = GRID_COL + 2 * i;
     sc.mergeCells(3, c, 3, c + 1);
     const head = sc.getCell(3, c);
-    head.value = { formula: `IF(INDEX(GameNames,${i + 1})="","—",INDEX(GameNames,${i + 1}))` };
+    head.value = {
+      formula: `IF(INDEX(GameNames,${i + 1})="","—",INDEX(GameNames,${i + 1}))`,
+      result: data.games[i]?.name || '—',
+    };
     head.font = { name: FONT, size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
     head.fill = solid(GAME_INKS[i]);
     head.alignment = CENTER;
@@ -921,7 +927,7 @@ export async function createImportTemplate(
     st,
     5,
     '⚖️  الطاقم',
-    'حكم ← اختار اللعبة (صف لكل لعبة) · مرشد ← اختار الفريق (مرشد واحد لكل فريق)',
+    'حكم ← اختار اللعبة (صف لكل لعبة) · مرشد ← اختار الفريق (ممكن أكتر من مرشد للفريق، صف لكل مرشد)',
     '00897B',
   );
   header(st, 3, STAFF_HEADERS, '00897B');
@@ -933,12 +939,15 @@ export async function createImportTemplate(
     st.getCell(r, 3).value = row.game || null;
     st.getCell(r, 4).value = row.team || null;
   });
+  const usernameOf = new Map(data.members.map((member) => [member.name, member.username]));
   for (let r = TABLE_ROW; r <= staffEnd; r++) {
+    const member = data.staff[r - TABLE_ROW]?.member;
     computed(
       st,
       r,
       5,
       `IF(A${r}="","",IFERROR(INDEX(MemberUsernames,MATCH(A${r},MemberNames,0)),"⚠️ مش موجود"))`,
+      member ? (usernameOf.get(member) ?? '⚠️ مش موجود') : '',
     );
     st.getCell(r, 5).font = { name: FONT, size: 10, color: { argb: argb(MUTED) } };
   }
@@ -947,12 +956,6 @@ export async function createImportTemplate(
     st,
     `C${s0}:D${staffEnd}`,
     `OR(AND($B${s0}="${ROLE_LABELS.REFEREE}",OR($C${s0}="",$D${s0}<>"")),AND($B${s0}="${ROLE_LABELS.GUIDE}",OR($D${s0}="",$C${s0}<>"")))`,
-    ERROR,
-  );
-  rule(
-    st,
-    `D${s0}:D${staffEnd}`,
-    `AND(D${s0}<>"",COUNTIFS($B$${s0}:$B$${staffEnd},"${ROLE_LABELS.GUIDE}",$D$${s0}:$D$${staffEnd},D${s0})>1)`,
     ERROR,
   );
   rule(st, `A${s0}:A${staffEnd}`, `AND(A${s0}<>"",COUNTIF(MemberNames,A${s0})=0)`, ERROR);
@@ -1550,20 +1553,6 @@ export function validateImportPayload(
     )
       add('Rounds', opening, 'number', 'OPENING_REQUIRES_ONE_MATCH');
   }
-  const guides = new Set<string>();
-  const reassignedGuides = new Set(
-    payload.staff
-      .filter((staff) => staff['role'] === 'GUIDE')
-      .map((staff) => text(staff['member']).toLowerCase()),
-  );
-  const existingGuides = new Map(
-    (context.roles ?? [])
-      .filter(
-        (role) =>
-          role['role'] === 'GUIDE' && !reassignedGuides.has(text(role['username']).toLowerCase()),
-      )
-      .map((role) => [text(teamIds.get(text(role['team_id']))), role]),
-  );
   const staffKeys = new Set<string>();
   for (const staff of payload.staff) {
     const role = text(staff['role']);
@@ -1575,11 +1564,6 @@ export function validateImportPayload(
       const code = text(staff['team_code']);
       if (!code) add('Staff', staff, 'team_code', 'REQUIRED');
       else if (!teams.has(code)) add('Staff', staff, 'team_code', 'UNKNOWN_TEAM');
-      if (guides.has(code)) add('Staff', staff, 'team_code', 'DUPLICATE_GUIDE');
-      // Phones are intentionally absent from the directory; the server resolves phone identities.
-      if (!/^(?:\+|00|01)\d/.test(text(staff['member'])) && existingGuides.has(code))
-        add('Staff', staff, 'team_code', 'DUPLICATE_GUIDE');
-      guides.add(code);
       if (!blank(staff['game_codes'])) add('Staff', staff, 'game_codes', 'GUIDE_HAS_GAMES');
     }
     if (role === 'REFEREE') {
