@@ -232,7 +232,11 @@ export class EventSetupPage {
       return true;
     } catch (error) {
       const failure = error as { message?: string; code?: string };
-      this.notice.set(`errors.${failure.message || failure.code || 'SAVE_FAILED'}`);
+      // Only known error codes are translated; raw database text never reaches the screen.
+      const code = [failure.message, failure.code].find((value) =>
+        /^[A-Z][A-Z_]+$/.test(value ?? ''),
+      );
+      this.notice.set(`errors.${code ?? 'SAVE_FAILED'}`);
       return false;
     } finally {
       this.saving.set(false);
@@ -342,13 +346,26 @@ export class EventSetupPage {
             name_ar: row.name_ar ?? '',
             duration_min: row.duration_min,
           }
-        : { number: 1, type: 'REGULAR', name_en: '', name_ar: '', duration_min: 10 },
+        : {
+            number: this.nextRoundNumber(),
+            type: 'REGULAR',
+            name_en: '',
+            name_ar: '',
+            duration_min: 10,
+          },
     );
+  }
+  /** First regular round number not used yet, so "add round" never collides with an existing one. */
+  nextRoundNumber() {
+    const used = this.rounds()
+      .filter((round) => round.id !== this.editingRound())
+      .map((round) => Number(round.number));
+    return Math.max(0, ...used) + 1;
   }
   onRoundTypeChange() {
     const number = this.roundForm.controls.number;
     if (this.roundForm.controls.type.value === 'OPENING') number.setValue(0);
-    else if (number.value === 0) number.setValue(1);
+    else if (number.value === 0) number.setValue(this.nextRoundNumber());
   }
   async saveRound() {
     if (this.roundForm.invalid) {
@@ -356,6 +373,13 @@ export class EventSetupPage {
       return;
     }
     const value = this.roundForm.getRawValue();
+    const taken = this.rounds().some(
+      (round) => Number(round.number) === Number(value.number) && round.id !== this.editingRound(),
+    );
+    if (taken) {
+      this.notice.set('errors.DUPLICATE_ROUND_NUMBER');
+      return;
+    }
     const saved = await this.mutate('upsert_round', {
       p_event: this.eventId,
       p_round: { ...(this.editingRound() ? { id: this.editingRound() } : {}), ...value },

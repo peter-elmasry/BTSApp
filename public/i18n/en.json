@@ -593,5 +593,8 @@
   "account.confirmPassword": "Confirm password",
   "account.save": "Save password",
   "errors.PASSWORD_MISMATCH": "The passwords do not match.",
-  "errors.PASSWORD_TOO_WEAK": "The password cannot contain your username."
+  "errors.PASSWORD_TOO_WEAK": "The password cannot contain your username.",
+  "errors.DUPLICATE_ROUND_NUMBER": "This round number already exists. Pick another number or edit the existing round.",
+  "errors.DUPLICATE_TEAM_CODE": "This team code already exists.",
+  "errors.DUPLICATE_GAME_CODE": "This game code already exists."
 }

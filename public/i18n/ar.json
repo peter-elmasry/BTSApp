@@ -614,5 +614,8 @@
   "account.confirmPassword": "أكّد كلمة السر",
   "account.save": "حفظ كلمة السر",
   "errors.PASSWORD_MISMATCH": "كلمتين السر مش زي بعض.",
-  "errors.PASSWORD_TOO_WEAK": "كلمة السر متقدرش يكون فيها اسم المستخدم."
+  "errors.PASSWORD_TOO_WEAK": "كلمة السر متقدرش يكون فيها اسم المستخدم.",
+  "errors.DUPLICATE_ROUND_NUMBER": "رقم الجولة ده موجود قبل كده. اختار رقم تاني أو عدّل الجولة الموجودة.",
+  "errors.DUPLICATE_TEAM_CODE": "كود الفريق ده موجود قبل كده.",
+  "errors.DUPLICATE_GAME_CODE": "كود اللعبة ده موجود قبل كده."
 }
