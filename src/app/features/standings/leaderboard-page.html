@@ -1,0 +1,46 @@
+<section *transloco="let t" class="mx-auto max-w-5xl space-y-5 p-4 pb-8">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h1 class="text-2xl font-extrabold">{{ t('standings.title') }}</h1>
+    <button
+      class="min-h-11 rounded-xl border border-mist bg-white px-4 font-semibold"
+      type="button"
+      (click)="refresh()"
+      [disabled]="standings.loading()"
+    >
+      {{ t('standings.refresh') }}
+    </button>
+  </div>
+  @if (standings.loading() && !standings.rows().length) {
+    <p role="status" class="rounded-card bg-white p-5">{{ t('standings.loading') }}</p>
+  } @else if (!standings.allowed() && events.event()) {
+    <div class="space-y-3 rounded-card bg-white p-5">
+      <p>{{ t('leaderboard.hidden') }}</p>
+      <a routerLink="/home" class="inline-flex min-h-11 items-center font-bold text-teal">{{
+        t('nav.home')
+      }}</a>
+    </div>
+  } @else if (standings.error(); as error) {
+    <div role="alert" class="space-y-3 rounded-card bg-white p-5">
+      <p>{{ t(error) }}</p>
+      <button
+        type="button"
+        class="min-h-11 rounded-xl bg-navy px-4 font-bold text-white"
+        (click)="refresh()"
+      >
+        {{ t('standings.retry') }}
+      </button>
+    </div>
+  } @else if (events.event(); as event) {
+    @if (standings.rows().length) {
+      <app-standings-list
+        [rows]="standings.rows()"
+        [event]="event"
+        [selectedCode]="selection.selectedCode()"
+      />
+    } @else {
+      <p class="rounded-card bg-white p-5">{{ t('standings.empty') }}</p>
+    }
+  } @else {
+    <p class="rounded-card bg-white p-5">{{ t('player.noEvent') }}</p>
+  }
+</section>

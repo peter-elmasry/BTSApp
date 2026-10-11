@@ -8,6 +8,7 @@ import { supabase } from '../../core/supabase/client';
 import { OpQueueService } from '../../core/offline/op-queue.service';
 import { ReadCacheService } from '../../core/offline/read-cache.service';
 import { availableTeamCodes, TEAM_AVATARS, validMatchSelection } from './setup-helpers';
+import { currencyLabel } from '../standings/rank-motion';
 
 type Row = any;
 type SetupData = {
@@ -218,13 +219,7 @@ export class EventSetupPage {
   }
 
   previewCurrency() {
-    const count = this.previewCount();
-    const value = this.settingsForm.getRawValue();
-    return count === 1
-      ? value.currency_ar_one
-      : count === 2
-        ? value.currency_ar_two
-        : value.currency_ar_plural;
+    return currencyLabel(this.previewCount(), this.settingsForm.getRawValue(), 'ar');
   }
 
   private async mutate(fn: string, args: Record<string, unknown>) {

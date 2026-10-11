@@ -13,7 +13,8 @@ for (const lang of ['ar', 'en']) {
     await page.goto('/home');
     await expect(page.locator('html')).toHaveAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
     await expect(page.locator('h1')).toBeVisible();
-    await expect(page.locator('header img')).toHaveAttribute('src', '/brand/dst-mark-white.webp');
+    await expect(page.locator('header img')).toHaveAttribute('src', '/brand/dst-mark-navy.webp');
+    await expect(page.locator('header').first()).toHaveCSS('background-color', 'rgb(255, 184, 0)');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );

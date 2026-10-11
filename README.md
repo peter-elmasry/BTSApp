@@ -29,6 +29,7 @@ Passwords must have at least 12 characters. The script creates `masry` and `gend
 ```sh
 node scripts/set-env.mjs --allow-empty
 npm run format:check
+npm run test:i18n
 npm test
 npm run build
 npx playwright install chromium
@@ -37,6 +38,8 @@ npm run test:db
 ```
 
 `--allow-empty` is for shell-only CI/local builds. Production generation fails without public configuration. The SQL suite requires running local Supabase. Phase 0 tests cover foundation permissions; later phase RPCs must add their own role-matrix tests before that phase can pass.
+
+`test:i18n` compares English/Arabic catalog paths and literal UI translation references to catch missing labels before CI passes. Narrative content arrays retain their language-specific layout; dynamic key families are exercised by unit and browser checks.
 
 Run `npm run serve:dist` in one terminal and `npm run test:lighthouse` in another. Reports/screenshots are written to ignored `artifacts/`. Lighthouse 12+ removed the PWA category; browser tests check offline shell navigation and manifest/SW behavior instead. Accessibility must score at least 90. These local results do not prove hosted deployment acceptance.
 
@@ -50,7 +53,7 @@ The public app uses the current event selected by an owner. Players pick a team 
 
 Open `/` or `/home` to choose a team, then see its current and upcoming matches. Team choice is stored per event on the device. Printed links such as `/?team=T01` suggest a team and still require confirmation. The header avatar opens the switch-team confirmation. `/schedule` supports my-team, round and game views; `/teams/:code` and `/games/:code` show details; `/about` contains the agreed bilingual DST story.
 
-Migration `0007_phase4_public.sql` adds allowlisted public read RPCs. Hidden schedules omit outcomes; team detail returns the requested team's own outcomes, with opponent outcomes withheld unless the leaderboard is public or the caller is an owner/event administrator. Guide phone numbers appear only when enabled for the event. Domain tables remain private. The server-synchronized clock shows countdown/overtime without closing a round. Standings/ranks remain Phase 6.
+Migration `0007_phase4_public.sql` adds allowlisted public read RPCs. Hidden schedules omit outcomes; team detail returns the requested team's own outcomes, with opponent outcomes withheld unless the leaderboard is public or the caller is an owner/event administrator. Guide phone numbers appear only when enabled for the event. Domain tables remain private. The server-synchronized clock shows countdown/overtime without closing a round. Phase 6 adds standings and ranks as described below.
 
 Player browser checks use mocked RPCs for repeatable EN/AR mobile journeys. The new pgTAP suite independently checks actual database read permissions and privacy; run it through `npm run test:db` with Supabase running, or through GitHub CI. A missing current event displays an empty state; unavailable RPCs display a retry action.
 
@@ -62,11 +65,19 @@ Migration `0008_phase5_live.sql` enforces assignments, round state, outcome comb
 
 Read snapshots and pending domain RPCs are stored in IndexedDB. A queued message means the change is saved on the device, not yet accepted by the server. Keep using the same staff account to sync its pending work; other accounts cannot upload it. Network failures retry automatically with the original operation ID. Permission/validation failures are shown for review and are not retried. If browser storage is unavailable, submissions fail visibly. Password/member Edge Function actions and image uploads require a connection and are never queued. Identifier-only realtime broadcasts refresh relevant views; jittered polling takes over if realtime is unavailable.
 
+## Standings and export (Phase 6)
+
+Open `/leaderboard` for computed standings, selected-team highlighting, shared ranks for unresolved ties, current points and active adjustments. Home shows the chosen team's rank/total and a top-five preview; team detail includes its standing when visible. Changing scoring settings recalculates totals. Owners/event administrators use `/manage/:eventId/standings` to confirm publishing/hiding the leaderboard, order a complete tied group, or prepare an export. Scoring, result, adjustment or roster changes clear manual tie orders so they can be reviewed again. Hidden standings remain available only to owners and that event's administrators.
+
+Preparing an export fetches one fresh online snapshot and freezes its preview. Download writes that exact snapshot to an XLSX workbook containing Standings, Matches, Adjustments and Staff. Totals remain numeric; names/reasons remain literal text; phone numbers and authentication/member IDs are excluded. The filename and generated stamp use Africa/Cairo time. Return to live standings to refresh after export. Queued tie/visibility changes use the existing actor-bound offline operation queue and remain pending until accepted by the server.
+
+`/display` removes app navigation and cycles every 20 seconds between standings and the latest five visible match results, with the current round timer, a results ticker and a pause control. Rank movement/count animations respect reduced-motion settings. Migration `0009_phase6_standings.sql` and its pgTAP suite cover computation, permissions, tie validation/invalidation, idempotency and export parity; frontend browser tests mock RPCs and exercise the actual workbook download.
+
 ## Event setup import (Phase 3)
 
 Owners and event administrators can open **Import event setup** from the event setup page. Download the bilingual template, replace its sample rows, and upload a `.xlsx` file (up to 5 MiB). ExcelJS loads on demand in the browser. The preview combines local row errors with a server dry-run; saving requires explicit confirmation and revalidates the whole workbook atomically.
 
-`UPSERT` matches teams/games by code and rounds by number, retains existing rows and referee assignments, and preserves UI-managed game images/team ordering. `REPLACE` removes the event setup and imports it again, retaining event administrators; it requires a draft event with no round ever started. Imports assign existing active members as referees/guides and never create accounts. Export remains scheduled for a later phase.
+`UPSERT` matches teams/games by code and rounds by number, retains existing rows and referee assignments, and preserves UI-managed game images/team ordering. `REPLACE` removes the event setup and imports it again, retaining event administrators; it requires a draft event with no round ever started. Imports assign existing active members as referees/guides and never create accounts. Standings export is available through the Phase 6 screen.
 
 Migration `0006_phase3_import.sql` adds the import RPC; its pgTAP suite runs through `npm run test:db` and GitHub CI. Frontend browser tests mock the RPC boundary and exercise actual workbook generation/parsing; they do not replace database tests.
 

@@ -4,7 +4,11 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { EventStore } from '../../core/player/event.store';
 import { TeamSelectionStore } from '../../core/player/team-selection.store';
+import { StandingsReader } from '../../core/standings/standings-reader';
 import { DsAvatar } from '../../shared/ui/avatar';
+import { currencyLabel } from '../standings/rank-motion';
+import { StandingsList } from '../standings/standings-list';
+import { CountUp } from '../standings/count-up';
 import { PublicMatchCard } from './match-card';
 import { localizedName } from './public-helpers';
 import { PublicState } from './public-state';
@@ -12,8 +16,16 @@ import { TeamViewState } from './team-view-state';
 
 @Component({
   selector: 'app-home-page',
-  imports: [RouterLink, TranslocoDirective, DsAvatar, PublicMatchCard, PublicState],
-  providers: [TeamViewState],
+  imports: [
+    RouterLink,
+    TranslocoDirective,
+    DsAvatar,
+    PublicMatchCard,
+    PublicState,
+    StandingsList,
+    CountUp,
+  ],
+  providers: [TeamViewState, StandingsReader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './home-page.html',
 })
@@ -22,6 +34,12 @@ export class HomePage {
   readonly selection = inject(TeamSelectionStore);
   readonly direction = inject(DirectionService);
   readonly teamView = inject(TeamViewState);
+  readonly standings = inject(StandingsReader);
+  readonly currency = currencyLabel;
+  readonly ownStanding = computed(() =>
+    this.standings.rows().find((row) => row.team.code === this.selection.selectedCode()),
+  );
+  readonly preview = computed(() => this.standings.rows().slice(0, 5));
   readonly name = localizedName;
   readonly matches = computed(() => {
     const own = this.teamView.view()?.matches;
@@ -56,9 +74,12 @@ export class HomePage {
   constructor() {
     void this.store.initialize();
     effect(() => this.teamView.code.set(this.selection.selectedCode() ?? ''));
+    effect(() => this.standings.eventId.set(this.store.event()?.id ?? null));
   }
   refresh() {
     void this.store.refresh();
+    this.teamView.refresh();
+    this.standings.refresh();
   }
   startPull(event: TouchEvent) {
     this.touch =

@@ -1,0 +1,138 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.standings {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.standing {
+  display: grid;
+  grid-template-columns: 1.6rem 44px minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.8rem;
+  border: 1px solid var(--color-mist);
+  border-radius: 1rem;
+  background: white;
+}
+.standing.selected {
+  background: var(--color-gold-soft);
+  border-color: var(--color-navy);
+}
+.rank {
+  font-size: 1.2rem;
+  font-weight: 800;
+  text-align: center;
+}
+.team-name {
+  min-width: 0;
+}
+.team-link {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+}
+.tie-badge,
+.my-team,
+.rank-change {
+  border-radius: 0.4rem;
+  padding: 0.1rem 0.35rem;
+  background: var(--color-ivory);
+}
+.rank-change {
+  color: var(--color-success);
+  font-weight: 800;
+}
+.rank-change.falling {
+  color: var(--color-error);
+}
+.record {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: 0;
+  font-size: 0.75rem;
+}
+.record > div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+.record dt {
+  color: var(--color-slate);
+}
+.record dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.total {
+  grid-column: 4;
+  grid-row: 1;
+  display: grid;
+  text-align: end;
+  max-width: 7rem;
+  overflow-wrap: anywhere;
+}
+.total-number {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.currency {
+  max-width: 7rem;
+  overflow-wrap: anywhere;
+  font-size: 0.75rem;
+}
+.compact-list .record {
+  display: none;
+}
+.display-list .standing {
+  grid-template-columns: 1.6rem 64px minmax(0, 1fr) auto;
+}
+@media (min-width: 768px) {
+  .standing {
+    grid-template-columns: 2rem 44px minmax(8rem, 1fr) minmax(12rem, auto) auto;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  .record {
+    grid-column: 4;
+    grid-row: 1;
+    justify-content: center;
+  }
+  .record > div {
+    display: grid;
+    text-align: center;
+    gap: 0.2rem;
+  }
+  .total {
+    grid-column: 5;
+  }
+  .display-list .standing {
+    grid-template-columns: 3rem 64px minmax(0, 1fr) minmax(12rem, auto) auto;
+  }
+  .display-list .team-link,
+  .display-list .rank {
+    font-size: clamp(1.2rem, 2vw, 2rem);
+  }
+  .display-list .record {
+    font-size: 1rem;
+  }
+  .display-list .total-number {
+    font-size: clamp(2rem, 3vw, 3rem);
+  }
+}

@@ -8,6 +8,11 @@
     </div>
     <a
       class="inline-flex min-h-11 items-center font-semibold text-teal"
+      [routerLink]="['/manage', eventId(), 'standings']"
+      >{{ t('phase6.title') }}</a
+    >
+    <a
+      class="inline-flex min-h-11 items-center font-semibold text-teal"
       [routerLink]="['/manage', eventId(), 'setup']"
       >{{ t('manage.setupTitle') }}</a
     >

@@ -1,3 +1,5 @@
+import type { StandingRow } from '../standings/standings-types';
+
 export interface LocalizedName {
   name_en: string;
   name_ar: string | null;
@@ -65,6 +67,7 @@ export interface PublicMatch {
   game_id: string;
   status: 'SCHEDULED' | 'COMPLETED' | 'VOID';
   participants: PublicParticipant[];
+  result_entered_at?: string | null;
 }
 export interface PublicBootstrap {
   teams: PublicTeam[];
@@ -84,5 +87,5 @@ export interface PublicTeamView {
   team: PublicTeam;
   matches: PublicMatch[];
   adjustments: PublicAdjustment[];
-  // Standings computation/ranks are implemented in Phase 6.
+  standing?: StandingRow;
 }

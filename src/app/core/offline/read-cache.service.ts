@@ -10,6 +10,7 @@ const allowedReads = new Set([
   'get_bootstrap',
   'get_schedule',
   'get_team_view',
+  'get_standings',
   'get_live_event',
   'get_referee_board',
   'get_match_entry',

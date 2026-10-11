@@ -135,6 +135,7 @@ describe('last-known outcome visibility', () => {
     const matches = [
       {
         id: 'm1',
+        result_entered_at: '2026-10-10T10:00:00Z',
         participants: [
           { team_id: 't1', team_code: 'T01', side: 'A', outcome: 'WIN' },
           { team_id: 't2', team_code: 'T02', side: 'B', outcome: 'LOSS' },
@@ -150,6 +151,8 @@ describe('last-known outcome visibility', () => {
       redactMatchOutcomes(matches, 'T01')[0].participants.map((participant) => participant.outcome),
     ).toEqual(['WIN', undefined]);
     expect(matches[0].participants[1].outcome).toBe('LOSS');
+    expect(redactMatchOutcomes(matches)[0]).not.toHaveProperty('result_entered_at');
+    expect(redactMatchOutcomes(matches, 'T01')[0]).not.toHaveProperty('result_entered_at');
     expect(canSeeAllOutcomes(event, { system_role: 'OWNER', roles: [] })).toBe(true);
     expect(
       canSeeAllOutcomes(event, {

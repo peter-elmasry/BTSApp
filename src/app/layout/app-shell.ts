@@ -6,14 +6,16 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map, startWith } from 'rxjs';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { DirectionService } from '../core/i18n/i18n.service';
 import { DsToast } from '../shared/ui/toast';
 import { AuthStore } from '../core/auth/auth.store';
 import { Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
-import { EventStore } from '../core/player/event.store';
+import { canSeeAllOutcomes, EventStore } from '../core/player/event.store';
 import { TeamSelectionStore } from '../core/player/team-selection.store';
 import { ServerClockService } from '../core/time/server-clock.service';
 import { DsAvatar } from '../shared/ui/avatar';
@@ -50,6 +52,14 @@ export class AppShell {
   private readonly clock = inject(ServerClockService);
   private readonly i18n = inject(TranslocoService);
   private readonly router = inject(Router);
+  private readonly routeUrl = toSignal(
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects),
+      startWith(this.router.url),
+    ),
+  );
+  readonly displayMode = computed(() => this.routeUrl()?.split(/[?#]/)[0] === '/display');
   readonly eventName = computed(() => {
     const event = this.events.event();
     const language = this.direction.language();
@@ -112,6 +122,8 @@ export class AppShell {
   readonly visibleNavigation = computed(() => {
     const items = [...this.navigation];
     const profile = this.auth.profile();
+    if (this.events.event() && canSeeAllOutcomes(this.events.event(), profile))
+      items.splice(2, 0, { path: '/leaderboard', key: 'nav.leaderboard', icon: '♜' });
     if (profile?.system_role === 'OWNER') {
       items.push({ path: '/owner/members', key: 'owner.title', icon: '♙' });
     }

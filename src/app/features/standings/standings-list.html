@@ -1,0 +1,78 @@
+<ng-container *transloco="let t">
+  <ol
+    class="standings"
+    [class.display-list]="display()"
+    [class.compact-list]="compact()"
+    [attr.aria-label]="t('standings.title')"
+  >
+    @for (row of rows(); track row.team.id) {
+      <li
+        class="standing"
+        [class.selected]="row.team.code === selectedCode()"
+        [attr.data-team-id]="row.team.id"
+        [attr.data-team-code]="row.team.code"
+      >
+        <span class="rank tabular" [attr.aria-label]="t('standings.rank', { n: row.rank })">{{
+          row.rank
+        }}</span>
+        <ds-avatar
+          [avatarKey]="row.team.avatar_key"
+          [color]="row.team.color_hex"
+          [size]="display() ? 64 : 44"
+        />
+        <div class="team-name">
+          <a class="team-link" [routerLink]="['/teams', row.team.code]">{{
+            name(row.team, direction.language())
+          }}</a>
+          <div class="badges">
+            @if (row.is_tied) {
+              <span class="tie-badge">{{ t('standings.tied') }}</span>
+            }
+            @if (row.team.code === selectedCode()) {
+              <span class="my-team">{{ t('standings.myTeam') }}</span>
+            }
+            @if (changes().get(row.team.id); as delta) {
+              <span
+                class="rank-change"
+                [class.falling]="delta < 0"
+                [attr.aria-label]="
+                  t(delta > 0 ? 'standings.movedUp' : 'standings.movedDown', {
+                    n: delta < 0 ? -delta : delta,
+                  })
+                "
+                dir="ltr"
+                >{{ delta > 0 ? '↑' : '↓' }} {{ delta < 0 ? -delta : delta }}</span
+              >
+            }
+          </div>
+        </div>
+        <dl class="record">
+          <div>
+            <dt>{{ t('standings.wins') }}</dt>
+            <dd>{{ row.wins }}</dd>
+          </div>
+          <div>
+            <dt>{{ t('standings.draws') }}</dt>
+            <dd>{{ row.draws }}</dd>
+          </div>
+          <div>
+            <dt>{{ t('standings.losses') }}</dt>
+            <dd>{{ row.losses }}</dd>
+          </div>
+          <div>
+            <dt>{{ t('standings.forfeits') }}</dt>
+            <dd>{{ row.forfeits }}</dd>
+          </div>
+          <div>
+            <dt>{{ t('standings.adjustments') }}</dt>
+            <dd dir="ltr">{{ row.adjustment_points > 0 ? '+' : '' }}{{ row.adjustment_points }}</dd>
+          </div>
+        </dl>
+        <div class="total">
+          <app-count-up class="total-number tabular" [value]="row.total" />
+          <span class="currency">{{ currency(row.total, event(), direction.language()) }}</span>
+        </div>
+      </li>
+    }
+  </ol>
+</ng-container>

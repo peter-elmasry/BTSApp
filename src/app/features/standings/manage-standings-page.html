@@ -1,0 +1,252 @@
+<div *transloco="let t" class="space-y-5">
+  <header class="space-y-3">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-2xl font-extrabold">{{ t('phase6.title') }}</h1>
+      <button class="ds-button ghost" [disabled]="loading() || exporting()" (click)="refresh()">
+        {{ t('phase6.refresh') }}
+      </button>
+    </div>
+    <nav class="flex flex-wrap gap-4">
+      <a
+        class="inline-flex min-h-11 items-center font-semibold text-teal"
+        [routerLink]="['/manage', eventId(), 'live']"
+        >{{ t('phase6.liveControl') }}</a
+      >
+      <a
+        class="inline-flex min-h-11 items-center font-semibold text-teal"
+        [routerLink]="['/manage', eventId(), 'setup']"
+        >{{ t('phase6.eventSetup') }}</a
+      >
+    </nav>
+  </header>
+  @if (notice()) {
+    <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
+  }
+  @if (loading()) {
+    <p role="status">{{ t('phase6.loading') }}</p>
+  }
+  @if (error()) {
+    <section class="space-y-3 rounded-card bg-white p-4">
+      <p role="alert">{{ t(error()) }}</p>
+      <button class="ds-button secondary" [disabled]="loading()" (click)="refresh()">
+        {{ t('phase6.retry') }}
+      </button>
+    </section>
+  }
+  @if (snapshot(); as data) {
+    <section class="space-y-4 rounded-card bg-white p-4 shadow-card">
+      <h2 class="text-xl font-bold">{{ name(data.event, direction.language()) }}</h2>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 class="font-bold">{{ t('phase6.visibility') }}</h3>
+          <p class="text-sm text-slate">
+            {{ t(data.event.leaderboard_public ? 'phase6.visibleHint' : 'phase6.hiddenHint') }}
+          </p>
+        </div>
+        <button
+          class="ds-button secondary"
+          [attr.aria-pressed]="data.event.leaderboard_public"
+          [disabled]="!canMutate()"
+          (click)="openVisibility()"
+        >
+          {{ t(data.event.leaderboard_public ? 'phase6.hide' : 'phase6.publish') }}
+        </button>
+      </div>
+      @if (pending()) {
+        <p role="status" class="text-sm">{{ t('phase6.pending') }}</p>
+      }
+      <div class="flex flex-wrap gap-2">
+        @if (!preview()) {
+          <button
+            class="ds-button primary"
+            [disabled]="loading() || saving() || exporting()"
+            (click)="prepareExport()"
+          >
+            {{ t('phase6.prepareExport') }}
+          </button>
+        } @else {
+          <button
+            class="ds-button primary"
+            data-testid="download-standings"
+            [disabled]="loading() || exporting()"
+            (click)="download()"
+          >
+            {{ t(exporting() ? 'phase6.preparing' : 'phase6.download') }}
+          </button>
+          <button class="ds-button ghost" [disabled]="exporting()" (click)="refresh()">
+            {{ t('phase6.backToLive') }}
+          </button>
+        }
+      </div>
+      @if (preview()) {
+        <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t('phase6.previewHint') }}</p>
+      }
+      <p class="text-sm text-slate">
+        {{ t('phase6.generatedAt') }}
+        <time [attr.datetime]="data.generated_at" dir="ltr">{{
+          cairoTime(data.generated_at)
+        }}</time>
+        · Africa/Cairo
+      </p>
+      <p class="text-sm text-slate">{{ t('phase6.exportIncludes') }}</p>
+    </section>
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold">
+        {{ t(preview() ? 'phase6.exportPreview' : 'phase6.standings') }}
+      </h2>
+      <div
+        class="overflow-x-auto rounded-card bg-white shadow-card"
+        tabindex="0"
+        role="region"
+        [attr.aria-label]="t('phase6.standings')"
+      >
+        <table class="w-full text-start text-sm" data-testid="admin-standings-table">
+          <caption class="sr-only">
+            {{
+              t('phase6.tableCaption')
+            }}
+          </caption>
+          <thead class="bg-navy text-white">
+            <tr>
+              <th scope="col" class="whitespace-nowrap p-3 text-start">
+                {{ t('phase6.workbook.rank') }}
+              </th>
+              <th scope="col" class="min-w-36 p-3 text-start">{{ t('phase6.workbook.team') }}</th>
+              <th scope="col" class="p-3">{{ t('phase6.workbook.played') }}</th>
+              <th scope="col" class="p-3">{{ t('phase6.workbook.wins') }}</th>
+              <th scope="col" class="p-3">{{ t('phase6.workbook.draws') }}</th>
+              <th scope="col" class="p-3">{{ t('phase6.workbook.losses') }}</th>
+              <th scope="col" class="p-3">{{ t('phase6.workbook.forfeits') }}</th>
+              <th scope="col" class="whitespace-nowrap p-3">
+                {{ t('phase6.workbook.matchPoints') }}
+              </th>
+              <th scope="col" class="p-3">{{ t('phase6.workbook.adjustments') }}</th>
+              <th scope="col" class="p-3">{{ t('phase6.workbook.total') }}</th>
+              <th scope="col" class="p-3">{{ t('phase6.workbook.tied') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of data.standings; track row.team.id) {
+              <tr class="border-b border-line" [attr.data-team-code]="row.team.code">
+                <td class="p-3 font-bold">{{ row.rank }}</td>
+                <th scope="row" class="p-3 text-start font-semibold">
+                  {{ name(row.team, direction.language())
+                  }}<span class="block text-xs font-normal text-slate">{{ row.team.code }}</span>
+                </th>
+                <td class="p-3 text-center">{{ row.played }}</td>
+                <td class="p-3 text-center">{{ row.wins }}</td>
+                <td class="p-3 text-center">{{ row.draws }}</td>
+                <td class="p-3 text-center">{{ row.losses }}</td>
+                <td class="p-3 text-center">{{ row.forfeits }}</td>
+                <td class="p-3 text-center">{{ row.match_points }}</td>
+                <td class="p-3 text-center">{{ row.adjustment_points }}</td>
+                <td class="p-3 text-center font-extrabold" data-testid="standing-total">
+                  {{ row.total }}
+                </td>
+                <td class="whitespace-nowrap p-3 text-center">
+                  {{
+                    t(
+                      row.is_tied
+                        ? 'phase6.unresolved'
+                        : row.final_tiebreak_pos !== null
+                          ? 'phase6.resolved'
+                          : 'phase6.noTie'
+                    )
+                  }}
+                  @if (row.final_tiebreak_pos !== null) {
+                    <span> · {{ row.final_tiebreak_pos }}</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="11" class="p-4">{{ t('phase6.noTeams') }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+    @if (!preview()) {
+      <section class="space-y-3">
+        <h2 class="text-xl font-bold">{{ t('phase6.ties') }}</h2>
+        <p class="text-sm text-slate">{{ t('phase6.tiesHint') }}</p>
+        @for (group of ties(); track group.total) {
+          <article class="space-y-3 rounded-card bg-white p-4 shadow-card">
+            <h3 class="font-bold">{{ t('phase6.tiedTotal', { n: group.total }) }}</h3>
+            <ul class="space-y-1">
+              @for (row of group.rows; track row.team.id) {
+                <li>{{ name(row.team, direction.language()) }} · {{ row.team.code }}</li>
+              }
+            </ul>
+            <button
+              class="ds-button secondary"
+              [disabled]="!canMutate()"
+              (click)="openTie(group.total)"
+            >
+              {{ t('phase6.resolveTie') }}
+            </button>
+          </article>
+        } @empty {
+          <p class="rounded-card bg-white p-4">{{ t('phase6.noTies') }}</p>
+        }
+      </section>
+    }
+    @if (action(); as item) {
+      <ds-bottom-sheet
+        [title]="t(item.kind === 'tie' ? 'phase6.resolveTie' : 'phase6.visibility')"
+        (close)="!saving() && action.set(null)"
+      >
+        <div class="space-y-4">
+          @if (item.kind === 'visibility') {
+            <p>{{ t(item.value ? 'phase6.publishConfirm' : 'phase6.hideConfirm') }}</p>
+          } @else {
+            <p>{{ t('phase6.orderHint') }}</p>
+            <ol class="space-y-2" [attr.aria-label]="t('phase6.tieOrder')">
+              @for (id of item.ids; track id; let index = $index) {
+                <li
+                  class="flex flex-wrap items-center gap-2 rounded-xl border border-line p-3"
+                  [draggable]="!saving()"
+                  (dragstart)="dragStart($event, id)"
+                  (dragover)="dragOver($event)"
+                  (drop)="drop($event, id)"
+                >
+                  <span class="min-w-0 flex-1 font-semibold"
+                    >{{ index + 1 }}. {{ teamName(id) }}</span
+                  >
+                  <button
+                    class="ds-button ghost"
+                    [disabled]="saving() || index === 0"
+                    [attr.aria-label]="t('phase6.moveUpTeam', { name: teamName(id) })"
+                    (click)="move(id, -1)"
+                  >
+                    ↑ <span class="sr-only">{{ t('phase6.moveUp') }}</span>
+                  </button>
+                  <button
+                    class="ds-button ghost"
+                    [disabled]="saving() || index === item.ids.length - 1"
+                    [attr.aria-label]="t('phase6.moveDownTeam', { name: teamName(id) })"
+                    (click)="move(id, 1)"
+                  >
+                    ↓ <span class="sr-only">{{ t('phase6.moveDown') }}</span>
+                  </button>
+                </li>
+              }
+            </ol>
+          }
+          <button
+            class="ds-button primary"
+            data-testid="confirm-standings-action"
+            [disabled]="!canMutate()"
+            (click)="confirmAction()"
+          >
+            {{ t(saving() ? 'phase6.saving' : 'phase6.confirm') }}
+          </button>
+          <button class="ds-button ghost" [disabled]="saving()" (click)="action.set(null)">
+            {{ t('phase6.cancel') }}
+          </button>
+        </div>
+      </ds-bottom-sheet>
+    }
+  }
+</div>
