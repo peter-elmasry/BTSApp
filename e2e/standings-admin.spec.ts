@@ -14,9 +14,9 @@ test('Arabic setup renders choose, delete and remove labels instead of translati
   await mockStandingsEvent(page, { role: 'EVENT_ADMIN', lang: 'ar' });
   await page.goto(`/manage/${eventId}/setup`);
   await page.getByRole('button', { name: t.manage.tab.rounds, exact: true }).click();
-  expect(
-    await page.getByRole('option', { name: t.common.choose, exact: true }).count(),
-  ).toBeGreaterThan(0);
+  await expect(page.getByRole('option', { name: t.common.choose, exact: true }).first()).toHaveText(
+    t.common.choose,
+  );
   await page.getByRole('button', { name: t.manage.tab.staff, exact: true }).click();
   await expect(
     page.getByRole('button', { name: t.common.remove, exact: true }).first(),
