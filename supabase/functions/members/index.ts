@@ -29,11 +29,41 @@ Deno.serve(async (request) => {
     });
     const { data: userData, error: userError } = await caller.auth.getUser();
     if (userError || !userData.user) return fail('UNAUTHORIZED', 401);
-    const { data: isOwner, error: ownerError } = await caller.rpc('is_owner');
-    if (ownerError || !isOwner) return fail('FORBIDDEN', 403);
-
     const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
     const body = await request.json();
+
+    // Any active member may replace their own (temporary) password; everything else is owner-only.
+    if (body?.action === 'change_own_password') {
+      if (typeof body.password !== 'string' || body.password.length < 12)
+        return fail('INVALID_PASSWORD', 400);
+      const { data: self } = await admin
+        .from('members')
+        .select('id,username,is_active')
+        .eq('auth_user_id', userData.user.id)
+        .maybeSingle();
+      if (!self?.is_active) return fail('FORBIDDEN', 403);
+      if (body.password.toLowerCase().includes(String(self.username).toLowerCase()))
+        return fail('PASSWORD_TOO_WEAK', 400);
+      const { error: passError } = await admin.auth.admin.updateUserById(userData.user.id, {
+        password: body.password,
+      });
+      if (passError) return fail('PASSWORD_UPDATE_FAILED', 400);
+      await admin
+        .from('members')
+        .update({ must_change_password: false, updated_at: new Date().toISOString() })
+        .eq('id', self.id);
+      await admin.from('audit_log').insert({
+        actor_id: self.id,
+        action: 'MEMBER_PASSWORD_CHANGED',
+        entity: 'member',
+        entity_id: self.id,
+        after: { action: 'change_own_password' },
+      });
+      return json({ member_id: self.id, ok: true });
+    }
+
+    const { data: isOwner, error: ownerError } = await caller.rpc('is_owner');
+    if (ownerError || !isOwner) return fail('FORBIDDEN', 403);
     const action = body?.action;
     const memberId = typeof body?.member_id === 'string' ? body.member_id : '';
     const actor = userData.user.id;
@@ -85,7 +115,11 @@ Deno.serve(async (request) => {
         }
         const { error: linkError } = await admin
           .from('members')
-          .update({ auth_user_id: created.user.id, updated_at: new Date().toISOString() })
+          .update({
+            auth_user_id: created.user.id,
+            must_change_password: true,
+            updated_at: new Date().toISOString(),
+          })
           .eq('id', subjectId);
         if (linkError) {
           await admin.auth.admin.deleteUser(created.user.id);
@@ -150,6 +184,11 @@ Deno.serve(async (request) => {
             return fail('AUTH_USER_LINK_FAILED', 500);
           }
         }
+        // An owner-set password is temporary: the member replaces it at next login.
+        await admin
+          .from('members')
+          .update({ must_change_password: true, updated_at: new Date().toISOString() })
+          .eq('id', memberId);
         auditAction = 'MEMBER_PASSWORD_SET';
       } else if (action === 'deactivate' || action === 'reactivate') {
         const active = action === 'reactivate';

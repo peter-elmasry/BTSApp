@@ -11,6 +11,7 @@ export interface StaffProfile {
   full_name_en: string;
   full_name_ar: string | null;
   system_role: 'OWNER' | 'MEMBER';
+  must_change_password?: boolean;
   roles: { event_id: string; role: 'EVENT_ADMIN' | 'REFEREE' | 'GUIDE'; team_id: string | null }[];
   assigned_games: { event_id: string; game_id: string }[];
 }
@@ -72,6 +73,20 @@ export class AuthStore {
       refresh_token: data.refresh_token,
     });
     if (sessionError) return 'INVALID_CREDENTIALS';
+    await this.loadProfile();
+    return null;
+  }
+
+  /** Replaces the signed-in member's password; returns an error code or null. */
+  async changeOwnPassword(password: string): Promise<string | null> {
+    const supabase = await this.client();
+    const { data, error } = await supabase.functions.invoke('members', {
+      body: { action: 'change_own_password', password },
+    });
+    if (error || !data?.ok)
+      return (await this.errorCode(error, data)) === 'INVALID_CREDENTIALS'
+        ? 'PASSWORD_UPDATE_FAILED'
+        : await this.errorCode(error, data);
     await this.loadProfile();
     return null;
   }
