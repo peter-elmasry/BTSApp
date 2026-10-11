@@ -58,6 +58,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login-page').then((m) => m.LoginPage),
   },
   {
+    path: 'account/password',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/account/change-password-page').then((m) => m.ChangePasswordPage),
+  },
+  {
     path: 'owner',
     canActivate: [authGuard, ownerGuard],
     children: [

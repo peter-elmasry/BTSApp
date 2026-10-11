@@ -29,6 +29,13 @@
         }
         @if (auth.profile(); as profile) {
           <span class="hidden max-w-28 truncate text-xs sm:block">{{ profile.full_name_en }}</span>
+          <a
+            routerLink="/account/password"
+            class="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-navy px-2 text-sm font-bold text-navy"
+            [attr.aria-label]="t('account.changePassword')"
+            [title]="t('account.changePassword')"
+            >🔑</a
+          >
           <button
             class="min-h-11 rounded-xl border border-navy bg-navy px-3 text-sm font-bold text-white"
             (click)="logout()"

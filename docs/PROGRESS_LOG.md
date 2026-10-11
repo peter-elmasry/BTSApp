@@ -2,6 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-11 — Arabic setup template v3 and temporary passwords — HANDOFF
+
+- **Requested by:** Peter: Arabic-first RTL, colourful setup workbook exported with live data; up to 20 pre-coloured teams the admin removes; a round × game schedule grid where an empty pair is a game break; one name per event/team/game/location/round/member; DST members created with username-based temporary passwords and a later password change.
+- **Template v3 (`import-workbook.ts`, `template-catalog.ts`):** Sheets ابدأ هنا (live readiness tiles), الحدث (opening game/duration moved here), الفرق (20 defaults, palette/avatar dropdowns, live match/rest counts), الألعاب, الجدول (grid → rounds + matches; red conflicts, grey breaks, team-colour cells), الطاقم (member by name, one referee row per game), الأعضاء/الألوان والشعارات (read-only), `_meta` (very hidden, `template_version` 3). Download now exports the current setup (`get_event_setup`, incl. `eligible_members`) and re-imports by code. Parser emits the unchanged server payload (single name → both `name_en`/`name_ar`; referee rows grouped to comma `game_codes`), so `import_event_setup` is unchanged. Old templates are rejected with `OLD_TEMPLATE`.
+- **Passwords:** Migration `0010` adds `members.must_change_password`, exposes it in `get_my_profile` and flags non-owner logins created from 2026-10-11 19:30 UTC. `members` Edge Function: owner create/set_password set the flag; new `change_own_password` for any active member (≥12 chars, must not contain the username) clears it. `authGuard` sends flagged members to `/account/password`; header has a 🔑 change-password link.
+- **Members created (hosted, via the owner page):** 109 DST members from Peter's list (excluding Peter and Gendy, who exist) with Arabic names, no phones, temporary passwords following the agreed username-based rule (value not recorded here). `نسرين نبيل` was not created pending confirmation that she is the existing `nesro` account.
+- **Checks:** 116 unit tests (22 files), i18n audit (567 keys), changed-file Prettier and production build (369.35 kB initial) pass. Import EN/AR browser journeys pass locally with axe; the offline service-worker shell journey fails locally on installability with the container's older Chromium (unrelated files untouched) — confirm in CI. pgTAP suite `0008` written, not run locally (no Docker).
+- **Next:** Publish the branch, confirm CI (DB + browser), merge so migration `0010` and the Edge Function deploy; until then the new accounts are not forced to change their temporary password.
+
 ## 2026-10-11 — Phase 6 cloud acceptance — DONE
 
 - **Requested by:** Gendy; finish Phase 6, fix Arabic translation keys, apply a contrasting gold header, and publish its checked PR.

@@ -133,9 +133,9 @@
     "intro": "Upload an Excel workbook, review its rows, then confirm the import.",
     "backToSetup": "Back to event setup",
     "upload": "Upload workbook",
-    "downloadTemplate": "Download template",
+    "downloadTemplate": "Download current setup (Excel)",
     "downloading": "Preparing template…",
-    "templateHint": "The template contains sample teams and a match. Edit or remove the samples before uploading. Staff must already exist in the member directory.",
+    "templateHint": "The template is in Arabic and holds the event’s current setup: teams, games, the match schedule and staff. Edit it and upload it again. Staff must already exist in the member directory with a login.",
     "file": "Excel workbook",
     "fileHint": "Choose a non-empty .xlsx file, up to 5 MiB.",
     "mode": "Import mode",
@@ -210,7 +210,20 @@
       "GUIDE_HAS_GAMES": "Leave game_codes empty for a guide.",
       "REFEREE_HAS_TEAM": "Leave team_code empty for a referee.",
       "SHEET_TOO_LARGE": "This worksheet has too many rows or columns. Remove unused rows and extra columns.",
-      "OTHER": "This row is not valid. Check the template instructions and referenced values."
+      "OTHER": "This row is not valid. Check the template instructions and referenced values.",
+      "OLD_TEMPLATE": "This is an old template. Download the new template and move your data into it.",
+      "HALF_MATCH": "This match has only one team. Pick both teams, or leave both cells empty for a break.",
+      "DUPLICATE_COLOR": "Another team already uses this colour. Pick a different colour for each team."
+    },
+    "sheetName": {
+      "Event": "Event",
+      "Teams": "Teams",
+      "Games": "Games",
+      "Rounds": "Schedule",
+      "Matches": "Schedule",
+      "Schedule": "Schedule",
+      "Staff": "Staff",
+      "Workbook": "Workbook"
     }
   },
   "app": {
@@ -572,5 +585,13 @@
       "games": "Games",
       "team": "Team"
     }
-  }
+  },
+  "account.changePassword": "Change password",
+  "account.hint": "Choose a new password of at least 12 characters.",
+  "account.forcedHint": "You signed in with a temporary password. Choose your own new password (at least 12 characters, not containing your username) to continue.",
+  "account.newPassword": "New password",
+  "account.confirmPassword": "Confirm password",
+  "account.save": "Save password",
+  "errors.PASSWORD_MISMATCH": "The passwords do not match.",
+  "errors.PASSWORD_TOO_WEAK": "The password cannot contain your username."
 }

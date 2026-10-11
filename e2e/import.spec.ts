@@ -98,7 +98,7 @@ for (const lang of ['en', 'ar']) {
     const review = page.getByRole('button', { name: labels.reviewImport, exact: true });
     await expect(review).toBeEnabled();
     expect(calls.filter((call) => !call.p_dry_run)).toHaveLength(0);
-    expect(calls[0].p_payload.teams).toHaveLength(2);
+    expect(calls[0].p_payload.teams).toHaveLength(20);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );

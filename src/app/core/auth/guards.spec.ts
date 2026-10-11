@@ -5,9 +5,11 @@ import { AuthStore } from './auth.store';
 import { authGuard, guestOnlyGuard, ownerGuard, scoringGuard } from './guards';
 
 describe('staff route guards', () => {
-  const profile = signal<{ system_role: 'OWNER' | 'MEMBER'; roles?: { role: string }[] } | null>(
-    null,
-  );
+  const profile = signal<{
+    system_role: 'OWNER' | 'MEMBER';
+    roles?: { role: string }[];
+    must_change_password?: boolean;
+  } | null>(null);
   const session = signal<unknown>(null);
   const auth = { profile, session, initialize: vi.fn(async () => {}) };
 
@@ -34,6 +36,20 @@ describe('staff route guards', () => {
     session.set({ access_token: 'staff-token' });
     expect(
       await TestBed.runInInjectionContext(() => authGuard({} as never, { url: '/ref' } as never)),
+    ).toBe(true);
+  });
+
+  it('sends members with a temporary password to the change-password page first', async () => {
+    session.set({ access_token: 'temp-token' });
+    profile.set({ system_role: 'MEMBER', must_change_password: true });
+    const result = await TestBed.runInInjectionContext(() =>
+      authGuard({} as never, { url: '/ref' } as never),
+    );
+    expect(TestBed.inject(Router).serializeUrl(result as UrlTree)).toBe('/account/password');
+    expect(
+      await TestBed.runInInjectionContext(() =>
+        authGuard({} as never, { url: '/account/password' } as never),
+      ),
     ).toBe(true);
   });
 

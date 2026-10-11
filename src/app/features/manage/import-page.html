@@ -134,7 +134,7 @@
               <tbody>
                 @for (issue of issues(); track $index) {
                   <tr class="border-t border-mist text-error">
-                    <td class="p-2">{{ issue.sheet }}</td>
+                    <td class="p-2">{{ t('import.sheetName.' + issue.sheet) }}</td>
                     <td class="p-2">{{ issue.row || '—' }}</td>
                     <td class="break-words p-2" dir="ltr">{{ issue.column || '—' }}</td>
                     <td class="p-2">{{ t(issueKey(issue.code)) }}</td>
