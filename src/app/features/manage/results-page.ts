@@ -25,44 +25,13 @@ import { DsOutcome } from '../../shared/ui/outcome';
 import { DsPhoneLink } from '../../shared/ui/phone-link';
 import { DsStatusPill, type DsStatus } from '../../shared/ui/status-pill';
 import { DsTabs, type DsTabItem } from '../../shared/ui/tabs';
-import { isLiveAdmin, liveErrorKey } from '../live/live-helpers';
+import { isLiveAdmin, liveErrorKey, liveMatchStatus, sortForChase } from '../live/live-helpers';
 import { LiveReader } from '../live/live-reader';
 import { ResultEntry } from '../live/result-entry';
 import { localizedLocation, localizedName } from '../public/public-helpers';
 import { TeamBreakdownSheet } from '../standings/team-breakdown-sheet';
 
-/** Status of a match for staff tables: late = no result after its round ended (D041). */
-export function liveMatchStatus(
-  match: Pick<LiveMatch, 'status'>,
-  roundStatus: 'DRAFT' | 'ACTIVE' | 'CLOSED' | undefined,
-): DsStatus {
-  if (match.status === 'COMPLETED') return 'done';
-  if (match.status === 'VOID') return 'void';
-  if (roundStatus === 'CLOSED') return 'late';
-  if (roundStatus === 'ACTIVE') return 'pending';
-  return 'scheduled';
-}
-
-const ORDER: Record<DsStatus, number> = {
-  late: 0,
-  pending: 1,
-  live: 2,
-  scheduled: 3,
-  queued: 4,
-  done: 5,
-  void: 6,
-};
-
-/** Pending and late first, then done, then void; stable by game code. */
-export function sortForChase<T extends Pick<LiveMatch, 'status'>>(
-  matches: readonly T[],
-  status: (match: T) => DsStatus,
-  code: (match: T) => string,
-): T[] {
-  return [...matches].sort(
-    (a, b) => ORDER[status(a)] - ORDER[status(b)] || code(a).localeCompare(code(b)),
-  );
-}
+export { liveMatchStatus, sortForChase };
 
 type Action = { kind: 'entry' | 'reset' | 'void'; match: LiveMatch };
 

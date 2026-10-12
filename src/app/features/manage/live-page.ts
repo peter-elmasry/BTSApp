@@ -33,7 +33,7 @@ import { LiveReader } from '../live/live-reader';
 import { ResultEntry } from '../live/result-entry';
 import { localizedLocation, localizedName } from '../public/public-helpers';
 import { nextRoundAfter, plannedEnd, validOffset } from './control-model';
-import { liveMatchStatus } from './results-page';
+import { liveMatchStatus } from '../live/live-helpers';
 
 type Sheet =
   | { kind: 'start_round'; roundId: string }

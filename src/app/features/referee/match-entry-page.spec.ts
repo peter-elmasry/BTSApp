@@ -1,36 +1,38 @@
 import { computed, signal } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { AuthStore, type StaffProfile } from '../../core/auth/auth.store';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { LiveApi } from '../../core/live/live-api';
-import type { LiveSnapshot } from '../../core/live/live-types';
+import type { LiveMatch, LiveSnapshot } from '../../core/live/live-types';
 import type { QueuedOperation } from '../../core/offline/offline-db';
 import { OpQueueService } from '../../core/offline/op-queue.service';
 import { LiveReader } from '../live/live-reader';
+import { ResultEntry } from '../live/result-entry';
 import { MatchEntryPage } from './match-entry-page';
 
-describe('match result confirmation safety', () => {
-  const snapshot = {
-    event: { id: 'event' },
-    teams: [],
-    games: [],
-    adjustments: [],
-    rounds: [{ id: 'round', type: 'REGULAR', status: 'ACTIVE' }],
-    matches: [
-      {
-        id: 'match',
-        round_id: 'round',
-        game_id: 'game',
-        status: 'SCHEDULED',
-        participants: [
-          { team_id: 'a', outcome: 'PENDING', side: 'A' },
-          { team_id: 'b', outcome: 'PENDING', side: 'B' },
-        ],
-      },
+const match = (id: string) =>
+  ({
+    id,
+    round_id: 'round',
+    game_id: 'game',
+    status: 'SCHEDULED',
+    participants: [
+      { team_id: 'a', outcome: 'PENDING', side: 'A' },
+      { team_id: 'b', outcome: 'PENDING', side: 'B' },
     ],
-  } as unknown as LiveSnapshot;
+  }) as unknown as LiveMatch;
+const snapshot = {
+  event: { id: 'event' },
+  teams: [],
+  games: [],
+  adjustments: [],
+  rounds: [{ id: 'round', type: 'REGULAR', status: 'ACTIVE' }],
+  matches: [match('match'), match('other-match')],
+} as unknown as LiveSnapshot;
+
+describe('match result confirmation safety', () => {
   const profile = signal<StaffProfile | null>(null);
   const operations = signal<QueuedOperation[]>([]);
   const queueReady = signal(true);
@@ -40,8 +42,11 @@ describe('match result confirmation safety', () => {
     source: signal<unknown>(null),
     refresh: vi.fn(),
   };
-  let page: MatchEntryPage;
+  const navigate = vi.fn();
   let params: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
+  let fixture: ComponentFixture<ResultEntry>;
+  let entry: ResultEntry;
+  let saved: string[];
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -53,7 +58,6 @@ describe('match result confirmation safety', () => {
     } as unknown as StaffProfile);
     operations.set([]);
     queueReady.set(true);
-    reader.data.set(snapshot);
     api.mutate.mockResolvedValue({ status: 'sent', opId: 'operation' });
     params = new BehaviorSubject(convertToParamMap({ id: 'match' }));
     TestBed.configureTestingModule({
@@ -65,6 +69,7 @@ describe('match result confirmation safety', () => {
         { provide: DirectionService, useValue: { language: signal('en') } },
         { provide: LiveApi, useValue: api },
         { provide: LiveReader, useValue: reader },
+        { provide: Router, useValue: { navigate } },
         {
           provide: OpQueueService,
           useValue: { operations, ready: queueReady, pending: computed(() => operations().length) },
@@ -75,16 +80,22 @@ describe('match result confirmation safety', () => {
         },
       ],
     });
-    page = TestBed.runInInjectionContext(() => new MatchEntryPage());
-    TestBed.tick();
+    TestBed.overrideComponent(ResultEntry, { set: { template: '', imports: [] } });
+    fixture = TestBed.createComponent(ResultEntry);
+    fixture.componentRef.setInput('snapshot', snapshot);
+    fixture.componentRef.setInput('match', snapshot.matches[0]);
+    entry = fixture.componentInstance;
+    saved = [];
+    entry.saved.subscribe((status) => saved.push(status));
+    fixture.detectChanges();
   });
 
   it('does not send a selected result until its summary is explicitly confirmed', async () => {
-    page.select('aWins');
-    await page.submit();
+    entry.select('aWins');
+    await entry.submit();
     expect(api.mutate).not.toHaveBeenCalled();
-    page.review();
-    await page.submit();
+    entry.review();
+    await entry.submit();
     expect(api.mutate).toHaveBeenCalledExactlyOnceWith('submit_match_result', {
       p_match: 'match',
       p_outcomes: [
@@ -92,37 +103,37 @@ describe('match result confirmation safety', () => {
         { team_id: 'b', outcome: 'LOSS' },
       ],
     });
-    expect(reader.refresh).toHaveBeenCalledOnce();
+    expect(saved).toEqual(['sent']);
   });
 
-  it('rejects a stale confirmation after the draft result changes', async () => {
-    page.select('aWins');
-    page.review();
-    page.select('draw');
-    await page.submit();
+  it('rejects a stale review after the draft result changes', async () => {
+    entry.select('aWins');
+    entry.review();
+    entry.select('draw');
+    await entry.submit();
     expect(api.mutate).not.toHaveBeenCalled();
   });
 
   it('blocks review and submission while persisted operations are still restoring', async () => {
-    page.select('aWins');
+    entry.select('aWins');
     queueReady.set(false);
-    page.review();
-    expect(page.confirmation()).toBeNull();
+    entry.review();
+    expect(entry.reviewing()).toBe(false);
     queueReady.set(true);
-    page.review();
-    expect(page.confirmation()).not.toBeNull();
+    entry.review();
+    expect(entry.reviewing()).toBe(true);
     queueReady.set(false);
-    await page.submit();
+    await entry.submit();
     expect(api.mutate).not.toHaveBeenCalled();
   });
 
-  it('clears confirmation when navigating to a different match in the reused component', async () => {
-    page.select('aWins');
-    page.review();
-    params.next(convertToParamMap({ id: 'other-match' }));
-    TestBed.tick();
-    expect(page.confirmation()).toBeNull();
-    await page.submit();
+  it('clears the review when the component is reused for a different match', async () => {
+    entry.select('aWins');
+    entry.review();
+    fixture.componentRef.setInput('match', snapshot.matches[1]);
+    fixture.detectChanges();
+    expect(entry.reviewing()).toBe(false);
+    await entry.submit();
     expect(api.mutate).not.toHaveBeenCalled();
   });
 
@@ -138,21 +149,32 @@ describe('match result confirmation safety', () => {
         nextAttempt: 0,
       },
     ]);
-    page.select('aWins');
-    page.review();
-    expect(page.queued()).toBe(true);
-    expect(page.confirmation()).toBeNull();
-    await page.submit();
+    entry.select('aWins');
+    entry.review();
+    expect(entry.queued()).toBe(true);
+    expect(entry.reviewing()).toBe(false);
+    await entry.submit();
     expect(api.mutate).not.toHaveBeenCalled();
   });
 
-  it('clears confirmation and blocks submission when permission changes', async () => {
-    page.select('aWins');
-    page.review();
+  it('clears the review and blocks submission when permission changes', async () => {
+    entry.select('aWins');
+    entry.review();
     profile.set(null);
-    TestBed.tick();
-    expect(page.confirmation()).toBeNull();
-    await page.submit();
+    fixture.detectChanges();
+    expect(entry.reviewing()).toBe(false);
+    await entry.submit();
     expect(api.mutate).not.toHaveBeenCalled();
+  });
+
+  it('returns to the station after a confirmed result and stays while it is queued', () => {
+    const page = TestBed.runInInjectionContext(() => new MatchEntryPage());
+    TestBed.tick();
+    page.saved('queued');
+    expect(navigate).not.toHaveBeenCalled();
+    page.saved('sent');
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(['/ref'], {
+      queryParams: { saved: 'match' },
+    });
   });
 });

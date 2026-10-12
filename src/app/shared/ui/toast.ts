@@ -2,10 +2,13 @@ import { ChangeDetectionStrategy, Component, inject, Injectable, signal } from '
 import { TranslocoPipe } from '@jsverse/transloco';
 @Injectable({ providedIn: 'root' })
 export class ToastService {
+  /** Translation key shown in the toast. */
   readonly message = signal('');
+  readonly params = signal<Record<string, unknown> | undefined>(undefined);
   private timer?: ReturnType<typeof setTimeout>;
-  show(message: string) {
+  show(message: string, params?: Record<string, unknown>) {
     clearTimeout(this.timer);
+    this.params.set(params);
     this.message.set(message);
     this.timer = setTimeout(() => this.message.set(''), 5000);
   }

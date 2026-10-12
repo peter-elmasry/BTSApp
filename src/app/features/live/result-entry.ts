@@ -114,12 +114,16 @@ export class ResultEntry {
       ),
   );
 
+  private version = 0;
+
   constructor() {
     let initialized = '';
     effect(() => {
       const match = this.match();
       if (initialized === match.id) return;
       initialized = match.id;
+      this.version++;
+      this.saving.set(false);
       this.reviewing.set(false);
       this.notice.set('');
       this.opening.set(
@@ -131,6 +135,10 @@ export class ResultEntry {
         ),
       );
       this.choice.set(currentChoice(match.participants.map((participant) => participant.outcome)));
+    });
+    // A permission change (sign-out, role removed) cancels a pending review.
+    effect(() => {
+      if (!this.canEdit()) this.reviewing.set(false);
     });
   }
 
@@ -156,20 +164,30 @@ export class ResultEntry {
       this.reviewing.set(true);
   }
   async submit() {
-    if (!this.reviewing() || !this.canEdit() || !this.valid() || this.saving()) return;
+    if (
+      !this.reviewing() ||
+      !this.queue.ready() ||
+      !this.canEdit() ||
+      !this.valid() ||
+      this.saving() ||
+      this.queued()
+    )
+      return;
     this.saving.set(true);
+    const version = this.version;
     try {
       const receipt = await this.api.mutate('submit_match_result', {
         p_match: this.match().id,
         p_outcomes: this.outcomes(),
       });
+      if (version !== this.version) return;
       this.reviewing.set(false);
       this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'live.resultSaved');
       this.saved.emit(receipt.status);
     } catch (error) {
-      this.notice.set(liveErrorKey(error));
+      if (version === this.version) this.notice.set(liveErrorKey(error));
     } finally {
-      this.saving.set(false);
+      if (version === this.version) this.saving.set(false);
     }
   }
 }

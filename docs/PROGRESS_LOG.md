@@ -2,6 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — UX enhancement U5 referee "My station" — DONE
+
+- **Branch:** `codex/ux-u5-referee` (stacked on P1).
+- **Station (`/ref`):** header with the round timer ring; one hero card per match of the running round (game, 📍 location, teams, status pill incl. Queued, the teams' guides with one-tap call, Enter/Correct result); a searchable "Late results" table for ended rounds without a result (D041); the round × game schedule; event admins' phones (`get_event_contacts`). Pure helpers in `station-model.ts` (`stationGroups`, `nextActionable`, `guidesFor`).
+- **Match entry (`/ref/match/:id`):** uses the shared `app-result-entry` (inline review); bonuses/penalties behind a "Match bonuses & penalties" button; a confirmed result returns to `/ref` with a toast "Result saved · Next: <game>" (or "All your results are in"); a queued result stays on the page until it syncs.
+- **Hardening:** `ResultEntry.submit` now also refuses while the queue restores or a result is queued, ignores a reply for a match the component no longer shows, and cancels the review when permission is lost (old page-level safety tests ported to the component).
+- **Shared:** `liveMatchStatus`/`sortForChase` moved to `live-helpers.ts`; `ToastService.show(key, params)` and the toast now translate their key (previously a raw key was shown).
+- **Checks:** i18n, 202 unit tests, build (initial 403.39 kB), 80/80 browser tests incl. new station test (guides/admin phones, late table, axe, 360 px) in EN/AR.
+- **Next:** U6 player/guide screens.
+
 ## 2026-10-13 — UX enhancement P1 visitor scope, phones, list search, logout clearing — DONE
 
 - **Branch:** `codex/ux-p1-privacy` (stacked on U4).

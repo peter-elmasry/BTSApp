@@ -840,5 +840,15 @@
     "endedAndStarted": "Round ended and the next one started.",
     "startFailed": "The round ended but the next one did not start.",
     "retryStart": "Retry start"
+  },
+  "station": {
+    "now": "At your station now",
+    "late": "Late results",
+    "lateHint": "These rounds have ended without a result. Enter it now; nothing is cancelled automatically.",
+    "guides": "Team guides",
+    "admins": "Event admins",
+    "noActive": "No round is running. Your next matches are in the schedule below.",
+    "savedNext": "Result saved · Next: {{game}}",
+    "savedAll": "Result saved · All your results are in"
   }
 }
