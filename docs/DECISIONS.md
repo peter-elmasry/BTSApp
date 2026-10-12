@@ -36,7 +36,7 @@ Reservations expire after 60 seconds; an expired or failed completion never
 releases credentials. Transient saturation/storage failures return `AUTH_UNAVAILABLE`;
 persisted lockouts return `LOCKED_OUT`. Successful attempts do not reset failures
 inside the window because the requirement counts failures, not consecutive failures.
-Existing applicable locks are backfilled from history during migration `0010`.
+Existing applicable locks are backfilled from history during migration `0013`.
 No password or token is stored in admission tables or history.
 
 ## D030 — Open staff screens belong to one permission context

@@ -2,6 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Repair PR #13 migration numbering — HANDOFF
+
+- **Requested by:** Gendy; database check is still failing.
+- **Preflight:** Clean `codex/phase-7-readiness` at `96f702f`, matching PR #13 head. Latest run `38225536749` confirms the same duplicate `0010` migration-version failure before database tests.
+- **Changed:** Renamed the new login-lockout migration to `0013_login_lockout.sql` with SQL contents unchanged; updated current decision/audit references. Existing password-change migration `0010` and member-audit migration `0014` retain their versions.
+- **Checks:** All 14 migration versions are unique; renamed SQL matches the original committed file exactly. Changed-document Prettier and whitespace checks pass. Database runtime retry reaches localhost but fails ECONNREFUSED at port 54322; no SQL runtime pass claimed.
+- **Handoff:** Fix committed locally, not pushed under repository rules. Publish this commit to PR #13 to trigger fresh cloud database CI; current remote checks still run the unfixed migration list.
+
 ## 2026-10-12 — PR #13 CI diagnosis — DONE
 
 - **Requested by:** Gendy; check what is wrong with the latest PR.
