@@ -2,6 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — PR #13 CI diagnosis — DONE
+
+- **Requested by:** Gendy; check what is wrong with the latest PR.
+- **Preflight/scope:** Clean `codex/phase-7-readiness` at `24fe6b3`, matching PR #13 head; read-only PR/CI investigation plus this session record. Initial general search omitted #13; explicit open-PR search found it.
+- **Confirmed blocker:** Run `38179650297`, database job `114589306710`, fails during `supabase start`: `schema_migrations_pkey` rejects duplicate version `0010`. The merged branch contains both `0010_login_lockout.sql` and `0010_password_change.sql`; Supabase identifies migrations by numeric prefix.
+- **Checks/outcomes:** Frontend and Vercel pass. Database migrations stop before reset/Auth/pgTAP checks, so this run provides no SQL acceptance. Registry rate-limit warnings recovered and are not the terminal error.
+- **Next:** Rename the new lockout migration to unused version `0013`, preserving existing password-change migration `0010` and member-audit migration `0014`; update references, then rerun cloud database CI. No product fix, push, deployment or CI rerun performed. Diagnosis record committed locally only.
+
 ## 2026-10-12 — Resolve members Edge merge conflict — HANDOFF
 
 - **Branch:** `codex/phase-7-readiness`.
