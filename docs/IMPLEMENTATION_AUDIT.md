@@ -219,6 +219,11 @@ parity remains green because the error is the chosen entity field.
 
 ### A07 — P2: owner remove-admin control is below the minimum touch size
 
+**Implementation update (2026-10-12):** The remove-admin control now has a
+non-shrinking 44×44 px minimum with centered content. The focused production
+browser journey passes target dimensions and no horizontal overflow in AR/EN
+at 360×740. Build and formatting pass; cloud acceptance pending publication.
+
 Requirement: §9.3, at least 44×44 px. The button at
 `owner-page.html:209` measures approximately **8.91×24 px** at 360×740. The
 browser probe fails both dimensions. Existing shell button checks do not cover

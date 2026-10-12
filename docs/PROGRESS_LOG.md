@@ -2,6 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Verify A06 merge and fix A07 touch target — STARTED
+
+- **Requested by:** Gendy; verify PR #16 merge/master and fix/publish A07. Standing authorization now covers pushing completed checked changes and opening PRs; merges require separate authorization.
+- **Preflight:** Clean prior branch with one local evidence commit; fetched origin, PR #16 already merged at `df28e10`. Created `codex/owner-admin-touch-target` from master and carried evidence as `3a9f2c9`.
+- **Master:** CI `38244996840` and Vercel production deployment pass at the merge commit.
+- **Scope:** Enlarge owner remove-admin control to at least 44×44 px, verify EN/AR mobile layout and removal behavior; update collaboration instructions and publish PR.
+- **Implemented/checked:** Remove-admin uses a centered non-shrinking 44×44 px minimum target; existing handler and accessible name retained. Focused production browser journey passes both languages at 360×740, asserting target dimensions and no horizontal overflow. Production build (373.91 kB initial), formatting and whitespace pass. Updated AGENTS.md with standing publication authorization. Cloud acceptance pending publication.
+
 ## 2026-10-12 — Publish A06 entity-language fix — DONE
 
 - **Requested by:** Gendy; publish the finished fix and verify cloud CI.
