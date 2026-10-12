@@ -18,4 +18,4 @@ These instructions apply to the primary agent and any delegated agents. The prim
 - After completing a task, run the relevant tests and lint/format checks, then commit the finished work.
 - Use Conventional Commit prefixes: `feat:`, `fix:`, `refactor:`, or `chore:`.
 - Keep one logical change per commit.
-- Never push or amend existing commits unless the user asks. If the user asks to publish a branch, inspect the diff and branch state first, then push that branch without rewriting existing history.
+- Gendy authorizes publishing completed logical changes/fixes: after relevant checks pass, inspect the diff and branch state, push the branch and open a PR, then verify cloud CI. Leave merging for explicit authorization. Never amend existing commits or rewrite published history unless asked.
