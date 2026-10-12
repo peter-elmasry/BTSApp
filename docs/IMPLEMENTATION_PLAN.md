@@ -361,9 +361,9 @@ All `SECURITY DEFINER` functions MUST `set search_path = public, pg_temp`.
 
 | Action | Who | Preconditions | Effect |
 |---|---|---|---|
-| `start_round` | Event Admin | status `DRAFT`; no other `ACTIVE` round in event; every non-void match in the round is valid (regular: 2 participants; opening: all teams) | `status=ACTIVE`, `started_at=now()`; event `DRAFT→LIVE` if needed |
+| `start_round` | Event Admin | status `DRAFT`; no other `ACTIVE` round in event; every non-void match in the round is valid (regular: 2 participants; opening: all teams) | `status=ACTIVE`, `started_at=now()`; event `DRAFT→LIVE` if needed. Optional backdated start "X minutes ago" (0–180), not before the previous round's `closed_at` (D042) |
 | `extend_round(minutes)` | Event Admin | status `ACTIVE`; 1 ≤ minutes ≤ 120 | `extension_min += minutes` |
-| `close_round` | Event Admin **only** | status `ACTIVE`; **no match in `SCHEDULED`** (all `COMPLETED` or `VOID`) | `status=CLOSED`, `closed_at=now()`. Otherwise raise `PENDING_MATCHES` with list of match ids |
+| `close_round` (UI: **End round**) | Event Admin **only** | status `ACTIVE` | `status=CLOSED`, `closed_at=now()`. Matches still `SCHEDULED` stay as **late results**; nothing is voided or forfeited automatically (D041). "End & start next round" = end, then start the next DRAFT round |
 | `reopen_round(reason)` | Event Admin | status `CLOSED`; no other `ACTIVE` round | `status=ACTIVE` (does not reset timer; audit with reason) |
 
 - **No auto-close, ever.** When `now() > started_at + (duration_min + extension_min) minutes` the round is in **OVERTIME** (derived, not stored). Overtime UI: red count-up timer for everyone; for Event Admins a sticky bar "Overtime +mm:ss · N matches pending · [Extend] [Close round]".
@@ -814,7 +814,7 @@ Each phase = one branch + PR. Do not start a phase before the previous one's cri
 
 **Phase 5 — Live operations**
 - Round lifecycle UI (start, extend, overtime, close with pending-matches blocker, reopen), referee board + result entry (regular & opening), adjustments with caps & giver, void/reset, realtime broadcast + polling fallback, offline op queue + idempotency.
-- ✅ Referee cannot submit for an unassigned game or a CLOSED round (server); same `op_id` sent twice applies once; airplane-mode submit is delivered after reconnect; round never auto-closes; close blocked while a match is pending.
+- ✅ Referee cannot submit for an unassigned game or a CLOSED round (server); same `op_id` sent twice applies once; airplane-mode submit is delivered after reconnect; round never auto-closes; ending a round with pending matches keeps them as late results and nothing is auto-voided (D041).
 
 **Phase 6 — Standings, visibility, export, display**
 - `get_standings`, leaderboard page with animations, visibility toggle, tie resolution, export XLSX, `/display`.
@@ -868,3 +868,11 @@ Product owner approved slices 1–7 on 2026-10-12. Decisions D035–D040 record 
 | 7 Docs | This section, D035–D040, README, progress log | — |
 
 General inter-round breaks with their own timer were proposed and **cancelled** by the product owner (2026-10-12).
+
+Amendments from the UX enhancement plan: D044 amends slice 1 (signed-in guides may move to their own guided teams) and D045 amends slice 4 (section bar and Import/Export placement).
+
+---
+
+## 21. UX enhancement (agreed 2026-10-13)
+
+The agreed UX plan and its implementation prompt live in `Claude outputs/BTSApp_UX_Assessment.md` and `Claude outputs/BTSApp_UX_Implementation_Prompt.md` (phases U0–U8; U7b auto-fill pairings not authorised). Decisions D041–D045 record the rule changes. Where earlier behaviour conflicts with that plan, the plan wins (§12 of the assessment).

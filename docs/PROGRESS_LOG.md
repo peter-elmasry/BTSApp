@@ -2,6 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — UX enhancement U0 decisions — DONE
+
+- **Requested by:** Peter; start the agreed UX plan v3.1 (`Claude outputs/`), Schedule Cards switch kept.
+- **Preflight:** `master` @ `a827d45` (PR #18 Phase 8 merged), clean tree; branch `codex/ux-u0-decisions`.
+- **Changed:** Updated both `Claude outputs/` files to v3.1; added D041–D045; plan §6.1 close/start rows, Phase 5 acceptance, §20 amendments note and new §21.
+- **Checks:** Documentation only; `format:check` on changed Markdown.
+- **Next:** U1 shared UI foundations on `codex/ux-u1-foundations`.
+
 ## 2026-10-12 — Phase 8: team lock, referees, breaks, lives scoring, schedule table — HANDOFF
 
 - **Requested by:** Peter; approved slices 1–7 of the Phase 8 proposal. General inter-round breaks were cancelled; "no match for a game in a round = break" instead. Answers: first pick allowed after the lock; teams at zero lives stay at zero and keep playing; life emoji is free text with ten suggestions.
