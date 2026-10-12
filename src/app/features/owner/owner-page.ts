@@ -1,6 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
+import { DsSearchSelect } from '../../shared/ui/search-select';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { supabase } from '../../core/supabase/client';
 import { DsButton } from '../../shared/ui/button';
@@ -40,6 +48,7 @@ type EventRow = {
     TranslocoDirective,
     DsButton,
     DsBottomSheet,
+    DsSearchSelect,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './owner-page.html',
@@ -56,6 +65,15 @@ export class OwnerPage implements OnInit {
     ? 'events'
     : 'members';
   readonly members = signal<Member[]>([]);
+  /** Active members for the searchable admin picker (lists over ten get a search box). */
+  readonly memberOptions = computed(() =>
+    this.members()
+      .filter((member) => member.is_active)
+      .map((member) => ({
+        value: member.id,
+        label: `${this.label(member, 'full_name') || member.username} (@${member.username})`,
+      })),
+  );
   readonly events = signal<EventRow[]>([]);
   readonly query = signal('');
   readonly notice = signal('');

@@ -7,14 +7,7 @@
   }
   @if (canAdd()) {
     <form [formGroup]="form" (ngSubmit)="add()" class="space-y-3">
-      <label class="block space-y-1"
-        ><span>{{ t('live.team') }}</span
-        ><select class="ds-control w-full" formControlName="team">
-          @for (team of teams(); track team.id) {
-            <option [value]="team.id">{{ name(team, direction.language()) }}</option>
-          }
-        </select></label
-      >
+      <ds-search-select formControlName="team" [label]="t('live.team')" [options]="teamOptions()" />
       <div class="block space-y-1">
         <span>{{ t('live.points') }}</span
         ><span class="flex gap-2"

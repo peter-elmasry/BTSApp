@@ -88,6 +88,7 @@
           }}</a>
         </div>
         <ds-data-table
+          [searchText]="searchText"
           [rows]="chase()"
           [columns]="columns(t)"
           [trackBy]="track"

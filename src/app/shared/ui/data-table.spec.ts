@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { disclosureClass, expandItemClass, priorityClass, sortRows } from './data-table';
+import {
+  disclosureClass,
+  expandItemClass,
+  matchesSearch,
+  priorityClass,
+  sortRows,
+} from './data-table';
 
 describe('data table column priority', () => {
   it('hides lower-priority columns until their breakpoint', () => {
@@ -41,5 +47,16 @@ describe('data table sorting', () => {
   });
   it('leaves order unchanged without a sort value', () => {
     expect(sortRows(rows, { key: 'x', header: 'X' }, 'asc')).toEqual(rows);
+  });
+});
+
+describe('list search', () => {
+  it('matches every word regardless of case', () => {
+    expect(matchesSearch('Falcons Relay Main court', 'relay falc')).toBe(true);
+    expect(matchesSearch('Falcons Relay', 'stars')).toBe(false);
+  });
+  it('ignores Arabic diacritics and Latin accents', () => {
+    expect(matchesSearch('الصُّقور', 'الصقور')).toBe(true);
+    expect(matchesSearch('Café', 'cafe')).toBe(true);
   });
 });

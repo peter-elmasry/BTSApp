@@ -12,6 +12,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { DirectionService } from '../../core/i18n/i18n.service';
+import { ViewerScope } from '../../core/player/viewer-scope';
 import type { PublicEvent } from '../../core/player/public-types';
 import type { StandingRow } from '../../core/standings/standings-types';
 import { DsAvatar } from '../../shared/ui/avatar';
@@ -33,6 +34,8 @@ export class StandingsList {
   readonly compact = input(false);
   readonly display = input(false);
   readonly direction = inject(DirectionService);
+  /** Visitors open only their own team and no game pages (D046). */
+  readonly scope = inject(ViewerScope);
   readonly name = localizedName;
   readonly currency = currencyLabel;
   readonly changes = signal(new Map<string, number>());

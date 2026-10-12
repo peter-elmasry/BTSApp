@@ -7,6 +7,7 @@ import {
   scoringGuard,
 } from './core/auth/guards';
 import { landingGuard } from './core/auth/landing';
+import { memberOnlyGuard, teamPageGuard } from './core/player/viewer-scope';
 import { leaderboardVisibleGuard, teamChosenGuard } from './core/player/player.guards';
 
 export const routes: Routes = [
@@ -32,10 +33,12 @@ export const routes: Routes = [
   },
   {
     path: 'teams/:code',
+    canActivate: [teamPageGuard],
     loadComponent: () => import('./features/public/team-detail-page').then((m) => m.TeamDetailPage),
   },
   {
     path: 'games/:code',
+    canActivate: [memberOnlyGuard],
     loadComponent: () => import('./features/public/game-detail-page').then((m) => m.GameDetailPage),
   },
   {

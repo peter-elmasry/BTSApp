@@ -130,6 +130,13 @@ export class ResultsPage {
     nonNullable: true,
     validators: [Validators.required, Validators.minLength(3), Validators.maxLength(500)],
   });
+  readonly searchText = (match: LiveMatch) =>
+    [
+      this.name(this.game(match.game_id)),
+      this.location(match.game_id),
+      ...match.participants.map((item) => this.name(this.team(item.team_id)) || item.team_code),
+      ...this.referees(match.game_id).map((item) => this.name(item)),
+    ].join(' ');
   readonly track = (match: LiveMatch) => match.id;
   readonly rowStatus = (match: LiveMatch): DsRowStatus => this.status(match);
 

@@ -155,6 +155,8 @@ export class LiveControlPage {
     const end = plannedEnd(round, this.clock.now(), validOffset(ago) ? ago : 0);
     return { end: this.time(end), overtime: end <= this.clock.now() };
   });
+  readonly searchText = (match: LiveMatch) =>
+    [this.gameName(match.game_id), this.location(match.game_id), this.matchup(match)].join(' ');
   readonly track = (match: LiveMatch) => match.id;
   readonly rowStatus = (match: LiveMatch): DsRowStatus => this.status(match);
 

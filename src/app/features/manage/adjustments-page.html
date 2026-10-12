@@ -23,19 +23,12 @@
         <option value="EVENT">{{ t('player.adjustmentScope.EVENT') }}</option>
       </select></label
     >
-    <label class="space-y-1"
-      ><span class="text-sm font-semibold">{{ t('adjustments.team') }}</span
-      ><select
-        class="ds-control w-full"
-        [value]="team()"
-        (change)="team.set($any($event.target).value)"
-      >
-        <option value="">{{ t('adjustments.allTeams') }}</option>
-        @for (item of reader.data()?.teams ?? []; track item.id) {
-          <option [value]="item.id">{{ name(item) }}</option>
-        }
-      </select></label
-    >
+    <ds-search-select
+      [label]="t('adjustments.team')"
+      [placeholder]="t('adjustments.allTeams')"
+      [options]="teamOptions()"
+      [(value)]="team"
+    />
     <label class="flex min-h-11 items-center gap-3 self-end rounded-xl bg-ivory px-3"
       ><input
         type="checkbox"
@@ -45,6 +38,7 @@
     >
   </section>
   <ds-data-table
+    [searchText]="searchText"
     [rows]="rows()"
     [columns]="columns(t)"
     [trackBy]="track"

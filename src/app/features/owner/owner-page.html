@@ -182,23 +182,14 @@
             >
           </div>
           <div class="flex flex-wrap items-end gap-2">
-            <label class="min-w-52 flex-1"
-              ><span class="mb-1 block text-sm font-semibold">{{ t('owner.assignAdmin') }}</span
-              ><select
-                class="ds-control w-full"
-                [value]="adminSelection()[event.id] || ''"
-                (change)="selectAdmin(event.id, $any($event.target).value)"
-              >
-                <option value="">{{ t('owner.chooseMember') }}</option>
-                @for (member of members(); track member.id) {
-                  @if (member.is_active) {
-                    <option [value]="member.id">
-                      {{ label(member, 'full_name') || member.username }} (@{{ member.username }})
-                    </option>
-                  }
-                }
-              </select></label
-            ><button class="ds-button primary" (click)="assignAdmin(event)">
+            <ds-search-select
+              class="min-w-52 flex-1"
+              [label]="t('owner.assignAdmin')"
+              [placeholder]="t('owner.chooseMember')"
+              [options]="memberOptions()"
+              [value]="adminSelection()[event.id] || ''"
+              (valueChange)="selectAdmin(event.id, $event)"
+            /><button class="ds-button primary" (click)="assignAdmin(event)">
               {{ t('owner.assign') }}
             </button>
           </div>

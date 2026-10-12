@@ -16,6 +16,7 @@ import { LiveApi } from '../../core/live/live-api';
 import type { LiveAdjustment } from '../../core/live/live-types';
 import { StandingsReader } from '../../core/standings/standings-reader';
 import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
+import { DsSearchSelect } from '../../shared/ui/search-select';
 import {
   DsCellDef,
   DsDataTable,
@@ -55,6 +56,7 @@ export function filterAdjustments(items: readonly LiveAdjustment[], filter: Adju
     DsCellDef,
     AdjustmentsPanel,
     TeamBreakdownSheet,
+    DsSearchSelect,
   ],
   providers: [LiveReader, StandingsReader],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -96,6 +98,11 @@ export class AdjustmentsPage {
     nonNullable: true,
     validators: [Validators.required, Validators.minLength(3), Validators.maxLength(500)],
   });
+  readonly teamOptions = computed(() =>
+    (this.reader.data()?.teams ?? []).map((team) => ({ value: team.id, label: this.name(team) })),
+  );
+  readonly searchText = (item: LiveAdjustment) =>
+    [this.name(this.teamOf(item)), item.reason, this.name(item.given_by)].join(' ');
   readonly track = (item: LiveAdjustment) => item.id;
   readonly rowStatus = (item: LiveAdjustment): DsRowStatus => (item.revoked_at ? 'void' : null);
 

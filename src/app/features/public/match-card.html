@@ -29,9 +29,13 @@
     </div>
     @if (game(); as item) {
       <h3 class="text-lg font-bold">
-        <a class="inline-flex min-h-11 items-center" [routerLink]="['/games', item.code]">{{
-          name(item, direction.language())
-        }}</a>
+        @if (scope.canOpenGames()) {
+          <a class="inline-flex min-h-11 items-center" [routerLink]="['/games', item.code]">{{
+            name(item, direction.language())
+          }}</a>
+        } @else {
+          {{ name(item, direction.language()) }}
+        }
       </h3>
       @if (location(item, direction.language())) {
         <p class="text-sm text-slate">{{ location(item, direction.language()) }}</p>
@@ -49,11 +53,18 @@
           [class.bg-ivory]="participant.team_code === selectedCode()"
         >
           @if (participant.team; as team) {
-            <ds-avatar [avatarKey]="team.avatar_key" [color]="team.color_hex" [size]="44" /><a
-              class="flex min-h-11 min-w-0 flex-1 items-center break-words font-semibold"
-              [routerLink]="['/teams', team.code]"
-              >{{ name(team, direction.language()) }}</a
-            >
+            <ds-avatar [avatarKey]="team.avatar_key" [color]="team.color_hex" [size]="44" />
+            @if (scope.canOpenTeam(team.code)) {
+              <a
+                class="flex min-h-11 min-w-0 flex-1 items-center break-words font-semibold"
+                [routerLink]="['/teams', team.code]"
+                >{{ name(team, direction.language()) }}</a
+              >
+            } @else {
+              <span class="flex min-h-11 min-w-0 flex-1 items-center break-words font-semibold">{{
+                name(team, direction.language())
+              }}</span>
+            }
           } @else {
             <span class="font-semibold">{{ participant.team_code }}</span>
           }

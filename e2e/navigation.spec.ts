@@ -78,7 +78,7 @@ for (const lang of ['ar', 'en'] as const) {
     await mockLiveEvent(page, { role: 'REFEREE', lang });
     await asGuide(page, 'team-2');
     await page.goto('/');
-    await expect(page).toHaveURL(/127\.0\.0\.1:4200\/(home)?$/);
+    await expect(page).toHaveURL(/127\.0\.0\.1:\d+\/(home)?$/);
     await expect
       .poll(() => page.evaluate((id) => localStorage.getItem(`bts.team.${id}`), eventId))
       .toBe('T02');

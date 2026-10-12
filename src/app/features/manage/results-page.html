@@ -15,6 +15,7 @@
     <ds-tabs [items]="roundTabs()" [label]="t('live.rounds')" [(active)]="selectedId" />
   }
   <ds-data-table
+    [searchText]="searchText"
     [rows]="rows()"
     [columns]="columns(t)"
     [trackBy]="track"

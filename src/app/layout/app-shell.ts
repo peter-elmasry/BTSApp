@@ -101,10 +101,6 @@ export class AppShell {
     this.switchSheet.set(false);
     await this.router.navigate(['/choose-team'], { queryParams: { switch: '1' } });
   }
-  async logout() {
-    await this.auth.logout();
-    await this.router.navigateByUrl('/home');
-  }
   lastUpdated() {
     const stamp = this.cache.lastUpdated();
     return stamp

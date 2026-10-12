@@ -13,7 +13,7 @@ export const authGuard: CanActivateFn = async (_route, state) => {
     return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
   // A temporary (owner-set) password must be replaced before any staff screen opens.
   if (auth.profile()?.must_change_password && !state.url.startsWith(PASSWORD_URL))
-    return router.createUrlTree([PASSWORD_URL]);
+    return router.createUrlTree([PASSWORD_URL], { queryParams: { returnUrl: state.url } });
   return true;
 };
 

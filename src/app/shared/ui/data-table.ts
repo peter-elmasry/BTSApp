@@ -64,6 +64,23 @@ export function expandItemClass(priority: DsPriority | undefined): string {
   return priority === 2 ? 'sm:hidden' : priority === 3 ? 'lg:hidden' : '';
 }
 
+/** Lists longer than this get a search box (UX requirement, 2026-10-13). */
+export const SEARCH_THRESHOLD = 10;
+
+/** Case- and diacritic-insensitive match of every search word against the row text. */
+export function matchesSearch(text: string, query: string): boolean {
+  const normalize = (value: string) =>
+    value
+      .toLocaleLowerCase()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f\u064b-\u0652]/g, '');
+  const haystack = normalize(text);
+  return normalize(query)
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((word) => haystack.includes(word));
+}
+
 export function sortRows<T>(
   rows: readonly T[],
   column: DsColumn<T> | undefined,
@@ -105,12 +122,28 @@ export class DsDataTable<T> {
   /** When true rows are focusable and emit `rowClick`. */
   readonly clickable = input(false);
   readonly sort = input<DsSort | null>(null);
+  /** Text searched for a row; defaults to all column values. */
+  readonly searchText = input<((row: T) => string) | null>(null);
   readonly rowClick = output<T>();
   readonly sortChange = output<DsSort>();
 
   private readonly cells = contentChildren(DsCellDef);
   private readonly localSort = signal<DsSort | null>(null);
   readonly expanded = signal<ReadonlySet<string>>(new Set());
+  readonly query = signal('');
+  readonly searchable = computed(() => this.rows().length > SEARCH_THRESHOLD);
+  private readonly visible = computed(() => {
+    const query = this.query().trim();
+    if (!query || !this.searchable()) return [...this.rows()];
+    const text =
+      this.searchText() ??
+      ((row: T) =>
+        this.columns()
+          .map((column) => column.value?.(row))
+          .filter((value) => value !== null && value !== undefined)
+          .join(' '));
+    return this.rows().filter((row) => matchesSearch(text(row), query));
+  });
 
   readonly activeSort = computed(() => this.localSort() ?? this.sort());
   readonly templates = computed(
@@ -123,9 +156,9 @@ export class DsDataTable<T> {
   readonly span = computed(() => this.columns().length + (this.disclosure() ? 1 : 0));
   readonly sorted = computed(() => {
     const sort = this.activeSort();
-    if (!sort) return [...this.rows()];
+    if (!sort) return this.visible();
     return sortRows(
-      this.rows(),
+      this.visible(),
       this.columns().find((column) => column.key === sort.key),
       sort.dir,
     );

@@ -17,12 +17,13 @@ import { LiveApi } from '../../core/live/live-api';
 import type { LiveAdjustment, LiveSnapshot } from '../../core/live/live-types';
 import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
 import { CountUp } from '../../shared/ui/count-up';
+import { DsSearchSelect } from '../../shared/ui/search-select';
 import { localizedName } from '../public/public-helpers';
 import { canEditLiveMatch, isLiveAdmin, liveErrorKey, remainingAllowance } from './live-helpers';
 
 @Component({
   selector: 'app-adjustments-panel',
-  imports: [TranslocoDirective, ReactiveFormsModule, DsBottomSheet, CountUp],
+  imports: [TranslocoDirective, ReactiveFormsModule, DsBottomSheet, CountUp, DsSearchSelect],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './adjustments-panel.html',
 })
@@ -67,6 +68,12 @@ export class AdjustmentsPanel {
           this.match()?.participants.some((participant) => participant.team_id === team.id),
         )
       : this.snapshot().teams,
+  );
+  readonly teamOptions = computed(() =>
+    this.teams().map((team) => ({
+      value: team.id,
+      label: this.name(team, this.direction.language()),
+    })),
   );
   readonly canAdd = computed(
     () =>

@@ -1,115 +1,138 @@
-<div
-  *transloco="let t"
-  class="ds-table-region"
-  role="region"
-  tabindex="0"
-  [attr.aria-label]="caption()"
-  [attr.aria-busy]="loading()"
->
-  <table class="ds-table">
-    <caption class="sr-only">
-      {{
-        caption()
-      }}
-    </caption>
-    <thead>
-      <tr>
-        @for (column of columns(); track column.key) {
-          <th
-            scope="col"
-            [class]="cellClass(column)"
-            [style.width]="column.width ?? null"
-            [attr.aria-sort]="ariaSort(column)"
-          >
-            @if (column.sortable) {
-              <button type="button" class="ds-sort" (click)="toggleSort(column)">
-                {{ column.header }}
-                <span aria-hidden="true">{{
-                  activeSort()?.key === column.key ? (activeSort()?.dir === 'asc' ? '▲' : '▼') : '↕'
-                }}</span>
-              </button>
-            } @else {
-              {{ column.header }}
-            }
-          </th>
-        }
-        @if (disclosure(); as hide) {
-          <th scope="col" [class]="hide + ' ds-disclosure-cell'">
-            <span class="sr-only">{{ t('ui.table.details') }}</span>
-          </th>
-        }
-      </tr>
-    </thead>
-    <tbody>
-      @if (loading() && !rows().length) {
-        @for (item of skeleton; track item) {
-          <tr class="ds-skeleton-row" aria-hidden="true">
-            <td [attr.colspan]="span()"><span class="ds-skeleton"></span></td>
-          </tr>
-        }
-      } @else {
-        @for (row of sorted(); track trackBy()(row)) {
-          <tr
-            animate.enter="ds-row-enter"
-            [attr.data-status]="status(row)"
-            [class.ds-row-highlight]="isHighlighted(row)"
-            [class.ds-row-clickable]="clickable()"
-            [attr.tabindex]="clickable() ? 0 : null"
-            (click)="activate(row, $event)"
-            (keydown.enter)="activate(row, $event)"
-            (keydown.space)="activate(row, $event)"
-          >
-            @for (column of columns(); track column.key) {
-              <td [class]="cellClass(column)">
-                @if (templates().get(column.key); as template) {
-                  <ng-container *ngTemplateOutlet="template; context: { $implicit: row }" />
-                } @else {
-                  {{ text(column, row) }}
-                }
-              </td>
-            }
-            @if (disclosure(); as hide) {
-              <td [class]="hide + ' ds-disclosure-cell'">
-                <button
-                  type="button"
-                  class="ds-disclosure"
-                  [attr.aria-expanded]="isExpanded(row)"
-                  [attr.aria-label]="t('ui.table.details')"
-                  (click)="toggleExpanded(row, $event)"
-                >
-                  <span aria-hidden="true">{{ isExpanded(row) ? '▴' : '▾' }}</span>
+<ng-container *transloco="let t">
+  @if (searchable()) {
+    <label class="mb-2 block">
+      <span class="sr-only">{{ t('ui.search') }}</span>
+      <input
+        type="search"
+        class="ds-control w-full"
+        data-testid="table-search"
+        autocomplete="off"
+        [placeholder]="'🔍 ' + t('ui.search')"
+        [value]="query()"
+        (input)="query.set($any($event.target).value)"
+      />
+    </label>
+  }
+  <div
+    class="ds-table-region"
+    role="region"
+    tabindex="0"
+    [attr.aria-label]="caption()"
+    [attr.aria-busy]="loading()"
+  >
+    <table class="ds-table">
+      <caption class="sr-only">
+        {{
+          caption()
+        }}
+      </caption>
+      <thead>
+        <tr>
+          @for (column of columns(); track column.key) {
+            <th
+              scope="col"
+              [class]="cellClass(column)"
+              [style.width]="column.width ?? null"
+              [attr.aria-sort]="ariaSort(column)"
+            >
+              @if (column.sortable) {
+                <button type="button" class="ds-sort" (click)="toggleSort(column)">
+                  {{ column.header }}
+                  <span aria-hidden="true">{{
+                    activeSort()?.key === column.key
+                      ? activeSort()?.dir === 'asc'
+                        ? '▲'
+                        : '▼'
+                      : '↕'
+                  }}</span>
                 </button>
-              </td>
-            }
-          </tr>
-          @if (isExpanded(row)) {
-            <tr class="ds-expand-row">
-              <td [attr.colspan]="span()">
-                <dl class="ds-expand-list">
-                  @for (column of hiddenColumns(); track column.key) {
-                    <div [class]="itemClass(column)">
-                      <dt>{{ column.header }}</dt>
-                      <dd [class.tabular]="column.numeric">
-                        @if (templates().get(column.key); as template) {
-                          <ng-container *ngTemplateOutlet="template; context: { $implicit: row }" />
-                        } @else {
-                          {{ text(column, row) }}
-                        }
-                      </dd>
-                    </div>
+              } @else {
+                {{ column.header }}
+              }
+            </th>
+          }
+          @if (disclosure(); as hide) {
+            <th scope="col" [class]="hide + ' ds-disclosure-cell'">
+              <span class="sr-only">{{ t('ui.table.details') }}</span>
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading() && !rows().length) {
+          @for (item of skeleton; track item) {
+            <tr class="ds-skeleton-row" aria-hidden="true">
+              <td [attr.colspan]="span()"><span class="ds-skeleton"></span></td>
+            </tr>
+          }
+        } @else {
+          @for (row of sorted(); track trackBy()(row)) {
+            <tr
+              animate.enter="ds-row-enter"
+              [attr.data-status]="status(row)"
+              [class.ds-row-highlight]="isHighlighted(row)"
+              [class.ds-row-clickable]="clickable()"
+              [attr.tabindex]="clickable() ? 0 : null"
+              (click)="activate(row, $event)"
+              (keydown.enter)="activate(row, $event)"
+              (keydown.space)="activate(row, $event)"
+            >
+              @for (column of columns(); track column.key) {
+                <td [class]="cellClass(column)">
+                  @if (templates().get(column.key); as template) {
+                    <ng-container *ngTemplateOutlet="template; context: { $implicit: row }" />
+                  } @else {
+                    {{ text(column, row) }}
                   }
-                </dl>
+                </td>
+              }
+              @if (disclosure(); as hide) {
+                <td [class]="hide + ' ds-disclosure-cell'">
+                  <button
+                    type="button"
+                    class="ds-disclosure"
+                    [attr.aria-expanded]="isExpanded(row)"
+                    [attr.aria-label]="t('ui.table.details')"
+                    (click)="toggleExpanded(row, $event)"
+                  >
+                    <span aria-hidden="true">{{ isExpanded(row) ? '▴' : '▾' }}</span>
+                  </button>
+                </td>
+              }
+            </tr>
+            @if (isExpanded(row)) {
+              <tr class="ds-expand-row">
+                <td [attr.colspan]="span()">
+                  <dl class="ds-expand-list">
+                    @for (column of hiddenColumns(); track column.key) {
+                      <div [class]="itemClass(column)">
+                        <dt>{{ column.header }}</dt>
+                        <dd [class.tabular]="column.numeric">
+                          @if (templates().get(column.key); as template) {
+                            <ng-container
+                              *ngTemplateOutlet="template; context: { $implicit: row }"
+                            />
+                          } @else {
+                            {{ text(column, row) }}
+                          }
+                        </dd>
+                      </div>
+                    }
+                  </dl>
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr>
+              <td class="ds-empty" [attr.colspan]="span()">
+                {{
+                  query() && rows().length ? t('ui.noMatches') : emptyText() || t('ui.table.empty')
+                }}
               </td>
             </tr>
           }
-        } @empty {
-          <tr>
-            <td class="ds-empty" [attr.colspan]="span()">
-              {{ emptyText() || t('ui.table.empty') }}
-            </td>
-          </tr>
         }
-      }
-    </tbody>
-  </table>
-</div>
+      </tbody>
+    </table>
+  </div>
+</ng-container>

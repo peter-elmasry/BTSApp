@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { DirectionService } from '../../core/i18n/i18n.service';
+import { ViewerScope } from '../../core/player/viewer-scope';
 import { EventStore } from '../../core/player/event.store';
 import type { PublicMatch } from '../../core/player/public-types';
 import { DsAvatar } from '../../shared/ui/avatar';
@@ -18,6 +19,8 @@ export class PublicMatchCard {
   readonly selectedCode = input('');
   private readonly store = inject(EventStore);
   readonly direction = inject(DirectionService);
+  /** Visitors open only their own team and no game pages (D046). */
+  readonly scope = inject(ViewerScope);
   readonly game = computed(() =>
     this.store.games().find((game) => game.id === this.match().game_id),
   );

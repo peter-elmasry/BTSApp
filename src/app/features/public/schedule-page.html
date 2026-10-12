@@ -6,20 +6,22 @@
     </button>
   </header>
   <app-public-state>
-    <nav class="grid grid-cols-3 gap-2" [attr.aria-label]="t('player.scheduleViews')">
-      @for (item of tabs; track item) {
-        <button
-          class="min-h-11 rounded-xl px-2 py-2 text-sm font-semibold"
-          [class.bg-navy]="tab() === item"
-          [class.text-white]="tab() === item"
-          [class.bg-white]="tab() !== item"
-          [attr.aria-pressed]="tab() === item"
-          (click)="tab.set(item)"
-        >
-          {{ t('player.' + item) }}
-        </button>
-      }
-    </nav>
+    @if (tabs().length > 1) {
+      <nav class="grid grid-cols-3 gap-2" [attr.aria-label]="t('player.scheduleViews')">
+        @for (item of tabs(); track item) {
+          <button
+            class="min-h-11 rounded-xl px-2 py-2 text-sm font-semibold"
+            [class.bg-navy]="tab() === item"
+            [class.text-white]="tab() === item"
+            [class.bg-white]="tab() !== item"
+            [attr.aria-pressed]="tab() === item"
+            (click)="tab.set(item)"
+          >
+            {{ t('player.' + item) }}
+          </button>
+        }
+      </nav>
+    }
     <div class="ds-tabs sub" role="group" [attr.aria-label]="t('player.displayAs')">
       @for (item of views; track item) {
         <button
@@ -75,11 +77,15 @@
                   </th>
                   <td class="px-3 py-2">
                     @if (row.game; as game) {
-                      <a
-                        class="inline-flex min-h-11 items-center font-semibold text-navy underline"
-                        [routerLink]="['/games', game.code]"
-                        >{{ name(game, direction.language()) }}</a
-                      >
+                      @if (scope.canOpenGames()) {
+                        <a
+                          class="inline-flex min-h-11 items-center font-semibold text-navy underline"
+                          [routerLink]="['/games', game.code]"
+                          >{{ name(game, direction.language()) }}</a
+                        >
+                      } @else {
+                        <span class="font-semibold">{{ name(game, direction.language()) }}</span>
+                      }
                     } @else {
                       <span class="text-slate">—</span>
                     }

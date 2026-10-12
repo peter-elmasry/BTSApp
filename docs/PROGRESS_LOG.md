@@ -2,6 +2,17 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — UX enhancement P1 visitor scope, phones, list search, logout clearing — DONE
+
+- **Branch:** `codex/ux-p1-privacy` (stacked on U4).
+- **Visitor scope (D046):** `core/player/viewer-scope.ts` — a visitor without a login sees only the selected team: Schedule shows only the "My team" tab, match/break cards and standings rows link only to the own team, `teams/:code` for another team and `games/:code` redirect home (`teamPageGuard`, `memberOnlyGuard`). Leaderboard and display stay visible only when published (D027, confirmed 2026-10-13).
+- **Phones (D048):** staff phones (referees, admins) render only for signed-in members; visitors see only their team's DST guide.
+- **Search (D049):** `ds-data-table` shows a search box above 10 rows (accent/Arabic-diacritic insensitive); new `ds-search-select` replaces long selects (owner members, adjustments team, adjustments filter).
+- **Logout (D047):** `clearDeviceData` clears local/session storage (keeps `bts.lang`), caches and the offline IndexedDB; the account menu warns when unsent operations exist and reloads to `/home`.
+- **Password redirect:** members created with temporary passwords (`must_change_password`, migration 0010) are sent to Change password by design; after saving they now return to the page they asked for (`returnUrl`) or their landing page.
+- **Checks:** unit tests, lint, build, 78/78 browser tests incl. new `privacy.spec.ts` (EN/AR visitor scope, member view, logout clearing).
+- **Next:** U5 referee "My station".
+
 ## 2026-10-13 — UX enhancement U4 admin Control, Results, Adjustments, export, drill-down — DONE
 
 - **Branch:** `codex/ux-u4-admin` (stacked on U3).

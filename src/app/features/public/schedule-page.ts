@@ -12,6 +12,7 @@ import type { PublicMatch } from '../../core/player/public-types';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { EventStore } from '../../core/player/event.store';
 import { TeamSelectionStore } from '../../core/player/team-selection.store';
+import { ViewerScope } from '../../core/player/viewer-scope';
 import { BreakCard } from './break-card';
 import { LifeLostOverlay } from './life-lost-overlay';
 import { PublicMatchCard } from './match-card';
@@ -49,7 +50,11 @@ export class SchedulePage {
   readonly direction = inject(DirectionService);
   readonly teamView = inject(TeamViewState);
   readonly tab = signal<ScheduleTab>('myTeam');
-  readonly tabs: ScheduleTab[] = ['myTeam', 'byRound', 'byGame'];
+  readonly scope = inject(ViewerScope);
+  /** Visitors without a login see only their own team's schedule (D046). */
+  readonly tabs = computed<ScheduleTab[]>(() =>
+    this.scope.member() ? ['myTeam', 'byRound', 'byGame'] : ['myTeam'],
+  );
   /** Table is the default (D039); the choice is remembered on this device. */
   readonly view = signal<ScheduleView>(this.restoreView());
   readonly views: ScheduleView[] = ['table', 'cards'];
@@ -64,8 +69,9 @@ export class SchedulePage {
     const rounds = this.store.rounds();
     const games = this.store.games();
     const matches = this.matches();
-    if (this.tab() === 'byGame') return groupByGame(rounds, games, matches);
-    if (this.tab() === 'byRound') return groupByRound(rounds, games, matches);
+    const tab = this.scope.member() ? this.tab() : 'myTeam';
+    if (tab === 'byGame') return groupByGame(rounds, games, matches);
+    if (tab === 'byRound') return groupByRound(rounds, games, matches);
     const rows = teamRows(rounds, games, matches, this.selection.selectedCode());
     return sortedRounds(rounds)
       .map((round) => ({

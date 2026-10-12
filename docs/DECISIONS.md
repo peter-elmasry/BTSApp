@@ -1,5 +1,42 @@
 # Implementation decisions
 
+## D049 — Search on long lists
+
+Product owner requirement 2026-10-13: any list with more than ten values is searchable.
+`ds-data-table` shows a search box automatically above tables with more than ten rows
+(case-, accent- and Arabic-diacritic-insensitive, every word must match); dropdowns with
+more than ten options use `ds-search-select`, which adds a search box to the native select
+and keeps the chosen option listed. Setup and owner pickers rebuilt in U7/U8 use the same
+components.
+
+## D048 — Phone numbers by audience
+
+Product owner requirement 2026-10-13: phone numbers are shown only to signed-in DST
+members, through the role-scoped staff reads of D043. Visitors without a login see only
+their own team's DST guide phone, and only while the event's `show_guide_phone` setting is
+on (the existing master switch). Referee names stay public (D036) without phones.
+
+## D047 — Logout clears the device
+
+Product owner requirement 2026-10-13: logging out removes everything the app stored on the
+device — local and session storage (including the team choice and Supabase session), the
+offline IndexedDB database (cached reads and queued operations) and Cache Storage — then
+reloads the app so no in-memory copy survives. Only the interface language is kept. When
+operations are still waiting to upload, logout first warns that they will be deleted and
+asks to confirm. After a forced password change the member returns to the page that asked
+for it (or their start page) instead of Home.
+
+## D046 — Visitors see only their own team
+
+Product owner requirement 2026-10-13: a visitor without a login sees only details of the
+team chosen on the device. The schedule offers only "My team" (no by-round or by-game
+views), other teams' pages and every game page redirect to Home, and team/game names are
+plain text instead of links. Signed-in DST members keep full access. Players are
+anonymous, so this is a screen rule like the team lock (D035), not a database boundary:
+the database cannot know which team a device picked. The leaderboard and the venue display
+remain visible to visitors only when the administrators publish them (D027; confirmed by
+the product owner 2026-10-13).
+
 ## D045 — Manage navigation and Import/Export placement (amends D040)
 
 Product owner decision 2026-10-12/13 (UX plan v3.1, `Claude outputs/BTSApp_UX_Assessment.md`).

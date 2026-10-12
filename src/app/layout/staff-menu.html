@@ -61,9 +61,23 @@
       <a class="menu-row" routerLink="/account/password" (click)="close.emit()"
         ><span aria-hidden="true">🔑</span>{{ t('account.changePassword') }}</a
       >
-      <button type="button" class="menu-row text-error" (click)="logout()">
-        <span aria-hidden="true">⎋</span>{{ t('auth.logout') }}
-      </button>
+      @if (confirmLogout()) {
+        <div class="ds-card space-y-3" role="alert" data-testid="logout-warning">
+          <p class="font-bold text-error">{{ t('menu.unsent', { n: queue.pending() }) }}</p>
+          <div class="ds-actions">
+            <button type="button" class="ds-button ghost" (click)="confirmLogout.set(false)">
+              {{ t('common.cancel') }}
+            </button>
+            <button type="button" class="ds-button danger" (click)="logout(true)">
+              {{ t('menu.logoutAnyway') }}
+            </button>
+          </div>
+        </div>
+      } @else {
+        <button type="button" class="menu-row text-error" (click)="logout()">
+          <span aria-hidden="true">⎋</span>{{ t('auth.logout') }}
+        </button>
+      }
     </div>
   </div>
 </ds-bottom-sheet>

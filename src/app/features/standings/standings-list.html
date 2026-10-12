@@ -21,9 +21,13 @@
           [size]="display() ? 64 : 44"
         />
         <div class="team-name">
-          <a class="team-link" [routerLink]="['/teams', row.team.code]">{{
-            name(row.team, direction.language())
-          }}</a>
+          @if (scope.canOpenTeam(row.team.code)) {
+            <a class="team-link" [routerLink]="['/teams', row.team.code]">{{
+              name(row.team, direction.language())
+            }}</a>
+          } @else {
+            <span class="team-link">{{ name(row.team, direction.language()) }}</span>
+          }
           <div class="badges">
             @if (row.is_tied) {
               <span class="tie-badge">{{ t('standings.tied') }}</span>

@@ -1,6 +1,6 @@
 # Implementation prompt — BTSApp UX enhancement (U0–U8)
 
-> Agreed scope v3.1 (2026-10-13; Schedule Cards switch kept). Every decision is final **except D-3 (auto-fill pairings)**. Phase U7b is **not authorised**. Do not build it.
+> Agreed scope v3.2 (2026-10-13; Schedule Cards switch kept; privacy & search added as phase P1). Every decision is final **except D-3 (auto-fill pairings)**. Phase U7b is **not authorised**. Do not build it.
 >
 > v3 reconciles this plan with **Phase 8** (`feat/phase-8-extensions`, D035–D040). **Where existing Phase 8 behaviour conflicts with this prompt, this prompt wins** (product-owner rule A9). The conflicts and their binding resolutions are R1–R10 in `Claude outputs/BTSApp_UX_Assessment.md` §12 (R5 resolved: Cards switch kept).
 
@@ -449,3 +449,13 @@ Bulk adds call the existing RPCs sequentially through the op queue with a count-
 - Do not touch others' uncommitted work. Push + PR per `AGENTS.md`; never merge without explicit approval.
 - Do not keep a Phase 8 behaviour that §12 R1–R10 overrides "for compatibility". Override it, update its tests, and record the decision.
 - Do not change unrelated Phase 8 behaviour: team lock for anonymous devices, breaks derivation, public referee names, lives rules, life-lost animation, import v4.
+
+---
+
+## P1 — Privacy and search (agreed 2026-10-13, branch `codex/ux-p1-privacy`, after U4)
+
+- **D046 visitor scope:** `core/player/viewer-scope.ts` (`ViewerScope`, `teamPageGuard`, `memberOnlyGuard`). Visitors: schedule "My team" only; other teams' pages and all game pages redirect to Home; names are plain text in match cards, break cards, schedule tables and standings rows. Members unchanged. Every later screen (U5–U8, drill-downs) must use `ViewerScope` before linking to a team or game.
+- **D048 phones:** never render a phone for visitors except their own team guide's (server already gates it with `show_guide_phone`).
+- **D049 search:** `ds-data-table` searches automatically above ten rows (pass `searchText` when cells are templates); use `ds-search-select` for any dropdown that can exceed ten options.
+- **D047 logout:** `AuthStore.logout()` calls `clearDeviceData` (local/session storage except `bts.lang`, `OfflineDb.destroy()`, Cache Storage); the menu warns about unsent operations and reloads the app. Forced password change returns to `returnUrl` or the landing page.
+- **Delivery:** at the end, create `codex/ux-enhancement` at the final commit; the product owner raises one PR from it into `master`.

@@ -714,7 +714,10 @@
       "void": "Void",
       "queued": "Queued"
     },
-    "call": "Call {{name}}"
+    "call": "Call {{name}}",
+    "search": "Search",
+    "searchIn": "Search {{name}}",
+    "noMatches": "No matches for this search"
   },
   "menu": {
     "title": "Menu",
@@ -729,7 +732,9 @@
       "EVENT_ADMIN": "Event admin",
       "REFEREE": "Referee",
       "GUIDE": "Guide"
-    }
+    },
+    "unsent": "{{n}} changes are still waiting to upload. Logging out deletes them from this device.",
+    "logoutAnyway": "Log out anyway"
   },
   "now": {
     "open": "Show what's happening now",

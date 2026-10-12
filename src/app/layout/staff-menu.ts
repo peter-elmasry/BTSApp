@@ -1,7 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, inject, output } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  output,
+  signal,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthStore } from '../core/auth/auth.store';
+import { OpQueueService } from '../core/offline/op-queue.service';
 import { DirectionService } from '../core/i18n/i18n.service';
 import { canSeeAllOutcomes, EventStore } from '../core/player/event.store';
 import { localizedName } from '../features/public/public-helpers';
@@ -51,9 +60,18 @@ export class StaffMenu {
     return labels;
   });
 
-  async logout() {
+  readonly queue = inject(OpQueueService);
+  private readonly document = inject(DOCUMENT);
+  readonly confirmLogout = signal(false);
+  /** Unsent offline changes would be deleted with the device data, so ask first (D047). */
+  async logout(confirmed = false) {
+    if (!confirmed && this.queue.pending() > 0) {
+      this.confirmLogout.set(true);
+      return;
+    }
     this.close.emit();
     await this.auth.logout();
-    await this.router.navigateByUrl('/home');
+    // A full reload drops every in-memory copy of the previous session.
+    this.document.location.assign('/home');
   }
 }
