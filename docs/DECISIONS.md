@@ -1,5 +1,20 @@
 # Implementation decisions
 
+## D033 — Event audit history uses private cursor reads
+
+`get_audit_log(p_event,p_limit,p_before,p_action,p_entity)` permits only an active
+owner or that event's administrator. Its first three arguments implement the
+planned reader; optional action/entity filters run on the server. Global member
+audits are excluded. Actor projections expose names only; event before/after
+snapshots remain available to administrators without granting table reads.
+Pagination orders by descending audit ID, uses an exclusive bigint cursor and
+returns IDs as strings to avoid JavaScript precision loss. Limits are 1–100.
+Filter choices come from the authorized event, including outside the current page.
+Audit history is read online without persistent browser caching. Context changes,
+permission failures and superseding requests hide/discard earlier private reads.
+The UI shows Cairo timestamps, localized actor names and safely escaped JSON
+snapshots; action/entity codes remain the exact identifiers recorded by the server.
+
 ## D032 — Atomic member audits and durable Auth operation recovery
 
 Member creation, edits, login links and activation state use a service-only RPC

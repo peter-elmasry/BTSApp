@@ -120,6 +120,10 @@ real Auth/database clients plus parallel admission/completion RPCs. These databa
 and Auth checks are wired into existing CI but remain unexecuted locally because
 port 54322 refuses connections; A02 runtime acceptance is pending cloud execution.
 
+**Cloud verification (2026-10-12):** PR #13 run `38227505696` passes all 775 SQL
+assertions and real login lockout/concurrent admission/completion integration.
+Merged master CI `38228132819` and Supabase deployment `38228132808` pass.
+
 ### A03 — P2: member mutation reports success after its audit write fails
 
 Requirement: §7.2, member actions write the audit trail. At
@@ -131,7 +135,7 @@ Fix direction: establish a reliable mutation/audit write boundary, handle audit
 failures explicitly, and cover compensation/retry behavior. Merely returning an
 error after an already-applied mutation also needs recovery semantics.
 
-**Remediation update (2026-10-12):** Migration `0011` makes database member writes,
+**Remediation update (2026-10-12):** Migration `0014` makes database member writes,
 their audit entries and replay receipts atomic. External Auth operations have a
 durable intent before execution and an audited completion; uncertain outcomes
 remain pending and prevent repeat external actions. HTTP 202 `needs_review`
@@ -147,6 +151,11 @@ Build, app/spec TypeScript, translation parity (558 keys), changed-file formatti
 and whitespace checks pass. This update does not claim the complete frontend
 suite or new SQL assertions have run successfully against the changed backend.
 
+**Cloud verification (2026-10-12):** PR #13 run `38227505696` passes real member/Auth
+integration and all 775 SQL assertions, including audit rollback and recovery.
+Merged master CI and Supabase deployment also pass; no hosted password mutation
+was performed merely to test acceptance.
+
 ### A04 — P2: required administrator audit-log reader and screen are missing
 
 Requirements: §2.3, §8 `get_audit_log(p_event,p_limit,p_before)`, §10.3 filterable
@@ -154,6 +163,15 @@ audit list. Audit rows are written, but there is no `get_audit_log` definition,
 client wrapper, route or viewer. Catalogue comparison finds this as the one
 missing named RPC among the plan's 40 entries checked. Admins cannot inspect the
 promised history through the app.
+
+**Implementation update (2026-10-12):** Migration `0015` adds event-scoped,
+owner/admin-only reads, server action/entity filters and precision-safe cursor
+pagination. A typed online client and EN/AR `/manage/:eventId/audit` viewer show
+actors, Cairo timestamps and before/after changes. New pgTAP permission/pagination
+cases are prepared; 23 focused unit and 11 browser checks pass, including EN/AR
+filters, pagination, escaped snapshots, axe, mobile width and nine logout routes. Runtime
+database acceptance remains pending; implementation does not mark all Phase 7
+requirements complete.
 
 ### A05 — P2: game-photo conversion and 1024 px resize are missing
 
