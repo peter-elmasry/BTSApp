@@ -19,7 +19,6 @@ import type {
   ResultOutcome,
 } from '../../core/live/live-types';
 import { OpQueueService } from '../../core/offline/op-queue.service';
-import { DsAvatar } from '../../shared/ui/avatar';
 import { localizedName } from '../public/public-helpers';
 import { canEditLiveMatch, liveErrorKey, validOutcomes } from './live-helpers';
 
@@ -48,7 +47,7 @@ export function currentChoice(outcomes: readonly (string | undefined)[]): Regula
  */
 @Component({
   selector: 'app-result-entry',
-  imports: [TranslocoDirective, DsAvatar],
+  imports: [TranslocoDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './result-entry.html',
 })

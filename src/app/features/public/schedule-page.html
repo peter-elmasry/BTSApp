@@ -45,95 +45,75 @@
       </div>
     }
     @if (view() === 'table') {
-      @if (tableRows().length) {
-        <div
-          class="overflow-x-auto rounded-card border border-mist bg-white shadow-card"
-          role="region"
-          tabindex="0"
-          [attr.aria-label]="t('player.' + tab())"
+      <div data-testid="schedule-table">
+        <ds-data-table
+          [rows]="tableRows()"
+          [columns]="columns(t)"
+          [trackBy]="track"
+          [caption]="t('player.' + tab())"
+          [emptyText]="t('player.noMatches')"
+          [rowStatus]="rowStatus"
+          [highlight]="ownRow"
+          [searchText]="searchText"
         >
-          <table class="w-full border-collapse text-sm" data-testid="schedule-table">
-            <thead class="bg-navy text-white">
-              <tr>
-                <th scope="col" class="px-3 py-2 text-start">{{ t('live.roundColumn') }}</th>
-                <th scope="col" class="px-3 py-2 text-start">{{ t('manage.game') }}</th>
-                <th scope="col" class="px-3 py-2 text-start">{{ t('player.teamsColumn') }}</th>
-                <th scope="col" class="px-3 py-2 text-start">{{ t('player.resultColumn') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of tableRows(); track row.key) {
-                <tr
-                  class="border-t border-mist align-top"
-                  [class.bg-gold-soft]="row.round.status === 'ACTIVE'"
-                  [class.bg-ivory]="!row.match && row.round.status !== 'ACTIVE'"
+          <ng-template dsCell="round" let-row>
+            {{
+              row.round.type === 'OPENING'
+                ? t('round.opening')
+                : t('player.roundNumber', { n: row.round.number })
+            }}
+          </ng-template>
+          <ng-template dsCell="game" let-row>
+            @if (row.game; as game) {
+              @if (scope.canOpenGames()) {
+                <a
+                  class="inline-flex min-h-11 items-center font-semibold text-navy underline"
+                  [routerLink]="['/games', game.code]"
+                  >{{ name(game, direction.language()) }}</a
                 >
-                  <th scope="row" class="px-3 py-2 text-start font-bold whitespace-nowrap">
-                    {{
-                      row.round.type === 'OPENING'
-                        ? t('round.opening')
-                        : t('player.roundNumber', { n: row.round.number })
-                    }}
-                  </th>
-                  <td class="px-3 py-2">
-                    @if (row.game; as game) {
-                      @if (scope.canOpenGames()) {
-                        <a
-                          class="inline-flex min-h-11 items-center font-semibold text-navy underline"
-                          [routerLink]="['/games', game.code]"
-                          >{{ name(game, direction.language()) }}</a
-                        >
-                      } @else {
-                        <span class="font-semibold">{{ name(game, direction.language()) }}</span>
-                      }
-                    } @else {
-                      <span class="text-slate">—</span>
-                    }
-                  </td>
-                  <td class="px-3 py-2">
-                    @if (row.match; as match) {
-                      @if (row.round.type === 'OPENING') {
-                        {{ t('live.allTeams', { n: match.participants.length }) }}
-                      } @else {
-                        @for (team of teamNames(match); track team.code; let last = $last) {
-                          <span [class.font-extrabold]="team.own">{{ team.name }}</span>
-                          @if (!last) {
-                            <span class="text-slate"> {{ t('match.vs') }} </span>
-                          }
-                        }
-                      }
-                    } @else {
-                      <span class="font-semibold" data-testid="table-break"
-                        >☕ {{ t('player.break') }}</span
-                      >
-                    }
-                  </td>
-                  <td class="px-3 py-2 whitespace-nowrap">
-                    @if (row.match; as match) {
-                      @if (ownOutcome(match); as outcome) {
-                        @if (outcome !== 'PENDING') {
-                          <span
-                            class="font-bold"
-                            [class.text-success]="outcome === 'WIN'"
-                            [class.text-error]="outcome === 'LOSS' || outcome === 'FORFEIT'"
-                            >{{ t('player.outcome.' + outcome) }}</span
-                          >
-                        } @else {
-                          {{ t('player.matchStatus.' + match.status) }}
-                        }
-                      } @else {
-                        {{ t('player.matchStatus.' + match.status) }}
-                      }
-                    }
-                  </td>
-                </tr>
+              } @else {
+                <span class="font-semibold">{{ name(game, direction.language()) }}</span>
               }
-            </tbody>
-          </table>
-        </div>
-      } @else {
-        <p class="rounded-card bg-white p-5">{{ t('player.noMatches') }}</p>
-      }
+              @if (location(game, direction.language()); as place) {
+                <span class="block text-sm text-slate">📍 {{ place }}</span>
+              }
+            } @else {
+              <span class="text-slate">—</span>
+            }
+          </ng-template>
+          <ng-template dsCell="teams" let-row>
+            @if (row.match; as match) {
+              @if (row.round.type === 'OPENING') {
+                {{ t('live.allTeams', { n: match.participants.length }) }}
+              } @else {
+                @for (team of teamNames(match); track team.code; let last = $last) {
+                  <span [class.font-extrabold]="team.own">{{ team.name }}</span>
+                  @if (!last) {
+                    <span class="text-slate"> {{ t('match.vs') }} </span>
+                  }
+                }
+              }
+            } @else {
+              <span class="font-semibold" data-testid="table-break"
+                >☕ {{ t(tab() === 'myTeam' ? 'now.resting' : 'player.break') }}</span
+              >
+            }
+          </ng-template>
+          <ng-template dsCell="result" let-row>
+            @if (row.match; as match) {
+              @if (ownOutcome(match); as outcome) {
+                @if (outcome !== 'PENDING') {
+                  <ds-outcome [outcome]="outcome" />
+                } @else {
+                  <ds-status-pill [status]="status(row)" />
+                }
+              } @else {
+                <ds-status-pill [status]="status(row)" />
+              }
+            }
+          </ng-template>
+        </ds-data-table>
+      </div>
     } @else {
       @for (group of groups(); track group.id) {
         <section class="space-y-3">

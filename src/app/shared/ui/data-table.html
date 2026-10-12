@@ -1,3 +1,10 @@
+<ng-template #cell let-row let-column="column">
+  @if (templates().get(column.key); as template) {
+    <ng-container *ngTemplateOutlet="template; context: { $implicit: row }" />
+  } @else {
+    {{ text(column, row) }}
+  }
+</ng-template>
 <ng-container *transloco="let t">
   @if (searchable()) {
     <label class="mb-2 block">
@@ -78,13 +85,19 @@
               (keydown.space)="activate(row, $event)"
             >
               @for (column of columns(); track column.key) {
-                <td [class]="cellClass(column)">
-                  @if (templates().get(column.key); as template) {
-                    <ng-container *ngTemplateOutlet="template; context: { $implicit: row }" />
-                  } @else {
-                    {{ text(column, row) }}
-                  }
-                </td>
+                @if (column.rowHeader) {
+                  <th scope="row" [class]="cellClass(column) + ' ds-row-header'">
+                    <ng-container
+                      *ngTemplateOutlet="cell; context: { $implicit: row, column: column }"
+                    />
+                  </th>
+                } @else {
+                  <td [class]="cellClass(column)">
+                    <ng-container
+                      *ngTemplateOutlet="cell; context: { $implicit: row, column: column }"
+                    />
+                  </td>
+                }
               }
               @if (disclosure(); as hide) {
                 <td [class]="hide + ' ds-disclosure-cell'">

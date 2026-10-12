@@ -7,14 +7,14 @@ import { EventStore } from '../../core/player/event.store';
 import { DsAvatar } from '../../shared/ui/avatar';
 import { currencyLabel } from '../standings/rank-motion';
 import { CountUp } from '../../shared/ui/count-up';
-import { PublicMatchCard } from './match-card';
 import { guideNames, localizedName, teamGuides } from './public-helpers';
 import { PublicState } from './public-state';
 import { TeamViewState } from './team-view-state';
+import { TeamBreakdown } from '../standings/team-breakdown';
 
 @Component({
   selector: 'app-team-detail-page',
-  imports: [RouterLink, TranslocoDirective, DsAvatar, PublicMatchCard, PublicState, CountUp],
+  imports: [RouterLink, TranslocoDirective, DsAvatar, PublicState, CountUp, TeamBreakdown],
   providers: [TeamViewState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './team-detail-page.html',
@@ -32,12 +32,6 @@ export class TeamDetailPage {
     () =>
       this.teamView.view()?.team ?? this.store.teams().find((team) => team.code === this.code()),
   );
-  readonly matches = computed(() => {
-    const order = new Map(this.store.rounds().map((round) => [round.id, round.number]));
-    return [...(this.teamView.view()?.matches ?? [])].sort(
-      (a, b) => (order.get(a.round_id) ?? 0) - (order.get(b.round_id) ?? 0),
-    );
-  });
   readonly name = localizedName;
   readonly guideNames = guideNames;
   readonly teamGuides = teamGuides;
@@ -45,11 +39,5 @@ export class TeamDetailPage {
   constructor() {
     void this.store.initialize();
     effect(() => this.teamView.code.set(this.code()));
-  }
-  date(value: string) {
-    return new Date(value).toLocaleString(
-      this.direction.language() === 'ar' ? 'ar-EG-u-nu-latn' : 'en-GB',
-      { timeZone: 'Africa/Cairo', dateStyle: 'medium', timeStyle: 'short' },
-    );
   }
 }

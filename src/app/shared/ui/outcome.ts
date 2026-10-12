@@ -17,7 +17,7 @@ export const OUTCOME_ICONS: Record<Outcome, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<span *transloco="let t" class="ds-outcome" [attr.data-outcome]="outcome()"
     ><span aria-hidden="true">{{ icons[outcome()] }}</span
-    >{{ t('player.outcome.' + outcome()) }}</span
+    ><span>{{ t('player.outcome.' + outcome()) }}</span></span
   >`,
 })
 export class DsOutcome {

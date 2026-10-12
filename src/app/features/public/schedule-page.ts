@@ -13,16 +13,25 @@ import { DirectionService } from '../../core/i18n/i18n.service';
 import { EventStore } from '../../core/player/event.store';
 import { TeamSelectionStore } from '../../core/player/team-selection.store';
 import { ViewerScope } from '../../core/player/viewer-scope';
+import {
+  DsCellDef,
+  DsDataTable,
+  type DsColumn,
+  type DsRowStatus,
+} from '../../shared/ui/data-table';
+import { DsOutcome } from '../../shared/ui/outcome';
+import { DsStatusPill, type DsStatus } from '../../shared/ui/status-pill';
 import { BreakCard } from './break-card';
 import { LifeLostOverlay } from './life-lost-overlay';
 import { PublicMatchCard } from './match-card';
-import { localizedName } from './public-helpers';
+import { localizedLocation, localizedName } from './public-helpers';
 import { PublicState } from './public-state';
 import { TeamViewState } from './team-view-state';
 import {
   groupByGame,
   groupByRound,
   type ScheduleGroup,
+  type ScheduleRow,
   sortedRounds,
   teamRows,
 } from './schedule-model';
@@ -39,6 +48,10 @@ const VIEW_KEY = 'bts.schedule.view';
     BreakCard,
     PublicState,
     LifeLostOverlay,
+    DsDataTable,
+    DsCellDef,
+    DsOutcome,
+    DsStatusPill,
   ],
   providers: [TeamViewState],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,6 +74,21 @@ export class SchedulePage {
   /** Flat rows for the table view, in the same order as the grouped cards. */
   readonly tableRows = computed(() => this.groups().flatMap((group) => group.rows));
   readonly name = localizedName;
+  readonly location = localizedLocation;
+  readonly track = (row: ScheduleRow) => row.key;
+  readonly rowStatus = (row: ScheduleRow): DsRowStatus =>
+    row.round.status === 'ACTIVE' ? 'live' : null;
+  /** My team's matches stand out in the by-round and by-game views. */
+  readonly ownRow = (row: ScheduleRow) =>
+    this.tab() !== 'myTeam' &&
+    !!row.match?.participants.some(
+      (participant) => participant.team_code === this.selection.selectedCode(),
+    );
+  readonly searchText = (row: ScheduleRow) =>
+    [
+      this.name(row.game, this.direction.language()),
+      ...(row.match ? this.teamNames(row.match).map((team) => team.name) : []),
+    ].join(' ');
   readonly matches = computed(() => {
     const own = new Map((this.teamView.view()?.matches ?? []).map((match) => [match.id, match]));
     return this.store.schedule().map((match) => own.get(match.id) ?? match);
@@ -100,6 +128,23 @@ export class SchedulePage {
     } catch {
       return 'table';
     }
+  }
+  columns(t: (key: string) => string): DsColumn<ScheduleRow>[] {
+    return [
+      { key: 'round', header: t('live.roundColumn'), rowHeader: true },
+      { key: 'game', header: t('manage.game') },
+      { key: 'teams', header: t('player.teamsColumn') },
+      { key: 'result', header: t('player.resultColumn') },
+    ];
+  }
+  status(row: ScheduleRow): DsStatus {
+    const match = row.match;
+    if (!match) return 'scheduled';
+    if (match.status === 'COMPLETED') return 'done';
+    if (match.status === 'VOID') return 'void';
+    if (row.round.status === 'ACTIVE') return 'live';
+    if (row.round.status === 'CLOSED') return 'pending';
+    return 'scheduled';
   }
   teamNames(match: PublicMatch) {
     return match.participants.map((participant) => ({

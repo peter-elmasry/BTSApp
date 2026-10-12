@@ -35,25 +35,45 @@
           }
         </div>
       </section>
-      @for (row of rows(); track row.key) {
-        <section class="space-y-3">
-          <h2 class="text-xl font-bold">
-            {{
-              name(row.round, direction.language()) ||
-                (row.round.type === 'OPENING'
-                  ? t('round.opening')
-                  : t('player.roundNumber', { n: row.round.number }))
-            }}
-          </h2>
+      <!-- One table for the game: a row per round, breaks included (U6, D037). -->
+      <ds-data-table
+        [rows]="rows()"
+        [columns]="columns(t)"
+        [trackBy]="track"
+        [caption]="name(item, direction.language())"
+        [emptyText]="t('player.noMatches')"
+        [searchText]="searchText"
+      >
+        <ng-template dsCell="round" let-row>
+          {{
+            name(row.round, direction.language()) ||
+              (row.round.type === 'OPENING'
+                ? t('round.opening')
+                : t('player.roundNumber', { n: row.round.number }))
+          }}
+        </ng-template>
+        <ng-template dsCell="teams" let-row>
           @if (row.match; as match) {
-            <app-public-match-card [match]="match" />
+            {{ teams(match) }}
           } @else {
-            <app-break-card [row]="row" />
+            <span data-testid="break-card" class="text-slate"
+              >☕ {{ t('player.break') }} · {{ t('player.breakHint') }}</span
+            >
           }
-        </section>
-      } @empty {
-        <p class="rounded-card bg-white p-5">{{ t('player.noMatches') }}</p>
-      }
+        </ng-template>
+        <ng-template dsCell="result" let-row>
+          @if (row.match; as match) {
+            @for (participant of match.participants; track participant.team_id) {
+              @if (participant.outcome && participant.outcome !== 'PENDING') {
+                <span class="block"
+                  >{{ teamName(participant.team_code) }}:
+                  <ds-outcome [outcome]="participant.outcome"
+                /></span>
+              }
+            }
+          }
+        </ng-template>
+      </ds-data-table>
     } @else {
       <p class="rounded-card bg-white p-5">{{ t('player.gameNotFound') }}</p>
     }

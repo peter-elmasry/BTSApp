@@ -29,6 +29,8 @@ export interface DsColumn<T> {
   /** Plain-text cell value and sort key when no `dsCell` template is given. */
   value?: (row: T) => string | number | null | undefined;
   width?: string;
+  /** Render this column's cells as row headers (`<th scope="row">`). */
+  rowHeader?: boolean;
 }
 
 export interface DsSort {
@@ -107,7 +109,6 @@ const INTERACTIVE = 'a,button,input,select,textarea,label,summary';
   imports: [NgTemplateOutlet, TranslocoDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './data-table.html',
-  styleUrl: './data-table.css',
   host: { class: 'block min-w-0' },
 })
 export class DsDataTable<T> {

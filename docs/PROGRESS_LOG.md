@@ -2,6 +2,19 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — UX enhancement U6 player and guide screens — DONE
+
+- **Branch:** `codex/ux-u6-public` (stacked on U5).
+- **Home:** "Now" hero (current game, 📍 location large, opponent, outcome, "Next station" when done, resting notice), next-matches table and a top-5 standings preview.
+- **Schedule (D039 kept):** Table/Cards switch stays; the table view is rebuilt on the shared table styles with break rows, own-team highlight and resting rows; visitors see only "My team" (D046).
+- **Leaderboard:** `standings-list` gains a `table` variant (rank, team with tie/my-team/rank-change badges, W-D-L, total with count-up, forfeits/adjustments from 640 px), search above ten teams, a late-results note from `rounds[].late_count` (D041) and row drill-down limited by `ViewerScope`. Home preview and the venue display keep the list layout.
+- **Team breakdown:** shared `app-team-breakdown` (summary, match-by-match table, adjustments, reconciliation) used by the drill-down sheet and the `/teams/:code` page.
+- **Game details (members only):** one table per game with a row per round and break rows.
+- **Guide chip:** signed-in guides see a "Guide" chip next to their team avatar (D044).
+- **Shared:** `ds-data-table` columns may render as row headers; table styles are global; `ds-outcome` wraps its word in its own element.
+- **Checks:** i18n (813 keys), 202 unit tests, build (initial 406.77 kB), full browser suite.
+- **Next:** U7 setup checklist, U8 owner tables, then merge to `master` and production verification.
+
 ## 2026-10-13 — UX enhancement U5 referee "My station" — DONE
 
 - **Branch:** `codex/ux-u5-referee` (stacked on P1).

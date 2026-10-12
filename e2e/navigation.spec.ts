@@ -82,6 +82,7 @@ for (const lang of ['ar', 'en'] as const) {
     await expect
       .poll(() => page.evaluate((id) => localStorage.getItem(`bts.team.${id}`), eventId))
       .toBe('T02');
+    await expect(page.getByTestId('guide-chip')).toHaveText(t['team.guide']);
     await expect(mainNav(page, t).getByRole('link', { name: t['nav.home'] })).toBeVisible();
   });
 

@@ -424,7 +424,9 @@
       "cards": "Cards"
     },
     "teamsColumn": "Teams",
-    "resultColumn": "Result"
+    "resultColumn": "Result",
+    "nextStation": "Next station",
+    "opponent": "Opponent"
   },
   "live": {
     "title": "Live control",
@@ -560,7 +562,12 @@
     "noResults": "Results will appear here after a match finishes.",
     "pauseCycle": "Pause cycling",
     "resumeCycle": "Resume cycling",
-    "loadFailed": "Could not load standings. Try again."
+    "loadFailed": "Could not load standings. Try again.",
+    "team": "Team",
+    "record": "W-D-L",
+    "total": "Total",
+    "livesColumn": "Lives {{emoji}}",
+    "pendingNote": "{{n}} result(s) from ended rounds are still being entered, so totals may change."
   },
   "phase6": {
     "pointsWarning": "Changing points recalculates all results and clears manual tie orders.",

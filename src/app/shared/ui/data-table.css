@@ -22,7 +22,8 @@
   font-weight: 700;
   white-space: nowrap;
 }
-.ds-table td {
+.ds-table td,
+.ds-table th.ds-row-header {
   padding: 0.625rem 0.75rem;
   border-block-end: 1px solid var(--color-mist);
   vertical-align: middle;
@@ -141,4 +142,20 @@
   .ds-skeleton {
     animation: none;
   }
+}
+.ds-table th.ds-row-header {
+  position: static;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  white-space: nowrap;
+}
+.ds-table tbody tr th.ds-row-header:first-child {
+  border-inline-start: 4px solid transparent;
+}
+.ds-table tr[data-status='live'] th.ds-row-header:first-child {
+  border-inline-start-color: var(--color-teal);
+}
+.ds-row-highlight th.ds-row-header {
+  background: var(--color-gold-soft);
 }

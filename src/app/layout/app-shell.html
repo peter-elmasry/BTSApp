@@ -26,6 +26,13 @@
               [size]="36"
             />
           </button>
+          @if (selection.guidedTeamCodes().includes(team.code)) {
+            <span
+              class="shrink-0 rounded-full bg-navy px-2 py-1 text-xs font-bold text-white"
+              data-testid="guide-chip"
+              >{{ t('team.guide') }}</span
+            >
+          }
         }
         @if (auth.profile(); as profile) {
           <span class="hidden max-w-28 truncate text-xs sm:block">{{ profile.full_name_en }}</span>

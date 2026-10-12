@@ -54,38 +54,9 @@
           </button>
         </section>
       } @else {
-        <section class="space-y-3">
-          <h2 class="text-xl font-bold">{{ t('player.teamSchedule') }}</h2>
-          @for (match of matches(); track match.id) {
-            <app-public-match-card [match]="match" [selectedCode]="item.code" />
-          } @empty {
-            <p class="rounded-card bg-white p-4">{{ t('player.noMatches') }}</p>
-          }
-        </section>
-        <section class="space-y-3">
-          <h2 class="text-xl font-bold">{{ t('player.adjustments') }}</h2>
-          @for (adjustment of teamView.view()?.adjustments ?? []; track adjustment.id) {
-            <article class="space-y-2 rounded-card bg-white p-4 shadow-card">
-              <p
-                class="tabular text-lg font-bold"
-                [class.text-success]="adjustment.points > 0"
-                [class.text-error]="adjustment.points < 0"
-              >
-                {{ adjustment.points > 0 ? '+' : '' }}{{ adjustment.points }} ·
-                {{ t('player.adjustmentScope.' + adjustment.scope) }}
-              </p>
-              <p class="break-words whitespace-pre-wrap">{{ adjustment.reason }}</p>
-              <p class="text-sm text-slate">
-                {{ t('player.givenBy') }} {{ name(adjustment.given_by, direction.language()) }}
-              </p>
-              <time class="block text-sm text-slate" [attr.datetime]="adjustment.created_at">{{
-                date(adjustment.created_at)
-              }}</time>
-            </article>
-          } @empty {
-            <p class="rounded-card bg-white p-4">{{ t('player.noAdjustments') }}</p>
-          }
-        </section>
+        <h2 class="text-xl font-bold">{{ t('player.teamSchedule') }}</h2>
+        <!-- Same match-by-match table and reconciliation as the drill-down sheet (A7). -->
+        <app-team-breakdown [code]="item.code" [summary]="false" [openPage]="false" />
       }
     } @else {
       <p class="rounded-card bg-white p-5">{{ t('player.teamNotFound') }}</p>

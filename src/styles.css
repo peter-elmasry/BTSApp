@@ -7,6 +7,8 @@
 @import '@fontsource/cairo/latin-700.css';
 @import '@fontsource/cairo/latin-800.css';
 @import 'tailwindcss';
+/* Shared table styles: global so other tables (leaderboard, schedule) reuse them. */
+@import './app/shared/ui/data-table.css';
 
 @theme {
   --color-*: initial;
