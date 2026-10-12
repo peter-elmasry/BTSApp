@@ -2,12 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-12 — Phase 8: team lock, referees, breaks, lives scoring, schedule table — STARTED
+## 2026-10-12 — Phase 8: team lock, referees, breaks, lives scoring, schedule table — HANDOFF
 
-- **Requested by:** Peter; approved slices 1–7 of the Phase 8 proposal (general inter-round breaks cancelled).
-- **Preflight:** Clean `master` at `df28e10` (CRLF-only noise on the Windows checkout). Work happens in a Linux copy with its own `npm ci`; finished files are copied back and committed on `feat/phase-8-extensions`, one commit per slice.
-- **Scope:** Slice 4 admin/owner layout and audit A07/A08; slice 1 team-selection lock after the first round starts (first pick still allowed, staff exempt); slice 3 referee names on game details; slice 2 per-game breaks (no match = break) and a referee round × game table; slice 5 LIVES scoring mode with life-lost animation; slice 6 schedule table view (default) with cards view; slice 7 docs. FUTURE_PLANS.md records the player market idea.
-- **Decisions:** D035–D038 (below). Migration `0016_phase8.sql` adds scoring mode columns, event `first_round_started_at` and game referee names to public reads.
+- **Requested by:** Peter; approved slices 1–7 of the Phase 8 proposal. General inter-round breaks were cancelled; "no match for a game in a round = break" instead. Answers: first pick allowed after the lock; teams at zero lives stay at zero and keep playing; life emoji is free text with ten suggestions.
+- **Preflight:** Clean `master` at `df28e10` (CRLF-only noise on the Windows checkout). Implemented in a Linux copy of the same commit; finished files copied back and committed on `feat/phase-8-extensions`, one commit per slice.
+- **Implemented:** Slice 4 shared staff section bar/layout classes, 44 px remove-admin, masked localized owner password sheet (A07/A08, D040). Slice 1 team lock after the first round starts, staff exempt (D035). Slice 3 referee names on game details via migration `0016_game_referees.sql` (D036). Slice 2 derived per-game/team breaks on schedule, game details and setup builder, plus a referee round × game table on `/ref` (D037). Slice 5 LIVES scoring via migration `0017_lives_scoring.sql`: settings, lock after start, standings, tie invalidation, import workbook v4, export headings, lives meter and life-lost animation (D038). Slice 6 schedule Table (default) and Cards views (D039). Plan §20, README, FUTURE_PLANS (player market idea) and audit A07/A08 notes updated.
+- **Checks passed:** 157/157 unit tests (31 files); translation audit 654 EN/AR keys; production build, initial 377.12 kB. Browser: 58/59 — new admin-layout, breaks, lives and team-lock journeys pass in EN/AR; XLSX import/export journeys pass under Node 24 (fail under Node 22 only from the known test-side ExcelJS import). SQL: all 15 existing migrations plus 0016/0017 apply and 837/837 pgTAP assertions pass (802 existing + 35 new) on a local Postgres 16 with a minimal Supabase stub (roles, `auth.uid`, `realtime.send`, storage tables). That stub is a local check, not Supabase CLI/CI evidence.
+- **Not passed / environment:** `shell loads offline after service worker takes control` fails with Chromium's `in-incognito` installability error in the sandbox browser; it fails identically on untouched `df28e10`, so it is an environment issue. Cloud CI, hosted migrations and Lighthouse were not run.
+- **Next:** Peter/Gendy review the branch, push `feat/phase-8-extensions`, open a PR and confirm cloud CI (expected 837 SQL assertions). Apply migrations 0016/0017 through the normal deploy workflow. Re-download the setup workbook after deploy (template v4).
 
 ## 2026-10-12 — Publish A06 entity-language fix — STARTED
 

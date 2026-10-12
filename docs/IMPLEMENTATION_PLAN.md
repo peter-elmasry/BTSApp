@@ -850,3 +850,21 @@ Each phase = one branch + PR. Do not start a phase before the previous one's cri
 
 ## 19. Out of scope (v1)
 Automatic tie-break rules, multiple simultaneous events, SMS/OTP, push notifications, player accounts, image uploads for teams (avatars are catalog-only), chat.
+
+---
+
+## 20. Phase 8 — Extensions agreed 2026-10-12
+
+Product owner approved slices 1–7 on 2026-10-12. Decisions D035–D040 record the details; ideas not yet agreed live in `docs/FUTURE_PLANS.md`.
+
+| Slice | Requirement | Acceptance |
+|---|---|---|
+| 1 Team lock (D035) | Players/guides cannot switch team after the first round starts; first pick still allowed; owners/event admins/referees exempt | Switch sheet and picker show the lock; QR link to another team refused; first pick works |
+| 2 Breaks (D037) | A game with no match in a regular round is on a break; shown in schedule, game details, setup builder; referees get a round × game table of their games | Break rows/cards appear where no match exists; referee table lists assigned games and breaks |
+| 3 Referee names (D036) | Game details and match cards list the game's referees (names only) | Public bootstrap exposes names only; pgTAP privacy checks |
+| 4 Staff layout (D040) | One section bar, consistent spacing and ≥44 px targets on admin/owner screens; closes audit A07/A08 | No 360 px overflow, axe clean, masked localized password sheet |
+| 5 Lives scoring (D038) | Optional LIVES mode: N lives, loss/forfeit −1, floor at 0, keep playing; emoji symbol; life-lost animation | Standings/locks/import covered by pgTAP; browser journeys for settings, meter and animation |
+| 6 Schedule table (D039) | `/schedule` Table (default) and Cards views, remembered per device | Table default, switch and persistence covered in EN/AR |
+| 7 Docs | This section, D035–D040, README, progress log | — |
+
+General inter-round breaks with their own timer were proposed and **cancelled** by the product owner (2026-10-12).

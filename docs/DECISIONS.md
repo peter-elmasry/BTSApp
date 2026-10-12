@@ -1,5 +1,76 @@
 # Implementation decisions
 
+## D040 — One section bar and shared layout for staff screens
+
+Every `/manage/:eventId/*` screen shows the same section bar (Live, Setup,
+Standings, Import, Audit log) with `aria-current`, replacing per-page link lists
+that ran together. Second-level tabs (setup sections, live rounds, schedule view)
+use a teal variant so they never read as the section bar. Shared `ds-card`,
+`ds-actions`, `ds-page-header`, `ds-tabs`/`ds-tab` and `ds-button ghost-danger`
+classes in `styles.css` give consistent spacing and ≥44 px targets; entity rows
+wrap actions below the name on narrow screens. The owner remove-admin control is
+now 44×44 px (audit A07). Owner password resets use a localized bottom-sheet form
+with masked new/confirm inputs, a 12-character check and cleared values on close,
+replacing `window.prompt` (audit A08). No permission or server behavior changed.
+
+## D039 — Schedule table is the default player view
+
+`/schedule` offers Table and Cards views inside each tab (my team, by round, by
+game). Table is the default; the choice is remembered per device in
+`localStorage bts.schedule.view` and falls back to Table when storage is
+unavailable. The table lists round, game, teams and result/status in the same
+order as the cards, highlights the active round, and shows breaks as rows. The
+result column shows only outcomes the existing visibility rules already return
+(own team always; others only when public).
+
+## D038 — LIVES scoring mode
+
+Events have `scoring_mode` (`POINTS` default, or `LIVES`), `initial_lives`
+(1–99, required for LIVES) and a free-text `life_emoji` (1–16 characters, default
+❤️; the UI suggests ten). In LIVES mode a WIN or DRAW keeps lives and a LOSS or
+FORFEIT costs one; VOID and pending matches cost nothing. Lives from matches stop
+at zero and a team at zero keeps playing; adjustments add or remove lives and the
+total also stops at zero. Standings remain computed (D026): `match_points` holds
+lives from matches and `total` the lives left, so ranking, ties, visibility,
+export and display reuse the existing contract. Scoring mode and starting lives
+cannot change once any round has `started_at` (`SCORING_LOCKED`); the emoji may.
+Changing either clears manual tie orders like points changes. The public event
+JSON adds the three fields; import workbook v4 adds them to the Event sheet
+(blank cells keep current scoring; v3 files remain accepted). Players see their
+own lives from their own results even when standings are hidden, which §6.6
+already allows. A once-per-match, per-device life-lost animation
+(`bts.seenLosses.<eventId>.<team>`) plays on Home/Schedule; the first load on a
+device only records existing losses. Reduced motion shows a static card.
+
+## D037 — Breaks are derived from missing matches
+
+Product owner decision 2026-10-12: no general inter-round break entity. In a
+regular round, a game without a match is on a break; a team without a match is
+resting. Breaks are computed in the client from the existing schedule, never
+stored, and need no migration. The opening round lists only its match; unused
+stations there are not breaks. Breaks appear on the player schedule (both views),
+game details, the setup match builder and the referee board's new round × game
+table of the referee's assigned games (event admins without assignments see all
+games). That table reads the public schedule, so hidden outcomes stay hidden.
+
+## D036 — Game referee names are public
+
+`get_bootstrap` games include `referees: [{name_en,name_ar}]` for active members
+holding REFEREE in the event and an assignment to that game. Names only — no
+member IDs, usernames or phones, matching the guide privacy rule. The live
+snapshot inherits the field through `get_bootstrap`. Game details and match cards
+show "Referee(s): …".
+
+## D035 — Players keep their team after the first round starts
+
+Once any round of the current event has `started_at`, anonymous players and
+guides cannot switch team; the header sheet and team picker explain the lock and
+QR links for another team are refused. A device that never chose a team may still
+pick once. Signed-in owners, that event's administrators and referees are exempt
+for operational checks. Team choice is device storage with no server mutation, so
+this is a client rule derived from public round data — consistent with the
+accepted §6.6 limitation; it is not a security boundary.
+
 ## D034 — Prepare game photos before upload
 
 Game setup accepts JPEG, PNG and WebP sources up to 20 MiB and 40 megapixels.
