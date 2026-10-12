@@ -2,6 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Merge A05 and fix A06 entity language — HANDOFF
+
+- **Requested by:** Gendy; merge PR #15, verify master and continue audit remediation.
+- **Preflight:** Clean photo branch with one local evidence commit. PR #15 clean/mergeable, four checks green, no submitted review objections; merged via signed-in browser at `ac89603`. Fetched master, created `codex/admin-entity-language`, carried prior CI evidence via cherry-pick.
+- **Scope:** Localize owner/setup display names, locations and selectors using the current language with opposite-language fallback; preserve explicit bilingual edit fields and payloads. Verify EN/AR and live switching. Master CI/deployment verification pending.
+- **Master verification:** CI `38242121889` and Vercel deployment pass on `ac89603`. Supabase workflow intentionally does not trigger without changes under its configured paths; PR #15 changed no backend files.
+- **Implemented:** Shared trimmed entity-label helper and current-language reads in setup/owner cards, selectors, round/game labels, locations, member/admin labels and staff team assignments. Removed duplicate secondary Arabic names; form field data remains bilingual.
+- **Checks:** Seven focused unit tests pass (fallback plus owner and photo-selection regression). App/spec TypeScript, 599-key translations, production build (373.91 kB initial), formatting and whitespace pass. Browser journey reports passing runtime switching, Arabic labels and blank-translation fallback across setup/owner. Initial browser failures were ambiguous header/hidden option locators and fixture language reset on navigation; corrected and rerun passed. Windows runner cleanup remains slow after test completion. Full frontend suite and cloud A06 acceptance not claimed; no SQL changed.
+- **Handoff:** Commit finished A06 locally on `codex/admin-entity-language`; not pushed. Next: publish A06 PR and verify CI, then A07 minimum touch size on remove-admin.
+
 ## 2026-10-12 — Publish A05 game-photo processing — DONE
 
 - **Requested by:** Gendy; publish the finished fix and verify cloud CI.

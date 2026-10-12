@@ -201,6 +201,14 @@ WebP limit, which does not substitute for client resizing.
 
 ### A06 — P2: Arabic admin/owner entity names remain English
 
+**Implementation update (2026-10-12):** Setup and owner entity labels now select
+the active language with trimmed opposite-language fallback. Event/team/game/
+round/member names, staff team assignments, locations and selectors update on
+runtime language switching; explicit bilingual edit inputs retain their fields.
+Seven focused unit tests and the setup/owner browser language-switch journey pass.
+Production build, app/spec TypeScript, translations and formatting pass locally;
+cloud acceptance is pending publication.
+
 Requirement: §14.1, entity names follow the language with fallback.
 `setup-page.html:235` renders `team.name_en`; game/round/staff selectors and owner
 cards similarly use English fields. With both names present, the Arabic setup

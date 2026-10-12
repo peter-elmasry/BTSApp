@@ -4,6 +4,7 @@ import { AuthStore } from '../../core/auth/auth.store';
 import { OpQueueService } from '../../core/offline/op-queue.service';
 import { ReadCacheService } from '../../core/offline/read-cache.service';
 import { EventSetupPage } from './setup-page';
+import { DirectionService } from '../../core/i18n/i18n.service';
 
 describe('pending game photo selection', () => {
   let page: EventSetupPage;
@@ -12,6 +13,7 @@ describe('pending game photo selection', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
+        { provide: DirectionService, useValue: { language: () => 'en' } },
         { provide: AuthStore, useValue: {} },
         { provide: OpQueueService, useValue: {} },
         {
