@@ -104,6 +104,18 @@ test('admin and owner entity labels switch languages with fallback', async ({ pa
   await page.goto('/owner/events');
   await expect(page.getByRole('heading', { name: 'المهرجان (LANG)' })).toBeVisible();
   await expect(page.locator('app-owner-page li').filter({ hasText: 'مينا (@mina)' })).toBeVisible();
+  const assertAdminTouchTarget = async (lang: 'ar' | 'en') => {
+    // The label adds the member name (D040); match the action as a prefix.
+    const remove = page.getByRole('button', { name: labels(lang).owner.removeAdmin });
+    const box = await remove.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.width).toBeGreaterThanOrEqual(44);
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+  };
+  await assertAdminTouchTarget('ar');
   await page
     .locator('header')
     .first()
@@ -115,6 +127,7 @@ test('admin and owner entity labels switch languages with fallback', async ({ pa
     .click();
   await expect(page.getByRole('heading', { name: 'Festival (LANG)' })).toBeVisible();
   await expect(page.locator('app-owner-page li').filter({ hasText: 'Mina (@mina)' })).toBeVisible();
+  await assertAdminTouchTarget('en');
   await page.goto('/owner/members');
   await expect(page.getByRole('heading', { name: 'مينا (@mina)' })).toBeVisible();
   await page

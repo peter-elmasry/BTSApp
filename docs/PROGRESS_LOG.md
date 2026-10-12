@@ -9,13 +9,28 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Implemented:** Slice 4 shared staff section bar/layout classes, 44 px remove-admin, masked localized owner password sheet (A07/A08, D040). Slice 1 team lock after the first round starts, staff exempt (D035). Slice 3 referee names on game details via migration `0016_game_referees.sql` (D036). Slice 2 derived per-game/team breaks on schedule, game details and setup builder, plus a referee round × game table on `/ref` (D037). Slice 5 LIVES scoring via migration `0017_lives_scoring.sql`: settings, lock after start, standings, tie invalidation, import workbook v4, export headings, lives meter and life-lost animation (D038). Slice 6 schedule Table (default) and Cards views (D039). Plan §20, README, FUTURE_PLANS (player market idea) and audit A07/A08 notes updated.
 - **Checks passed:** 157/157 unit tests (31 files); translation audit 654 EN/AR keys; production build, initial 377.12 kB. Browser: 58/59 — new admin-layout, breaks, lives and team-lock journeys pass in EN/AR; XLSX import/export journeys pass under Node 24 (fail under Node 22 only from the known test-side ExcelJS import). SQL: all 15 existing migrations plus 0016/0017 apply and 837/837 pgTAP assertions pass (802 existing + 35 new) on a local Postgres 16 with a minimal Supabase stub (roles, `auth.uid`, `realtime.send`, storage tables). That stub is a local check, not Supabase CLI/CI evidence.
 - **Not passed / environment:** `shell loads offline after service worker takes control` fails with Chromium's `in-incognito` installability error in the sandbox browser; it fails identically on untouched `df28e10`, so it is an environment issue. Cloud CI, hosted migrations and Lighthouse were not run.
+- **Merge (2026-10-13):** Merged master `f3ae6f1` (PR #17 A07 fix) into this branch. Owner remove-admin keeps PR #17's non-shrinking 44 px target plus the member-specific label; PR #17's touch-target check matches the label as a prefix. Audit/progress histories from both branches retained.
 - **Next:** Peter/Gendy review the branch, push `feat/phase-8-extensions`, open a PR and confirm cloud CI (expected 837 SQL assertions). Apply migrations 0016/0017 through the normal deploy workflow. Re-download the setup workbook after deploy (template v4).
 
-## 2026-10-12 — Publish A06 entity-language fix — STARTED
+## 2026-10-12 — Verify A06 merge and fix A07 touch target — DONE
+
+- **Requested by:** Gendy; verify PR #16 merge/master and fix/publish A07. Standing authorization now covers pushing completed checked changes and opening PRs; merges require separate authorization.
+- **Preflight:** Clean prior branch with one local evidence commit; fetched origin, PR #16 already merged at `df28e10`. Created `codex/owner-admin-touch-target` from master and carried evidence as `3a9f2c9`.
+- **Master:** CI `38244996840` and Vercel production deployment pass at the merge commit.
+- **Scope:** Enlarge owner remove-admin control to at least 44×44 px, verify EN/AR mobile layout; update collaboration instructions and publish PR.
+- **Implemented/checked:** Remove-admin uses a centered non-shrinking 44×44 px minimum target; existing handler and accessible name retained. Focused production browser journey passes both languages at 360×740, asserting target dimensions and no horizontal overflow. Production build (373.91 kB initial), formatting and whitespace pass. Updated AGENTS.md with standing publication authorization.
+- **Published/verified:** PR #17 at `352b2d9`; CI `38248413574` passes 146 unit tests, 43 browser tests and 802 SQL assertions. Frontend/database and Vercel preview/feedback checks pass.
+- **Latest deployment blocker:** Documentation-only head `3db40fa` has a failed Vercel status after the application head deployed successfully. The inspector redirects to Vercel login; no local Vercel credentials are configured. Failure cause is unavailable through GitHub's reported status. Authenticated project access is needed to inspect deployment `CHaQxwJ5wKHDe852YWfZRV6ZfkZv`; do not infer an application regression from this status alone.
+- **Handoff:** Final documentation evidence committed and published with this PR; no merge of #17 performed. Next: inspect/retry the failed Vercel preview using project access, review/merge #17 when checks are acceptable, verify master, then A08 localized masked password-reset form.
+
+## 2026-10-12 — Publish A06 entity-language fix — DONE
 
 - **Requested by:** Gendy; publish the finished fix and verify cloud CI.
 - **Preflight:** Clean `codex/admin-entity-language` at `3c492b8`; fetched origin and reviewed branch commits/change summary; whitespace passes.
 - **Scope:** Publish branch, open PR against master, verify/fix cloud checks. No merge requested in this session.
+- **Published:** PR #16 (`codex/admin-entity-language`) at `22548f2`; opened through the signed-in browser because connector writes lack permission.
+- **Cloud checks:** CI `38243675816` passes frontend and database on the published head: 146 unit tests, 43 browser tests, 802 SQL assertions across 11 files; formatting, 599-key translations, login/member handler checks and production build pass. Vercel preview and preview-feedback check pass.
+- **Handoff:** PR #16 ready for review/merge; no merge performed. Final CI evidence committed locally. Next: merge and verify master, then A07 remove-admin minimum touch size.
 
 ## 2026-10-12 — Merge A05 and fix A06 entity language — HANDOFF
 
