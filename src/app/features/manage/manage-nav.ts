@@ -2,12 +2,13 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 
-/** One consistent section bar for every event-administration screen. */
+/** One section bar for every event-administration screen (D040, amended by D045). */
 export const MANAGE_SECTIONS = [
-  { path: 'live', key: 'manage.nav.live' },
-  { path: 'setup', key: 'manage.nav.setup' },
+  { path: 'live', key: 'manage.nav.control' },
+  { path: 'results', key: 'manage.nav.results' },
+  { path: 'adjustments', key: 'manage.nav.adjustments' },
   { path: 'standings', key: 'manage.nav.standings' },
-  { path: 'import', key: 'manage.nav.import' },
+  { path: 'setup', key: 'manage.nav.setup' },
   { path: 'audit', key: 'manage.nav.audit' },
 ] as const;
 

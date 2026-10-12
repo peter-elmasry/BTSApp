@@ -13,7 +13,8 @@ import {
 } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 
-export type DsRowStatus = 'live' | 'pending' | 'late' | 'done' | 'void' | 'queued' | null;
+export type DsRowStatus =
+  'scheduled' | 'live' | 'pending' | 'late' | 'done' | 'void' | 'queued' | null;
 export type DsPriority = 1 | 2 | 3;
 
 /** One table column. `header` is already translated by the caller. */

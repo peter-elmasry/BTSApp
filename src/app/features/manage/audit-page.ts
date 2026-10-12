@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { ManageNav } from './manage-nav';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuditApi, type AuditEntry, type AuditJson } from '../../core/audit/audit-api';
@@ -22,7 +21,7 @@ import { localizedName } from '../public/public-helpers';
 
 @Component({
   selector: 'app-audit-page',
-  imports: [TranslocoDirective, ManageNav, ReactiveFormsModule],
+  imports: [TranslocoDirective, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './audit-page.html',
 })

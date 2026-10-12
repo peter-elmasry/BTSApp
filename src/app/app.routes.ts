@@ -6,13 +6,14 @@ import {
   ownerGuard,
   scoringGuard,
 } from './core/auth/guards';
+import { landingGuard } from './core/auth/landing';
 import { leaderboardVisibleGuard, teamChosenGuard } from './core/player/player.guards';
 
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    canActivate: [teamChosenGuard],
+    canActivate: [landingGuard, teamChosenGuard],
     loadComponent: () => import('./features/public/home-page').then((m) => m.HomePage),
   },
   {
@@ -89,8 +90,12 @@ export const routes: Routes = [
     path: 'manage/:eventId',
     canActivate: [authGuard, eventRoleGuard],
     data: { roles: ['EVENT_ADMIN'] },
+    loadComponent: () => import('./features/manage/manage-layout').then((m) => m.ManageLayout),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'live' },
+      // Results and Adjustments get their own screens in U4; until then they open Control.
+      { path: 'results', redirectTo: 'live' },
+      { path: 'adjustments', redirectTo: 'live' },
       {
         path: 'audit',
         loadComponent: () => import('./features/manage/audit-page').then((m) => m.AuditPage),

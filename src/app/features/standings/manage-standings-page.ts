@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { ManageNav } from '../manage/manage-nav';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { AuthStore } from '../../core/auth/auth.store';
 import { DirectionService } from '../../core/i18n/i18n.service';
@@ -64,7 +63,7 @@ export function standingsAdminError(error: unknown) {
 
 @Component({
   selector: 'app-manage-standings-page',
-  imports: [ManageNav, TranslocoDirective, DsBottomSheet],
+  imports: [TranslocoDirective, DsBottomSheet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './manage-standings-page.html',
 })
@@ -82,6 +81,10 @@ export class ManageStandingsPage {
     initialValue: this.route.snapshot.paramMap,
   });
   readonly eventId = computed(() => this.params().get('eventId') ?? '');
+  private readonly query = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
+  private exportRequested = false;
   readonly allowed = computed(
     () => !!this.auth.session() && isLiveAdmin(this.auth.profile(), this.eventId()),
   );
@@ -125,6 +128,13 @@ export class ManageStandingsPage {
   private dragId: string | null = null;
 
   constructor() {
+    // The Export toolbar button (D045) opens this page ready to download.
+    effect(() => {
+      if (this.query().get('export') !== '1' || this.exportRequested) return;
+      if (!this.snapshot() || this.loading() || this.preview()) return;
+      this.exportRequested = true;
+      untracked(() => void this.prepareExport());
+    });
     effect((cleanup) => {
       const id = this.eventId();
       if (id && this.allowed()) cleanup(this.realtime.acquire(id));

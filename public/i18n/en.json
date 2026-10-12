@@ -20,6 +20,11 @@
   "nav.schedule": "Schedule",
   "nav.leaderboard": "Standings",
   "nav.about": "About us",
+  "nav.control": "Control",
+  "nav.results": "Results",
+  "nav.setup": "Setup",
+  "nav.more": "More",
+  "nav.myStation": "My station",
   "team.choose.title": "Pick your team",
   "team.choose.confirm": "Yes, that's my team!",
   "team.switch": "Switch team",
@@ -154,10 +159,18 @@
       "setup": "Setup",
       "standings": "Standings",
       "import": "Import",
-      "audit": "Audit log"
+      "audit": "Audit log",
+      "control": "Control",
+      "results": "Results",
+      "adjustments": "Bonuses & penalties"
     },
     "entityNameEn": "Name (English)",
-    "entityNameAr": "Name (Arabic)"
+    "entityNameAr": "Name (Arabic)",
+    "toolbar": {
+      "label": "Excel import and export",
+      "import": "Import (Excel)",
+      "export": "Export (Excel)"
+    }
   },
   "import": {
     "intro": "Upload an Excel workbook, review its rows, then confirm the import.",
@@ -701,5 +714,42 @@
       "queued": "Queued"
     },
     "call": "Call {{name}}"
+  },
+  "menu": {
+    "title": "Menu",
+    "open": "Open account menu",
+    "roles": "Your roles in this event",
+    "eventTools": "Event tools",
+    "playerView": "Player view",
+    "display": "Big screen",
+    "members": "Members & events",
+    "role": {
+      "OWNER": "Owner",
+      "EVENT_ADMIN": "Event admin",
+      "REFEREE": "Referee",
+      "GUIDE": "Guide"
+    }
+  },
+  "now": {
+    "open": "Show what's happening now",
+    "tapHint": "Tap for details",
+    "title": "Right now",
+    "noActive": "No round is running right now",
+    "completed": "Results in",
+    "pending": "Waiting",
+    "pendingTable": "Matches still without a result",
+    "noPending": "All results are in 🎉",
+    "referees": "Referee",
+    "openControl": "Open control",
+    "openStation": "Open my station",
+    "myStation": "Your station this round",
+    "myMatch": "Your match",
+    "nextMatch": "Your next match",
+    "resting": "Your team is resting this round",
+    "none": "Pick your team to see your match",
+    "nextRound": "Next: {{name}}",
+    "game": "Game",
+    "teams": "Teams",
+    "status": "Status"
   }
 }

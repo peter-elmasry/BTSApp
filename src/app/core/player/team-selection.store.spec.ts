@@ -113,4 +113,48 @@ describe('event-scoped player team choice', () => {
     profile.set({ system_role: 'OWNER', roles: [] });
     expect(store.locked()).toBe(false);
   });
+  it('moves a signed-in guide of one team to that team even after the lock (D044)', () => {
+    localStorage.setItem('bts.team.one', 'T01');
+    rounds.set([{ id: 'r1', started_at: '2026-10-12T10:00:00Z' } as PublicRound]);
+    const store = TestBed.inject(TeamSelectionStore);
+    expect(store.selectedCode()).toBe('T01');
+    profile.set({
+      system_role: 'MEMBER',
+      roles: [{ event_id: 'one', role: 'GUIDE', team_id: 't2' }],
+    });
+    TestBed.tick();
+    expect(store.guidedTeamCodes()).toEqual(['T02']);
+    expect(store.selectedCode()).toBe('T02');
+    expect(localStorage.getItem('bts.team.one')).toBe('T02');
+    expect(store.choose('T01')).toBe(false);
+  });
+
+  it('lets a guide of several teams switch only among them after the lock (D044)', () => {
+    teams.set([...roster, { id: 't3', code: 'T03' } as PublicTeam]);
+    rounds.set([{ id: 'r1', started_at: '2026-10-12T10:00:00Z' } as PublicRound]);
+    profile.set({
+      system_role: 'MEMBER',
+      roles: [
+        { event_id: 'one', role: 'GUIDE', team_id: 't1' },
+        { event_id: 'one', role: 'GUIDE', team_id: 't3' },
+      ],
+    });
+    const store = TestBed.inject(TeamSelectionStore);
+    TestBed.tick();
+    expect(store.selectedCode()).toBeNull();
+    expect(store.canSwitch()).toBe(true);
+    expect(store.choose('T03')).toBe(true);
+    expect(store.choose('T01')).toBe(true);
+    expect(store.choose('T02')).toBe(false);
+    expect(store.selectedCode()).toBe('T01');
+  });
+
+  it('keeps anonymous devices locked as before (D035)', () => {
+    rounds.set([{ id: 'r1', started_at: '2026-10-12T10:00:00Z' } as PublicRound]);
+    const store = TestBed.inject(TeamSelectionStore);
+    store.choose('T01');
+    expect(store.guidedTeamCodes()).toEqual([]);
+    expect(store.canSwitch()).toBe(false);
+    expect(store.choose('T02')).toBe(false);
+  });
 });

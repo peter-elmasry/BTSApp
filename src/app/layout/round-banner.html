@@ -1,24 +1,54 @@
 <ng-container *transloco="let t">
   @if (activeRound(); as round) {
-    <aside
-      class="px-4 py-3 text-white"
+    <button
+      type="button"
+      class="block w-full px-4 py-3 text-start text-white"
+      data-testid="round-banner"
       [class.bg-error]="overtime()"
       [class.bg-teal]="!overtime()"
-      [attr.aria-label]="t('round.live', { n: round.number })"
+      [attr.aria-label]="t('now.open')"
+      (click)="open.set(true)"
     >
-      <div class="mx-auto flex max-w-3xl items-center justify-between gap-3">
-        <div class="min-w-0">
-          <p class="font-bold">
+      <span class="mx-auto flex max-w-3xl items-center justify-between gap-3">
+        <span class="min-w-0">
+          <span class="block font-bold">
             {{ t(round.type === 'OPENING' ? 'round.opening' : 'round.live', { n: round.number }) }}
-          </p>
+          </span>
           @if (overtime()) {
-            <p class="text-sm">{{ t('round.overtime') }}</p>
+            <span class="block text-sm">{{ t('round.overtime') }}</span>
           }
-        </div>
+          <span class="block text-xs">{{ t('now.tapHint') }}</span>
+        </span>
         <span class="tabular shrink-0 text-xl font-extrabold" dir="ltr" role="timer">{{
           timer()
         }}</span>
-      </div>
-    </aside>
+      </span>
+    </button>
+  } @else if (nextRound(); as round) {
+    <button
+      type="button"
+      class="block w-full border-b border-teal bg-white px-4 py-2 text-start text-teal"
+      data-testid="next-round-banner"
+      [attr.aria-label]="t('now.open')"
+      (click)="open.set(true)"
+    >
+      <span class="mx-auto flex max-w-3xl items-center justify-between gap-3 font-bold">
+        <span>{{
+          t('now.nextRound', {
+            name:
+              roundName(round) ||
+              (round.type === 'OPENING'
+                ? t('round.opening')
+                : t('player.roundNumber', { n: round.number })),
+          })
+        }}</span>
+        <span aria-hidden="true">›</span>
+      </span>
+    </button>
+  }
+  @if (open()) {
+    @defer {
+      <app-now-sheet (close)="open.set(false)" />
+    }
   }
 </ng-container>

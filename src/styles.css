@@ -263,6 +263,22 @@ select {
   color: var(--color-navy);
   font-size: 0.75rem;
 }
+/* Rows in the account / More sheet. */
+.menu-row {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.75rem;
+  background: var(--color-white);
+  padding-inline: 1rem;
+  font-weight: 700;
+  text-align: start;
+}
+.menu-row > span:first-child {
+  width: 1.5rem;
+  text-align: center;
+}
 /* Status pills, outcomes and phone links share one vocabulary. */
 .ds-pill {
   display: inline-flex;

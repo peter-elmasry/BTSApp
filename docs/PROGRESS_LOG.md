@@ -2,6 +2,17 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — UX enhancement U2 landing, navigation and Now sheet — DONE
+
+- **Branch:** `codex/ux-u2-navigation` (stacked on U1).
+- **Landing (§2.1):** `core/auth/landing.ts` — owners/admins → Control, referees → `/ref`, guides/players → home; used by `/` (`landingGuard`), the login redirect and the guest-only guard.
+- **D044:** `TeamSelectionStore.guidedTeamCodes/canSwitch/canChoose`; a signed-in guide is moved to their single guided team even after the lock, and a guide of several teams switches only among them. Anonymous lock (D035) unchanged.
+- **Navigation:** role-aware bottom nav (`layout/navigation.ts`, max five items); header 🔑/logout replaced by an initials button opening the account/More sheet (`layout/staff-menu`) with Import/Export, adjustments, audit, player view, display, members & events, language, password and logout.
+- **D045:** `/manage/:eventId` renders `ManageLayout` once with the section bar (Control · Results · Bonuses & penalties · Standings · Setup · Audit) and permanent "Import (Excel)" / "Export (Excel)" buttons; per-page bars removed. Router uses `paramsInheritanceStrategy: 'always'`. `results`/`adjustments` temporarily open Control until U4. Export opens Standings with `?export=1`, which prepares the export immediately.
+- **Now sheet:** the round banner opens a role-specific sheet (player match + location + next match, referee station status, admin results-in/pending/void count-ups with a pending table); staff also see a "Next: Round N" banner between rounds. Now sheet and menu are `@defer`-loaded.
+- **Checks:** 184 unit tests, i18n (713 keys), build (initial 399.87 kB), Prettier pass. Browser suite 68/69; the only failure is the known flaky `lives.spec.ts` life-lost case. Updated `admin-layout` and `session-privacy` specs for the agreed nav; new `navigation.spec.ts` (landing per role, toolbar on every manage page, guide auto-select, Now sheet) in EN/AR.
+- **Next:** U3 backend (migration 0018) and round lifecycle wiring.
+
 ## 2026-10-13 — UX enhancement U1 shared UI foundations — DONE
 
 - **Branch:** `codex/ux-u1-foundations` (stacked on `codex/ux-u0-decisions`).

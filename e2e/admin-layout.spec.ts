@@ -20,7 +20,7 @@ for (const lang of ['ar', 'en'] as const) {
     await mockOwner(page, lang);
     await page.goto(`/manage/${eventId}/live`);
     const nav = page.getByRole('navigation', { name: t.manage.nav.label });
-    await expect(nav.getByRole('link', { name: t.manage.nav.live })).toHaveAttribute(
+    await expect(nav.getByRole('link', { name: t.manage.nav.control })).toHaveAttribute(
       'aria-current',
       'page',
     );

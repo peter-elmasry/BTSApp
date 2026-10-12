@@ -3,6 +3,7 @@ import {
   Component,
   DestroyRef,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -19,11 +20,11 @@ import { currencyLabel } from '../standings/rank-motion';
 import { prepareGameImage } from './game-image';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { entityLabel } from '../../core/i18n/entity-label';
-import { ManageNav } from './manage-nav';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
 import { LIFE_EMOJI_SUGGESTIONS } from '../../core/player/scoring';
 import { DsLivesMeter } from '../../shared/ui/lives-meter';
+import { ManageContext } from './manage-context';
 
 type Row = any;
 type SetupData = {
@@ -41,7 +42,7 @@ type SetupTab = 'settings' | 'teams' | 'games' | 'rounds' | 'staff';
 
 @Component({
   selector: 'app-event-setup-page',
-  imports: [CommonModule, ReactiveFormsModule, TranslocoDirective, ManageNav, DsLivesMeter],
+  imports: [CommonModule, ReactiveFormsModule, TranslocoDirective, DsLivesMeter],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './setup-page.html',
 })
@@ -214,7 +215,14 @@ export class EventSetupPage {
   private imageRequest = 0;
 
   constructor() {
+    const context = inject(ManageContext);
+    // The layout shows the name of the event this screen loaded (it may not be the current one).
+    effect(() => {
+      const event = this.setup()?.event;
+      context.eventLabel.set(event ? `${this.label(event)} · ${event.code}` : '');
+    });
     inject(DestroyRef).onDestroy(() => {
+      context.eventLabel.set('');
       this.imageRequest++;
       this.releaseImagePreview();
     });

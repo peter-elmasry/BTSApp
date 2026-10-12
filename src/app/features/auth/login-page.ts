@@ -3,6 +3,8 @@ import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthStore } from '../../core/auth/auth.store';
+import { landingFor } from '../../core/auth/landing';
+import { EventStore } from '../../core/player/event.store';
 import { DsButton } from '../../shared/ui/button';
 import { DsInput } from '../../shared/ui/controls';
 
@@ -16,6 +18,7 @@ export class LoginPage {
   private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly events = inject(EventStore);
   readonly busy = signal(false);
   readonly error = signal('');
   readonly form = new FormGroup({
@@ -39,6 +42,13 @@ export class LoginPage {
       return;
     }
     const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-    await this.router.navigateByUrl(returnUrl?.startsWith('/') ? returnUrl : '/home');
+    if (returnUrl?.startsWith('/') && !returnUrl.startsWith('//')) {
+      await this.router.navigateByUrl(returnUrl);
+      return;
+    }
+    await this.events.refresh().catch(() => undefined);
+    await this.router.navigateByUrl(
+      landingFor(this.auth.profile(), this.events.event()?.id ?? null),
+    );
   }
 }

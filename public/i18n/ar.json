@@ -20,6 +20,11 @@
   "nav.schedule": "المواعيد",
   "nav.leaderboard": "الترتيب",
   "nav.about": "مين إحنا",
+  "nav.control": "التحكم",
+  "nav.results": "النتايج",
+  "nav.setup": "الإعداد",
+  "nav.more": "المزيد",
+  "nav.myStation": "محطتي",
   "team.choose.title": "اختار فريقك",
   "team.choose.confirm": "أيوه، ده فريقي!",
   "team.switch": "غيّر فريقك",
@@ -154,10 +159,18 @@
       "setup": "الإعداد",
       "standings": "الترتيب",
       "import": "الاستيراد",
-      "audit": "سجل التغييرات"
+      "audit": "سجل التغييرات",
+      "control": "التحكم",
+      "results": "النتايج",
+      "adjustments": "البونص والخصم"
     },
     "entityNameEn": "الاسم (إنجليزي)",
-    "entityNameAr": "الاسم (عربي)"
+    "entityNameAr": "الاسم (عربي)",
+    "toolbar": {
+      "label": "استيراد وتصدير إكسل",
+      "import": "استيراد (إكسل)",
+      "export": "تصدير (إكسل)"
+    }
   },
   "import": {
     "intro": "ارفع ملف Excel، وراجع الصفوف، ثم أكّد الاستيراد.",
@@ -722,5 +735,42 @@
       "queued": "مستنية النت"
     },
     "call": "اتصل بـ {{name}}"
+  },
+  "menu": {
+    "title": "القايمة",
+    "open": "افتح قايمة الحساب",
+    "roles": "أدوارك في الإيفنت ده",
+    "eventTools": "أدوات الإيفنت",
+    "playerView": "شاشة اللاعبين",
+    "display": "الشاشة الكبيرة",
+    "members": "الأعضاء والإيفنتات",
+    "role": {
+      "OWNER": "المالك",
+      "EVENT_ADMIN": "أدمن الإيفنت",
+      "REFEREE": "حكم",
+      "GUIDE": "مرشد"
+    }
+  },
+  "now": {
+    "open": "اعرض اللي بيحصل دلوقتي",
+    "tapHint": "دوس للتفاصيل",
+    "title": "دلوقتي",
+    "noActive": "مفيش جولة شغالة دلوقتي",
+    "completed": "نتايج وصلت",
+    "pending": "مستنية",
+    "pendingTable": "ماتشات لسه من غير نتيجة",
+    "noPending": "كل النتايج وصلت 🎉",
+    "referees": "الحكم",
+    "openControl": "افتح التحكم",
+    "openStation": "افتح محطتي",
+    "myStation": "محطتك في الجولة دي",
+    "myMatch": "ماتشك",
+    "nextMatch": "ماتشك الجاي",
+    "resting": "فريقك مستريح الجولة دي",
+    "none": "اختار فريقك علشان تشوف ماتشك",
+    "nextRound": "الجاية: {{name}}",
+    "game": "اللعبة",
+    "teams": "الفرق",
+    "status": "الحالة"
   }
 }

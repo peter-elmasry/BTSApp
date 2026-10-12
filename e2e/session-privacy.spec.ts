@@ -26,7 +26,8 @@ for (const [path, selector] of [
     await mockOwner(second);
     await second.goto('/owner/members');
     await expect(second.getByText('+201000000001')).toBeVisible();
-    await second.locator('header').getByRole('button', { name: 'تسجيل الخروج' }).click();
+    await second.getByTestId('account-menu').click();
+    await second.getByTestId('staff-menu').getByRole('button', { name: 'تسجيل الخروج' }).click();
     await expect(page.locator('header').getByRole('link', { name: 'تسجيل الدخول' })).toBeVisible();
     await expect(page.locator(selector)).toHaveCount(0);
     await expect(page.getByText('+201000000001')).toHaveCount(0);

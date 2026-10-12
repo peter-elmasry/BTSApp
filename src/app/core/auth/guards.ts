@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthStore } from './auth.store';
+import { resolveLanding } from './landing';
 
 export const PASSWORD_URL = '/account/password';
 
@@ -19,8 +20,10 @@ export const authGuard: CanActivateFn = async (_route, state) => {
 export const guestOnlyGuard: CanActivateFn = async () => {
   const auth = inject(AuthStore);
   const router = inject(Router);
+  const landing = resolveLanding();
   await auth.initialize();
-  return auth.session() ? router.createUrlTree(['/home']) : true;
+  if (!auth.session()) return true;
+  return router.parseUrl(await landing);
 };
 
 export const ownerGuard: CanActivateFn = async () => {

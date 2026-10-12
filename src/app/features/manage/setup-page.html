@@ -1,10 +1,6 @@
 <div *transloco="let t" class="space-y-5">
   <header class="space-y-3">
     <h1 class="text-2xl font-extrabold">{{ t('manage.setupTitle') }}</h1>
-    <app-manage-nav
-      [eventId]="eventId"
-      [eventLabel]="setup() ? label(setup()!.event) + ' · ' + setup()!.event.code : ''"
-    />
   </header>
 
   @if (notice()) {
