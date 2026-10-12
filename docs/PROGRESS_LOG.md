@@ -2,6 +2,81 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Repair PR #13 database fixture failures — HANDOFF
+
+- **Requested by:** Gendy; database check still fails after migration fix.
+- **Preflight:** Clean `codex/phase-7-readiness` at `a305419`, now published by the user and matching PR #13 head. Run `38226245094` applies all migrations and passes real member/Auth/login integration; pgTAP reports 2 failures among 775 assertions.
+- **Changed:** Foundations receipt count now filters its test operation; member audit-failure regression uses a third, unlinked Auth fixture. Production constraints, expected audit exception and rollback assertions remain intact.
+- **Checks:** Changed-file Prettier, whitespace and diff review pass. Local database retry fails ECONNREFUSED at port 54322; repaired assertions require cloud execution. Previous cloud run passed 773/775 assertions and real member/login integration, not a fully passing suite.
+- **Handoff:** Repair committed locally; no push/deployment. Next: publish this commit to PR #13 and verify its complete database job. Repository instructions require user authorization to push.
+
+## 2026-10-12 — Repair PR #13 migration numbering — HANDOFF
+
+- **Requested by:** Gendy; database check is still failing.
+- **Preflight:** Clean `codex/phase-7-readiness` at `96f702f`, matching PR #13 head. Latest run `38225536749` confirms the same duplicate `0010` migration-version failure before database tests.
+- **Changed:** Renamed the new login-lockout migration to `0013_login_lockout.sql` with SQL contents unchanged; updated current decision/audit references. Existing password-change migration `0010` and member-audit migration `0014` retain their versions.
+- **Checks:** All 14 migration versions are unique; renamed SQL matches the original committed file exactly. Changed-document Prettier and whitespace checks pass. Database runtime retry reaches localhost but fails ECONNREFUSED at port 54322; no SQL runtime pass claimed.
+- **Handoff:** Fix committed locally, not pushed under repository rules. Publish this commit to PR #13 to trigger fresh cloud database CI; current remote checks still run the unfixed migration list.
+
+## 2026-10-12 — PR #13 CI diagnosis — DONE
+
+- **Requested by:** Gendy; check what is wrong with the latest PR.
+- **Preflight/scope:** Clean `codex/phase-7-readiness` at `24fe6b3`, matching PR #13 head; read-only PR/CI investigation plus this session record. Initial general search omitted #13; explicit open-PR search found it.
+- **Confirmed blocker:** Run `38179650297`, database job `114589306710`, fails during `supabase start`: `schema_migrations_pkey` rejects duplicate version `0010`. The merged branch contains both `0010_login_lockout.sql` and `0010_password_change.sql`; Supabase identifies migrations by numeric prefix.
+- **Checks/outcomes:** Frontend and Vercel pass. Database migrations stop before reset/Auth/pgTAP checks, so this run provides no SQL acceptance. Registry rate-limit warnings recovered and are not the terminal error.
+- **Next:** Rename the new lockout migration to unused version `0013`, preserving existing password-change migration `0010` and member-audit migration `0014`; update references, then rerun cloud database CI. No product fix, push, deployment or CI rerun performed. Diagnosis record committed locally only.
+
+## 2026-10-12 — Resolve members Edge merge conflict — HANDOFF
+
+- **Branch:** `codex/phase-7-readiness`.
+- **Changed:** Resolved and staged `supabase/functions/members/index.ts`, retaining audited member-admin writes and adding first-login password change through durable member operation RPCs. Extended the in-progress member-audit migration/test; mapped the bare client import in `supabase/functions/deno.json`. Updated D032, AuthStore/page handling, and EN/AR pending notices so uncertain outcomes clear the form and are not shown as success.
+- **Checks passed:** `npm run test:edge` (56 mocked checks); focused AuthStore unit test (6 passed); `npm run build` (372.01 kB initial bundle); `npm run test:i18n` (582 matching keys); Prettier; `git diff --check`; TypeScript resolves `@supabase/supabase-js`; editor diagnostics report no errors in the Edge handler.
+- **Blocked:** `npm run test:db` could not connect to local Postgres at `127.0.0.1:54322`; SQL behavior remains unverified at runtime. Deno CLI is unavailable, so no standalone `deno check` was run.
+- **Handoff:** Conflict is resolved in the index; supporting migration/tests and docs remain in the shared worktree. No commit or push was made to avoid bundling this change with the other staged work. Next, run `npm run test:db` once local Supabase is available, then commit the coordinated changes.
+
+## 2026-10-11 — A02 login lockout and A03 member audit reliability — HANDOFF
+
+- **Requested by:** Gendy; proceed with the next two audit fixes, continuing with Astra.
+- **Preflight:** Clean `codex/phase-7-readiness` at `e437171`; no publication or deployment requested.
+- **Scope/owners:** Primary owns A02 login handler, migration `0010`, lockout tests and shared documentation/CI integration. Astra owns A03 member handler, migration `0011` and member audit tests. Separate logical commits; preserve all shared work.
+- **Acceptance:** Full ten-minute lockout after the fifth failure, including concurrent attempts and failed persistence; member actions must have a reliable audit boundary. No secrets in audit payloads. Run local handler regressions and available SQL checks; local Docker remains unavailable, so cloud database execution may remain pending.
+- **2026-10-12 resume:** Previous session stopped on a usage-limit interruption, including automatic approval review. Saved work is intact. Resumed with Astra on A03. Local database retry now executes but cannot connect to `127.0.0.1:54322`; SQL and real Auth/database concurrency acceptance remain pending. A02 mocked handler checks pass 22/22.
+- **A02 implementation milestone:** Persisted deadline/admission RPCs in `0010`, 24 pgTAP assertions and a localhost handler/Auth integration extension cover full duration, expired reservations, atomic recording and concurrent admission/completion. Handler checks pass 22/22; new `test:edge` CI step runs them. SQL/real Auth execution remains pending; no hosted changes or publication.
+- **A03 implementation milestone:** Astra delivered atomic member/audit writes, payload-bound receipts, durable external Auth intents/completion and explicit owner review notices. Added 29 passing mocked handler checks, 27 pgTAP assertions and localhost real Auth/member integration. D032/runbook describe pending-operation reconciliation. A02 committed locally as `71929b6`; A03 frontend validation is in progress. No push or deployment.
+- **Final checks (2026-10-12):** Both actual-handler suites pass 51/51 with simulated transport. Three owner Angular unit tests pass after correcting the Supabase getter mock; ten browser journeys pass (new EN/AR pending notices plus all eight privileged logout routes). Production build passes at 370.84 kB; app/spec TypeScript, 558-key translation audit, changed-file Prettier, script syntax and whitespace pass. Test-owned preview server stopped. No full frontend-suite rerun claimed for this focused change.
+- **Handoff:** A02 and A03 implementations are committed locally as separate fixes; nothing pushed or deployed. Added 51 SQL assertions (expected suite total 755) and real localhost Auth/member/concurrent-login checks are prepared for CI, but not runtime-verified because local database port 54322 refuses connections. Publish when requested and verify both CI jobs before accepting these database changes. Next feature gap is A04, the administrator audit viewer; other audit/Phase 7 requirements remain open.
+
+## 2026-10-11 — A01 privileged screen session isolation — DONE
+
+- **Requested by:** Gendy; proceed with audit remediation, beginning with the cross-tab logout privacy finding.
+- **Preflight:** Clean `codex/phase-7-readiness` at `31a8a00`; no push/deployment requested.
+- **Scope:** Shared routed-screen lifecycle boundary for owner, manage and referee areas; destroy previous actor/permission-context views, including forms and late read responses. Add normal-CI regression coverage and update audit evidence.
+- **Validation plan:** Focused lifecycle unit tests, real two-tab browser logout coverage, TypeScript/build, translations and changed-file formatting. Database permissions remain unchanged; local Docker remains unavailable.
+- **Milestone:** Shared session outlet integrated; all nine lifecycle unit tests and eight real cross-tab logout tests pass. Every owner/manage/referee route is covered in normal CI; token refresh preserves drafts, account changes discard them, and revoked access destroys the view. Build passes at 370.84 kB; app/spec TypeScript and 555-key translations pass. Final focused run passes 15/15 unit tests (nine lifecycle and six guard tests); full Node 24 browser regression passes 35/35, including all 27 existing cases and eight new logout cases.
+
+- **Final review/handoff:** Astra reviewed the shared lifecycle boundary and regressions. Changed-file Prettier and whitespace checks pass; no SQL changes or database rerun (local Docker unavailable). A01 is complete and committed locally on `codex/phase-7-readiness`, without pushing. Other audit findings remain open. Next: A02, enforce the full ten-minute lockout after the fifth failure, then A03, handle failed audit writes.
+
+## 2026-10-11 — Full requirements and application audit — DONE
+
+- **Requested by:** Gendy; review all plans/docs and test the application against them.
+- **Preflight:** Clean `codex/phase-7-readiness` at `72a4436`; preserve the local Phase 7 slice. No publication or deployment requested.
+- **Scope:** Read repository requirements/decisions/runbook/history; map implemented behavior and tests to the plan; execute frontend/unit/browser/accessibility/build/translation/format and available database checks. Add focused audit regressions for uncovered requirements when useful, without implementing unrelated features.
+- **Evidence rule:** Separate fresh passes, existing cloud evidence, confirmed gaps, and blocked hosted/device checks. Record findings in a committed audit report and update this entry before handoff.
+- **Milestone:** Build, TypeScript and 555-key translation check pass. Initial Node 22 run: 115/116 unit tests (ExcelJS cold-start timeout; focused retry passes 4/4), 25/27 browser tests (Node-side workbook import failure). Node 24 browser rerun passes all 27 tests after test-owned server teardown; full unit rerun still times out one export case. Database rerun reaches localhost but fails ECONNREFUSED at 54322; repo-wide formatting flags 31 existing files.
+- **Confirmed contract findings:** Offline handler probes execute actual Edge source with simulated transport/clock: 10/12 pass. Lockout expires early after five spread-out failures; member writes return success even when audit insertion fails. Static review also finds missing audit-log RPC/UI, absent game resize/conversion, untyped setup RPCs and remaining documented Phase 7 features. No product changes made.
+- **Final audit evidence:** Opt-in committed browser diagnostics reproduce four failures: owner member phone remains visible after real cross-tab logout (P1), 8.91×24 px owner remove-admin control, English team names in Arabic setup, PNG upload rejection. Both 390×844 EN/AR reduced-motion/axe probes pass. Handler diagnostics remain 10/12 passing. Lighthouse a11y 100 / best practices 96 / performance 68. Explicit local 3G/4×CPU diagnostic measures 8.120 s EN and 7.606 s AR on uncompressed assets; hosted/physical-device timing remains unverified. Fresh npm audit confirms two documented moderate ExcelJS/uuid entries, zero high/critical.
+- **Database evidence:** Re-read GitHub run `38139075290`: both jobs succeeded; DB log confirms 704 assertions across seven suites. Current SQL matches verified `4bad347`; this is prior cloud evidence, not a fresh local/hosted run. Missing direct delete-RPC test coverage and absent Edge login integration are documented.
+- **Handoff:** Full traceability/findings are in `docs/IMPLEMENTATION_AUDIT.md`; reproducible opt-in failing browser/Edge/performance diagnostics are committed separately from normal CI. Product code and acceptance criteria unchanged. Audit files pass changed-file formatting/whitespace and diagnostic parse checks; confirmed failures remain intentionally red. Commit locally on `codex/phase-7-readiness`, no push. Next: fix A01 privileged component state on actor changes, then lockout/audit failures, missing requirements and coverage before release.
+
+## 2026-10-11 — Phase 7 readiness kickoff — HANDOFF
+
+- **Requested by:** Gendy; start the next phase.
+- **Preflight:** Clean working tree; fetched origin and verified Phase 6 PR #9 merged at `50e6066`. New branch `codex/phase-7-readiness` starts from refreshed master.
+- **Scope:** First readiness slice: bilingual PWA install affordance/manual guidance, strict initial bundle budget, event-day runbook. Subsequent Phase 7 work includes celebrations, printable team QR sheets, motion review and measured 3G first-load acceptance.
+- **Delivered:** Browser install lifecycle retained by the shell, gesture-triggered About install card with EN/AR manual instructions, strict 500 kB build error budget, event-day runbook and D029. No domain/permission changes.
+- **Checks passed:** Production build (369.49 kB initial), app/spec TypeScript, translation audit (555 matching paths), changed-file Prettier and whitespace. Two install lifecycle unit tests pass using existing ignored serial thread configuration; default forks timed out before executing tests. Two production EN/AR browser journeys pass with mocked install events/RPCs, axe and 360 px overflow checks; Arabic screenshot inspected. Browser teardown required stopping only its test-owned preview server. No claim of native device install or 3G timing verification.
+- **Handoff/next:** First slice committed locally on `codex/phase-7-readiness`; no push, merge or deployment. Implement once-per-event/team result celebrations and printable admin team QR sheets next, then complete motion, real-device install/offline and 3G performance checks. Phase 7 and Phase 0 hosted acceptance remain pending. Database tests were not rerun because this slice changes no SQL and local Docker is unavailable.
+
 ## 2026-10-11 — Usernames in exported setup and multiple guides — HANDOFF
 
 - **Requested by:** Peter: the exported setup showed no English usernames; several guides must be allowed on one team. `nesro` confirmed as نسرين نبيل, so no extra account is needed.

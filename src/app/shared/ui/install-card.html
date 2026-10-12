@@ -1,0 +1,16 @@
+<section *transloco="let t" class="space-y-3 rounded-card border border-mist bg-white p-5">
+  <h2 class="text-lg font-bold">{{ t('pwa.title') }}</h2>
+  @if (pwa.installed()) {
+    <p role="status">{{ t('pwa.installed') }}</p>
+  } @else {
+    <p>{{ t('pwa.description') }}</p>
+    @if (pwa.available() || pwa.busy()) {
+      <button class="ds-button primary" [disabled]="pwa.busy()" (click)="pwa.install()">
+        {{ t('pwa.install') }}
+      </button>
+    }
+    <p class="text-sm">{{ t('pwa.android') }}</p>
+    <p class="text-sm">{{ t('pwa.ios') }}</p>
+    <p class="text-sm">{{ t('pwa.offline') }}</p>
+  }
+</section>

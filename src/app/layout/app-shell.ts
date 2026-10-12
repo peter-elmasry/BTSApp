@@ -6,7 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { NavigationEnd, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { TranslocoDirective } from '@jsverse/transloco';
@@ -24,13 +24,15 @@ import { RoundBanner } from './round-banner';
 import { OpQueueService } from '../core/offline/op-queue.service';
 import { ReadCacheService } from '../core/offline/read-cache.service';
 import { EventChannelService } from '../core/realtime/event-channel.service';
+import { SessionOutlet } from '../core/auth/session-outlet';
+import { InstallService } from '../core/pwa/install.service';
 
 @Component({
   selector: 'app-shell',
   imports: [
     RouterLink,
     RouterLinkActive,
-    RouterOutlet,
+    SessionOutlet,
     TranslocoDirective,
     DsToast,
     DsAvatar,
@@ -41,6 +43,7 @@ import { EventChannelService } from '../core/realtime/event-channel.service';
   templateUrl: './app-shell.html',
 })
 export class AppShell {
+  private readonly install = inject(InstallService);
   readonly direction = inject(DirectionService);
   readonly auth = inject(AuthStore);
   readonly events = inject(EventStore);

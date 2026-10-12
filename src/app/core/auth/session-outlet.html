@@ -1,0 +1,5 @@
+@if (allowed()) {
+  @for (context of contexts(); track context.key) {
+    <router-outlet />
+  }
+}

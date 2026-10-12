@@ -83,6 +83,7 @@ export class AuthStore {
     const { data, error } = await supabase.functions.invoke('members', {
       body: { action: 'change_own_password', password },
     });
+    if (data?.status === 'needs_review') return 'PASSWORD_CHANGE_NEEDS_REVIEW';
     if (error || !data?.ok)
       return (await this.errorCode(error, data)) === 'INVALID_CREDENTIALS'
         ? 'PASSWORD_UPDATE_FAILED'

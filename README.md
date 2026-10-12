@@ -26,6 +26,11 @@ Passwords must have at least 12 characters. The script creates `masry` and `gend
 
 ## Checks
 
+The [2026-10-11 requirements audit](docs/IMPLEMENTATION_AUDIT.md) maps the app to
+the agreed plan and records passing checks, confirmed defects and blocked
+acceptance. [Opt-in audit diagnostics](audit/README.md) reproduce the remaining
+contract failures separately from the normal test suite.
+
 ```sh
 node scripts/set-env.mjs --allow-empty
 npm run format:check
@@ -80,6 +85,16 @@ Owners and event administrators can open **Import event setup** from the event s
 `UPSERT` matches teams/games by code and rounds by number, retains existing rows and referee assignments, and preserves UI-managed game images/team ordering. `REPLACE` removes the event setup and imports it again, retaining event administrators; it requires a draft event with no round ever started. Imports assign existing active members as referees/guides and never create accounts. Standings export is available through the Phase 6 screen.
 
 Migration `0006_phase3_import.sql` adds the import RPC; its pgTAP suite runs through `npm run test:db` and GitHub CI. Frontend browser tests mock the RPC boundary and exercise actual workbook generation/parsing; they do not replace database tests.
+
+## Readiness (Phase 7 in progress)
+
+About includes bilingual installation guidance and a browser install button when
+an install prompt is available. Installation always starts from a user action;
+only the browser's installation event confirms success. Open needed pages online
+before relying on cached data. Production builds enforce a 500 kB initial bundle
+limit. Follow [the event-day runbook](docs/EVENT_DAY_RUNBOOK.md) for rehearsal,
+offline recovery, final exports and the remaining hosted/device acceptance checks.
+Celebrations, printable QR sheets and measured 3G timing remain in progress.
 
 ## Hosting and deployment
 

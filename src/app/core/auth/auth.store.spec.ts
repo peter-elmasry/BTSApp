@@ -18,6 +18,7 @@ const session = (id: string) => ({ user: { id } }) as Session;
 describe('staff profile network recovery', () => {
   const db = { cached: vi.fn(), cache: vi.fn(), removeCache: vi.fn() };
   const rpc = vi.fn();
+  const invoke = vi.fn();
   const signOut = vi.fn();
   let auth: AuthStore;
   beforeEach(() => {
@@ -29,6 +30,7 @@ describe('staff profile network recovery', () => {
     auth = TestBed.inject(AuthStore);
     vi.spyOn(auth as unknown as { client(): Promise<SupabaseClient> }, 'client').mockResolvedValue({
       rpc,
+      functions: { invoke },
       auth: { signOut },
     } as unknown as SupabaseClient);
     auth.session.set(session('user-a'));
@@ -85,5 +87,16 @@ describe('staff profile network recovery', () => {
     expect(auth.profile()?.phone).toBe(profile.phone);
     expect(db.cache.mock.calls[0][0].data.phone).toBeNull();
     expect(db.cache.mock.calls[0][0].private).toBe(true);
+  });
+
+  it('does not treat a pending password change as a success', async () => {
+    invoke.mockResolvedValue({
+      data: { ok: false, status: 'needs_review', operation_id: 'operation-a' },
+      error: null,
+    });
+    await expect(auth.changeOwnPassword('a-long-test-password')).resolves.toBe(
+      'PASSWORD_CHANGE_NEEDS_REVIEW',
+    );
+    expect(rpc).not.toHaveBeenCalled();
   });
 });

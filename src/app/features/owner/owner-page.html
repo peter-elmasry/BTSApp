@@ -19,6 +19,14 @@
   @if (notice()) {
     <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
   }
+  @if (pendingOperation()) {
+    <p role="alert" class="rounded-xl bg-gold-soft p-3">
+      {{ t('owner.memberOperationPending') }}
+      <span class="block break-all"
+        >{{ t('owner.operationReference') }}: {{ pendingOperation() }}</span
+      >
+    </p>
+  }
   @if (section === 'members') {
     <section class="space-y-4">
       <form

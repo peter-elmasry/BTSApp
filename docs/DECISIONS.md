@@ -1,5 +1,68 @@
 # Implementation decisions
 
+## D032 — Atomic member audits and durable Auth operation recovery
+
+Member creation, edits, login links and activation state use a service-only RPC
+that rechecks the active owner actor and writes the row, audit and payload-bound
+receipt in one transaction. Member-initiated password changes use a separate
+service-only RPC path that requires an active, self-matched actor and atomically
+clears the forced-change flag with its audit. Audit failure rolls back that
+database mutation. Passwords never enter these RPCs or their receipts.
+Edge Functions use the package's bare `@supabase/supabase-js` import; the shared
+`supabase/functions/deno.json` maps it to the Deno npm resolver while TypeScript
+resolves the installed package.
+
+Auth administration spans an external service and cannot share the database
+transaction. Before touching Auth, the Edge handler persists an operation intent
+and audit atomically. It appends a completion audit after success. Failed or
+ambiguous Auth/link/completion outcomes retain `STARTED` or `NEEDS_REVIEW`, block
+another external operation for that member and return HTTP 202 with `ok:false`,
+`status:needs_review` and an operation reference. The owner UI shows a review
+warning, clears submitted password fields and does not announce success. It never
+automatically retries a password write or deletes an uncertain Auth account.
+The runbook describes explicit operator reconciliation; successful outcomes are
+recorded only after verification. This makes partial completion recoverable but
+does not claim distributed atomicity. Apply migrations before deploying handlers.
+
+## D031 — Persisted login deadlines and concurrent admission
+
+The login Edge Function uses service-only database RPCs to reserve an attempt and
+record its outcome. Five failures within ten minutes persist a deadline ten minutes
+after the fifth completion. Requests during the lock neither authenticate nor
+extend it. The deadline survives aging-out history and Edge instance restarts.
+An identifier row lock serializes admission and completion; pending attempts
+reserve the remaining slots so parallel callers cannot bypass the threshold.
+Reservations expire after 60 seconds; an expired or failed completion never
+releases credentials. Transient saturation/storage failures return `AUTH_UNAVAILABLE`;
+persisted lockouts return `LOCKED_OUT`. Successful attempts do not reset failures
+inside the window because the requirement counts failures, not consecutive failures.
+Existing applicable locks are backfilled from history during migration `0013`.
+No password or token is stored in admission tables or history.
+
+## D030 — Open staff screens belong to one permission context
+
+Route activation guards remain the entry check; a shared session outlet also owns
+the lifetime of all owner, manage and referee screens. Losing access removes the
+routed component tree and returns to Home. Changing the authenticated user,
+member, system role, event roles or assigned games recreates an otherwise allowed
+staff screen, discarding local forms and preventing late reads from restoring the
+previous screen's DOM. Same-actor token refresh and equivalent profiles preserve
+drafts. Public screens retain their existing scoped read-state behavior. Server
+RPC/RLS authorization and actor-bound offline operations remain authoritative;
+this closes the component-state gap found in audit A01.
+
+## D029 — Readiness installation and enforced bundle budget
+
+Phase 7 installation uses the browser-provided deferred prompt only after an
+explicit user gesture. A consumed prompt is never reused; dismissal/errors leave
+manual EN/AR guidance available on About. Only `appinstalled` or standalone
+launch confirms installation, not prompt acceptance. The shell initializes the
+listener so an offer received before About opens is retained. Existing service
+worker and IndexedDB behavior remain the offline mechanism; installation does
+not promise that every page is cached. Production builds now fail above 500 kB
+initial assets instead of allowing the previous 1 MB error ceiling. Real-device
+3G timing remains an independent Phase 7 acceptance check.
+
 The agreed implementation plan remains the source of truth. Checked 2026-10-09.
 
 ## D001 — Broadcast API verified

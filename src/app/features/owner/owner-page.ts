@@ -45,6 +45,7 @@ export class OwnerPage implements OnInit {
   readonly events = signal<EventRow[]>([]);
   readonly query = signal('');
   readonly notice = signal('');
+  readonly pendingOperation = signal('');
   readonly busy = signal(false);
   readonly editing = signal<string | null>(null);
   readonly adminSelection = signal<Record<string, string>>({});
@@ -101,6 +102,11 @@ export class OwnerPage implements OnInit {
       },
     });
     this.busy.set(false);
+    if (this.showPendingOperation(result.data)) {
+      this.cancelEdit();
+      await this.reload();
+      return;
+    }
     if (result.error || result.data?.error) {
       this.notice.set(`errors.${result.data?.error || 'SAVE_FAILED'}`);
       return;
@@ -130,21 +136,35 @@ export class OwnerPage implements OnInit {
     });
   }
   async setPassword(member: Member) {
+    if (this.busy()) return;
     const password = window.prompt(`Set password for ${member.username} (minimum 12 characters)`);
     if (password === null) return;
+    this.busy.set(true);
     const { error, data } = await supabase.functions.invoke('members', {
       body: { action: 'set_password', member_id: member.id, password },
     });
+    this.busy.set(false);
+    if (this.showPendingOperation(data)) {
+      await this.reload();
+      return;
+    }
     this.notice.set(
       error || data?.error ? `errors.${data?.error || 'SAVE_FAILED'}` : 'owner.passwordSaved',
     );
     await this.reload();
   }
   async toggleActive(member: Member) {
+    if (this.busy()) return;
+    this.busy.set(true);
     const action = member.is_active ? 'deactivate' : 'reactivate';
     const { error, data } = await supabase.functions.invoke('members', {
       body: { action, member_id: member.id },
     });
+    this.busy.set(false);
+    if (this.showPendingOperation(data)) {
+      await this.reload();
+      return;
+    }
     this.notice.set(
       error || data?.error ? `errors.${data?.error || 'SAVE_FAILED'}` : 'owner.memberSaved',
     );
@@ -162,6 +182,12 @@ export class OwnerPage implements OnInit {
     if (accepted) {
       this.eventForm.reset({ code: '', name_en: '', name_ar: '', starts_on: '' });
     }
+  }
+  private showPendingOperation(data: { status?: string; operation_id?: string } | null): boolean {
+    if (data?.status !== 'needs_review') return false;
+    this.pendingOperation.set(data.operation_id ?? '');
+    this.notice.set('');
+    return true;
   }
   async setCurrent(event: EventRow) {
     await this.mutate('set_current_event', {

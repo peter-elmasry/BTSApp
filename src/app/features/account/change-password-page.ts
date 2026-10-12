@@ -43,6 +43,7 @@ export class ChangePasswordPage {
     const result = await this.auth.changeOwnPassword(password);
     this.busy.set(false);
     if (result) {
+      if (result === 'PASSWORD_CHANGE_NEEDS_REVIEW') this.form.reset();
       this.error.set(result);
       return;
     }

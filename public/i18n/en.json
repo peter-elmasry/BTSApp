@@ -26,6 +26,7 @@
   "errors.INVALID_CREDENTIALS": "Wrong username/phone or password",
   "errors.LOCKED_OUT": "Too many attempts, try again in 10 minutes",
   "errors.AUTH_UNAVAILABLE": "Sign in is temporarily unavailable. Try again shortly.",
+  "errors.AUDIT_WRITE_FAILED": "The change could not start because its audit record could not be saved. Try again shortly.",
   "errors.INVALID_MEMBER": "Check the member details and try again.",
   "errors.INVALID_PASSWORD": "Use a password with at least 12 characters.",
   "errors.DUPLICATE_MEMBER": "That username or phone is already in use.",
@@ -37,6 +38,7 @@
   "errors.AUTH_USER_CREATE_FAILED": "Could not create sign-in credentials.",
   "errors.AUTH_USER_LINK_FAILED": "Could not finish linking sign-in credentials.",
   "errors.PASSWORD_UPDATE_FAILED": "Could not update the password.",
+  "errors.PASSWORD_CHANGE_NEEDS_REVIEW": "The password change is being verified. Contact an event administrator before trying again.",
   "errors.AUTH_STATE_UPDATE_FAILED": "Could not update the account sign-in status.",
   "errors.INVALID_EVENT": "Enter a valid event code and English name.",
   "errors.MEMBER_NO_LOGIN": "Create sign-in credentials for this member before assigning them as an Event Admin.",
@@ -267,6 +269,8 @@
     "reactivate": "Reactivate",
     "noMembers": "No members found.",
     "memberSaved": "Member saved.",
+    "memberOperationPending": "This change needs an owner review. Do not repeat it or reset the password again until the operation has been checked.",
+    "operationReference": "Operation reference",
     "passwordSaved": "Password updated.",
     "createEvent": "Create event",
     "eventCode": "Event code",
@@ -585,6 +589,15 @@
       "games": "Games",
       "team": "Team"
     }
+  },
+  "pwa": {
+    "title": "Keep BTSApp on your phone",
+    "description": "Install for quick access on event day.",
+    "install": "Install app",
+    "installed": "BTSApp is running as an installed app.",
+    "android": "Android: open the browser menu and choose Install app or Add to Home screen, when available.",
+    "ios": "iPhone/iPad: open in Safari, tap Share, then Add to Home Screen.",
+    "offline": "Open your team and schedule online first. Offline pages show the last saved data; staff changes need a connection to reach the server."
   },
   "account.changePassword": "Change password",
   "account.hint": "Choose a new password of at least 12 characters.",

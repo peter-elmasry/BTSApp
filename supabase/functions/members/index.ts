@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient } from '@supabase/supabase-js';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -21,212 +21,223 @@ Deno.serve(async (request) => {
   if (!authorization?.startsWith('Bearer ')) return fail('UNAUTHORIZED', 401);
   try {
     const url = Deno.env.get('SUPABASE_URL')!;
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const caller = createClient(url, anonKey, {
+    const caller = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!, {
       global: { headers: { Authorization: authorization } },
       auth: { persistSession: false },
     });
     const { data: userData, error: userError } = await caller.auth.getUser();
     if (userError || !userData.user) return fail('UNAUTHORIZED', 401);
-    const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
+    const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
+      auth: { persistSession: false },
+    });
     const body = await request.json();
-
-    // Any active member may replace their own (temporary) password; everything else is owner-only.
     if (body?.action === 'change_own_password') {
       if (typeof body.password !== 'string' || body.password.length < 12)
         return fail('INVALID_PASSWORD', 400);
-      const { data: self } = await admin
+      const { data: member, error: memberError } = await admin
         .from('members')
-        .select('id,username,is_active')
+        .select('id, auth_user_id, username, is_active')
         .eq('auth_user_id', userData.user.id)
         .maybeSingle();
-      if (!self?.is_active) return fail('FORBIDDEN', 403);
-      if (body.password.toLowerCase().includes(String(self.username).toLowerCase()))
+      if (memberError) return fail('MEMBER_READ_FAILED', 503);
+      if (!member?.is_active) return fail('FORBIDDEN', 403);
+      if (body.password.toLowerCase().includes(member.username.toLowerCase()))
         return fail('PASSWORD_TOO_WEAK', 400);
-      const { error: passError } = await admin.auth.admin.updateUserById(userData.user.id, {
-        password: body.password,
-      });
-      if (passError) return fail('PASSWORD_UPDATE_FAILED', 400);
-      await admin
-        .from('members')
-        .update({ must_change_password: false, updated_at: new Date().toISOString() })
-        .eq('id', self.id);
-      await admin.from('audit_log').insert({
-        actor_id: self.id,
-        action: 'MEMBER_PASSWORD_CHANGED',
-        entity: 'member',
-        entity_id: self.id,
-        after: { action: 'change_own_password' },
-      });
-      return json({ member_id: self.id, ok: true });
-    }
 
+      const operationId = crypto.randomUUID();
+      const { data: intent, error: intentError } = await admin.rpc('member_admin_begin', {
+        p_op_id: operationId,
+        p_actor: userData.user.id,
+        p_member: member.id,
+        p_action: 'change_own_password',
+      });
+      if (intentError || !intent) return fail('AUDIT_WRITE_FAILED', 503);
+      const pending = (id = operationId) =>
+        json(
+          {
+            member_id: member.id,
+            ok: false,
+            status: 'needs_review',
+            operation_id: id,
+            error: 'PASSWORD_CHANGE_NEEDS_REVIEW',
+          },
+          202,
+        );
+      if (intent.status !== 'STARTED') return pending(intent.id);
+      const finish = async (status: string, reason: string | null = null) => {
+        try {
+          const { error } = await admin.rpc('member_admin_finish', {
+            p_op_id: operationId,
+            p_status: status,
+            p_auth_user: userData.user.id,
+            p_reason: reason,
+          });
+          return !error;
+        } catch {
+          return false;
+        }
+      };
+      try {
+        const { error } = await admin.auth.admin.updateUserById(userData.user.id, {
+          password: body.password,
+        });
+        if (error) {
+          await finish('NEEDS_REVIEW', 'PASSWORD_UPDATE_FAILED');
+          return pending();
+        }
+        return (await finish('SUCCEEDED')) ? json({ member_id: member.id, ok: true }) : pending();
+      } catch {
+        await finish('NEEDS_REVIEW', 'TRANSPORT_FAILED');
+        return pending();
+      }
+    }
     const { data: isOwner, error: ownerError } = await caller.rpc('is_owner');
     if (ownerError || !isOwner) return fail('FORBIDDEN', 403);
     const action = body?.action;
-    const memberId = typeof body?.member_id === 'string' ? body.member_id : '';
+    if (!['create', 'update', 'set_password', 'deactivate', 'reactivate'].includes(action))
+      return fail('INVALID_ACTION', 400);
+    const memberId = action === 'create' ? crypto.randomUUID() : body?.member_id;
+    if (typeof memberId !== 'string' || !/^[0-9a-f-]{36}$/i.test(memberId))
+      return fail('INVALID_MEMBER', 400);
     const actor = userData.user.id;
-    let subjectId = memberId;
-    let auditAction = '';
-
-    if (action === 'create') {
-      const username = typeof body.username === 'string' ? body.username.trim().toLowerCase() : '';
-      const nameEn = typeof body.full_name_en === 'string' ? body.full_name_en.trim() : '';
-      const phone = normalizePhone(body.phone);
-      if (
-        body.password !== undefined &&
-        body.password !== '' &&
-        (typeof body.password !== 'string' || body.password.length < 12)
-      )
-        return fail('INVALID_PASSWORD', 400);
-      if (
-        !usernamePattern.test(username) ||
-        !nameEn ||
-        (body.phone !== undefined && body.phone !== null && body.phone !== '' && !phone)
-      )
-        return fail('INVALID_MEMBER', 400);
-      const { data: member, error } = await admin
-        .from('members')
-        .insert({
-          username,
-          phone,
-          full_name_en: nameEn,
-          full_name_ar:
-            typeof body.full_name_ar === 'string' ? body.full_name_ar.trim() || null : null,
-          created_by:
-            (await admin.from('members').select('id').eq('auth_user_id', actor).maybeSingle()).data
-              ?.id ?? null,
-        })
-        .select('id')
-        .single();
-      if (error || !member)
-        return fail(error?.code === '23505' ? 'DUPLICATE_MEMBER' : 'MEMBER_WRITE_FAILED', 400);
-      subjectId = member.id;
-      if (typeof body.password === 'string' && body.password.length > 0) {
-        const { data: created, error: authError } = await admin.auth.admin.createUser({
-          email: syntheticEmail(subjectId),
-          password: body.password,
-          email_confirm: true,
+    const values: Record<string, unknown> = {};
+    if (action === 'create' || action === 'update') {
+      if (action === 'create' || body.username !== undefined) {
+        const username =
+          typeof body.username === 'string' ? body.username.trim().toLowerCase() : '';
+        if (!usernamePattern.test(username)) return fail('INVALID_MEMBER', 400);
+        values.username = username;
+      }
+      if (action === 'create' || body.full_name_en !== undefined) {
+        const name = typeof body.full_name_en === 'string' ? body.full_name_en.trim() : '';
+        if (!name) return fail('INVALID_MEMBER', 400);
+        values.full_name_en = name;
+      }
+      if (action === 'create' || body.phone !== undefined) {
+        const phone = normalizePhone(body.phone);
+        if (body.phone !== undefined && body.phone !== null && body.phone !== '' && !phone)
+          return fail('INVALID_MEMBER', 400);
+        values.phone = phone;
+      }
+      if (action === 'create' || body.full_name_ar !== undefined) {
+        if (body.full_name_ar != null && typeof body.full_name_ar !== 'string')
+          return fail('INVALID_MEMBER', 400);
+        values.full_name_ar =
+          typeof body.full_name_ar === 'string' ? body.full_name_ar.trim() || null : null;
+      }
+    }
+    const withPassword =
+      action === 'set_password' ||
+      (action === 'create' && body.password !== undefined && body.password !== '');
+    if (withPassword && (typeof body.password !== 'string' || body.password.length < 12))
+      return fail('INVALID_PASSWORD', 400);
+    const write = (writeAction: string, patch: Record<string, unknown> = {}) =>
+      admin.rpc('member_admin_write', {
+        p_op_id: crypto.randomUUID(),
+        p_actor: actor,
+        p_action: writeAction,
+        p_member: memberId,
+        p_values: patch,
+      });
+    const writeFailure = (error: { code?: string } | null) =>
+      fail(error?.code === '23505' ? 'DUPLICATE_MEMBER' : 'MEMBER_WRITE_FAILED', 400);
+    if (action === 'update' || (action === 'create' && !withPassword)) {
+      const { error } = await write(action, values);
+      return error ? writeFailure(error) : json({ member_id: memberId, ok: true });
+    }
+    const { data: member, error: readError } =
+      action === 'create'
+        ? { data: { auth_user_id: null, is_active: true }, error: null }
+        : await admin
+            .from('members')
+            .select('id, auth_user_id, is_active')
+            .eq('id', memberId)
+            .maybeSingle();
+    if (readError || !member) return fail('NOT_FOUND', 404);
+    const operationId = crypto.randomUUID();
+    const { data: intent, error: intentError } = await admin.rpc('member_admin_begin', {
+      p_op_id: operationId,
+      p_actor: actor,
+      p_member: memberId,
+      p_action: action,
+    });
+    if (intentError || !intent) return fail('AUDIT_WRITE_FAILED', 503);
+    const pending = (id = operationId) =>
+      json({ member_id: memberId, ok: false, status: 'needs_review', operation_id: id }, 202);
+    if (intent.status !== 'STARTED') return pending(intent.id);
+    let authUserId: string | null = member.auth_user_id;
+    const finish = async (status: string, reason: string | null = null) => {
+      try {
+        const { error } = await admin.rpc('member_admin_finish', {
+          p_op_id: operationId,
+          p_status: status,
+          p_auth_user: authUserId,
+          p_reason: reason,
         });
-        if (authError || !created.user) {
-          await admin.from('members').delete().eq('id', subjectId);
-          return fail('AUTH_USER_CREATE_FAILED', 400);
-        }
-        const { error: linkError } = await admin
-          .from('members')
-          .update({
-            auth_user_id: created.user.id,
-            must_change_password: true,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', subjectId);
-        if (linkError) {
-          await admin.auth.admin.deleteUser(created.user.id);
-          await admin.from('members').delete().eq('id', subjectId);
-          return fail('AUTH_USER_LINK_FAILED', 500);
+        return !error;
+      } catch {
+        return false;
+      }
+    };
+    // An intent survives transport failures and process termination. Never retry
+    // external password writes or claim rollback after an ambiguous Auth result.
+    try {
+      if (action === 'create') {
+        const { error } = await write('create', values);
+        if (error) {
+          const recorded = await finish('FAILED', 'MEMBER_WRITE_FAILED');
+          return recorded ? writeFailure(error) : pending();
         }
       }
-      auditAction = 'MEMBER_CREATED';
-    } else {
-      const { data: member, error } = await admin
-        .from('members')
-        .select('id, auth_user_id, is_active')
-        .eq('id', memberId)
-        .maybeSingle();
-      if (error || !member) return fail('NOT_FOUND', 404);
-      if (action === 'update') {
-        const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-        if (typeof body.username === 'string') {
-          const username = body.username.trim().toLowerCase();
-          if (!usernamePattern.test(username)) return fail('INVALID_MEMBER', 400);
-          patch.username = username;
-        }
-        if (typeof body.phone === 'string' || body.phone === null) {
-          const phone = normalizePhone(body.phone);
-          if (body.phone && !phone) return fail('INVALID_MEMBER', 400);
-          patch.phone = phone;
-        }
-        if (typeof body.full_name_en === 'string' && body.full_name_en.trim())
-          patch.full_name_en = body.full_name_en.trim();
-        if (typeof body.full_name_ar === 'string' || body.full_name_ar === null)
-          patch.full_name_ar =
-            typeof body.full_name_ar === 'string' ? body.full_name_ar.trim() || null : null;
-        const { error: updateError } = await admin.from('members').update(patch).eq('id', memberId);
-        if (updateError)
-          return fail(
-            updateError.code === '23505' ? 'DUPLICATE_MEMBER' : 'MEMBER_WRITE_FAILED',
-            400,
-          );
-        auditAction = 'MEMBER_UPDATED';
-      } else if (action === 'set_password') {
-        if (typeof body.password !== 'string' || body.password.length < 12)
-          return fail('INVALID_PASSWORD', 400);
-        if (member.auth_user_id) {
-          const { error: passError } = await admin.auth.admin.updateUserById(member.auth_user_id, {
+      if (withPassword) {
+        if (authUserId) {
+          const { error } = await admin.auth.admin.updateUserById(authUserId, {
             password: body.password,
             ban_duration: member.is_active ? 'none' : '876000h',
           });
-          if (passError) return fail('PASSWORD_UPDATE_FAILED', 400);
+          if (error) {
+            await finish('NEEDS_REVIEW', 'PASSWORD_UPDATE_FAILED');
+            return pending();
+          }
         } else {
-          const { data: created, error: authError } = await admin.auth.admin.createUser({
+          const { data: created, error } = await admin.auth.admin.createUser({
             email: syntheticEmail(memberId),
             password: body.password,
             email_confirm: true,
+            ban_duration: member.is_active ? 'none' : '876000h',
           });
-          if (authError || !created.user) return fail('AUTH_USER_CREATE_FAILED', 400);
-          const { error: linkError } = await admin
-            .from('members')
-            .update({ auth_user_id: created.user.id, updated_at: new Date().toISOString() })
-            .eq('id', memberId);
+          if (error || !created.user) {
+            await finish('NEEDS_REVIEW', 'AUTH_USER_CREATE_FAILED');
+            return pending();
+          }
+          authUserId = created.user.id;
+          const { error: linkError } = await write('link', { auth_user_id: authUserId });
           if (linkError) {
-            await admin.auth.admin.deleteUser(created.user.id);
-            return fail('AUTH_USER_LINK_FAILED', 500);
+            await finish('NEEDS_REVIEW', 'AUTH_USER_LINK_FAILED');
+            return pending();
           }
         }
-        // An owner-set password is temporary: the member replaces it at next login.
-        await admin
-          .from('members')
-          .update({ must_change_password: true, updated_at: new Date().toISOString() })
-          .eq('id', memberId);
-        auditAction = 'MEMBER_PASSWORD_SET';
-      } else if (action === 'deactivate' || action === 'reactivate') {
-        const active = action === 'reactivate';
-        if (member.auth_user_id) {
-          const { error: authStateError } = await admin.auth.admin.updateUserById(
-            member.auth_user_id,
-            { ban_duration: active ? 'none' : '876000h' },
-          );
-          if (authStateError) return fail('AUTH_STATE_UPDATE_FAILED', 400);
+      } else {
+        if (authUserId) {
+          const { error } = await admin.auth.admin.updateUserById(authUserId, {
+            ban_duration: action === 'reactivate' ? 'none' : '876000h',
+          });
+          if (error) {
+            await finish('NEEDS_REVIEW', 'AUTH_STATE_UPDATE_FAILED');
+            return pending();
+          }
         }
-        const { error: stateError } = await admin
-          .from('members')
-          .update({ is_active: active, updated_at: new Date().toISOString() })
-          .eq('id', memberId);
-        if (stateError) {
-          if (member.auth_user_id)
-            await admin.auth.admin.updateUserById(member.auth_user_id, {
-              ban_duration: member.is_active ? 'none' : '876000h',
-            });
-          return fail('MEMBER_WRITE_FAILED', 400);
+        const { error } = await write(action);
+        if (error) {
+          await finish('NEEDS_REVIEW', 'MEMBER_WRITE_FAILED');
+          return pending();
         }
-        auditAction = active ? 'MEMBER_REACTIVATED' : 'MEMBER_DEACTIVATED';
-      } else return fail('INVALID_ACTION', 400);
+      }
+      return (await finish('SUCCEEDED')) ? json({ member_id: memberId, ok: true }) : pending();
+    } catch {
+      await finish('NEEDS_REVIEW', 'TRANSPORT_FAILED');
+      return pending();
     }
-
-    const { data: actorMember } = await admin
-      .from('members')
-      .select('id')
-      .eq('auth_user_id', actor)
-      .maybeSingle();
-    await admin.from('audit_log').insert({
-      actor_id: actorMember?.id ?? null,
-      action: auditAction,
-      entity: 'member',
-      entity_id: subjectId,
-      after: { action },
-    });
-    return json({ member_id: subjectId, ok: true });
   } catch {
     return fail('INVALID_REQUEST', 400);
   }
