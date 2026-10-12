@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Publish A04 audit viewer and verify CI — STARTED
+
+- **Requested by:** Gendy; proceed with publication and cloud verification.
+- **Preflight:** Clean `codex/admin-audit-viewer` at `43e9a80`; fetched origin and reviewed the full diff against master, with whitespace checks passing.
+- **Scope:** Publish this branch, open its PR against master and verify/fix cloud frontend/database checks. No merge or production deployment requested.
+
 ## 2026-10-12 — A04 administrator audit viewer — HANDOFF
 
 - **Requested by:** Gendy; PR #13 is merged, continue with the next audit remediation.
