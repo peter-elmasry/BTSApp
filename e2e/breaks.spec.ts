@@ -64,6 +64,8 @@ for (const lang of ['en', 'ar'] as const) {
     await expect(page.getByTestId('schedule-table')).toHaveCount(0);
     await expect(page.getByTestId('break-card')).toHaveCount(4);
     await page.getByRole('button', { name: t.player.myTeam }).click();
+    // Wait for the re-render to settle on one card before reading its text.
+    await expect(page.getByTestId('break-card')).toHaveCount(1);
     await expect(page.getByTestId('break-card')).toContainText(t.player.teamBreak);
     // The chosen view is remembered on this device.
     await page.reload();
