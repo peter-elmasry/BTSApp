@@ -499,6 +499,18 @@
                 </button>
               </div>
             }
+            @if (breakGames(round).length) {
+              <ul class="flex flex-wrap gap-2" [attr.aria-label]="t('player.break')">
+                @for (game of breakGames(round); track game.id) {
+                  <li
+                    class="rounded-full border border-dashed border-slate bg-ivory px-3 py-1 text-sm"
+                    data-testid="setup-break"
+                  >
+                    ☕ {{ label(game) }} · {{ t('player.break') }}
+                  </li>
+                }
+              </ul>
+            }
           </article>
         } @empty {
           <p class="rounded-card bg-white p-4">{{ t('manage.noRounds') }}</p>

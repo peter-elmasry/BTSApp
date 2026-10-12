@@ -425,6 +425,10 @@ export class EventSetupPage {
     );
     return this.games().filter((game) => !used.has(game.id));
   }
+  /** Games with no match in a regular round are on a break there (D037). */
+  breakGames(round: Row) {
+    return round.type === 'OPENING' ? [] : this.matchGameOptions(round.id);
+  }
   async saveMatch() {
     const value = this.matchForm.getRawValue();
     const round = this.rounds().find((item) => item.id === value.round_id);

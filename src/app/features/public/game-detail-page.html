@@ -35,18 +35,20 @@
           }
         </div>
       </section>
-      @for (group of groups(); track group.round.id) {
+      @for (row of rows(); track row.key) {
         <section class="space-y-3">
           <h2 class="text-xl font-bold">
             {{
-              name(group.round, direction.language()) ||
-                (group.round.type === 'OPENING'
+              name(row.round, direction.language()) ||
+                (row.round.type === 'OPENING'
                   ? t('round.opening')
-                  : t('player.roundNumber', { n: group.round.number }))
+                  : t('player.roundNumber', { n: row.round.number }))
             }}
           </h2>
-          @for (match of group.matches; track match.id) {
+          @if (row.match; as match) {
             <app-public-match-card [match]="match" />
+          } @else {
+            <app-break-card [row]="row" />
           }
         </section>
       } @empty {

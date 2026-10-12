@@ -401,7 +401,10 @@
     "teamLockedLink": "This link is for another team, but team choice is locked because the first round has started.",
     "referee": "Referee",
     "referees": "Referees",
-    "location": "Location"
+    "location": "Location",
+    "break": "Break",
+    "breakHint": "No match at this game in this round.",
+    "teamBreak": "Your team has no match this round — take a break."
   },
   "live": {
     "title": "Live control",
@@ -487,7 +490,13 @@
       "reopen_round": "Reopen this round? Its original timer is kept. Enter the reason below.",
       "reset_match_result": "Clear this match’s result and restore it to scheduled? Any cancellation is removed. Bonuses and penalties stay recorded.",
       "void_match": "Cancel this match? It will no longer count towards results. Enter the reason below."
-    }
+    },
+    "mySchedule": "My games by round",
+    "myScheduleHint": "Each row is a round; each column is one of your games.",
+    "allTeams": "All teams ({{n}})",
+    "breakCell": "Break",
+    "roundColumn": "Round",
+    "activeRound": "Now"
   },
   "errors.ROUND_NOT_DRAFT": "Only a draft round can be started.",
   "errors.ROUND_NOT_ACTIVE": "This round is no longer active. Refresh to see its current state.",
