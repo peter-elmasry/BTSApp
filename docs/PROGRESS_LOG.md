@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Publish A06 entity-language fix — STARTED
+
+- **Requested by:** Gendy; publish the finished fix and verify cloud CI.
+- **Preflight:** Clean `codex/admin-entity-language` at `3c492b8`; fetched origin and reviewed branch commits/change summary; whitespace passes.
+- **Scope:** Publish branch, open PR against master, verify/fix cloud checks. No merge requested in this session.
+
 ## 2026-10-12 — Merge A05 and fix A06 entity language — HANDOFF
 
 - **Requested by:** Gendy; merge PR #15, verify master and continue audit remediation.
