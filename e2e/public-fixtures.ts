@@ -114,7 +114,7 @@ export const matches: PublicMatch[] = [
 
 export async function mockPublicEvent(
   page: Page,
-  options: { noEvent?: boolean; overtime?: boolean } = {},
+  options: { noEvent?: boolean; overtime?: boolean; beforeStart?: boolean } = {},
 ) {
   await page.route('http://127.0.0.1:54321/**', async (route) => {
     const headers = {
@@ -126,7 +126,17 @@ export async function mockPublicEvent(
     const rpc = new URL(route.request().url()).pathname.split('/').at(-1);
     let data: unknown = null;
     if (rpc === 'get_current_event') data = options.noEvent ? null : event;
-    if (rpc === 'get_bootstrap')
+    if (rpc === 'get_bootstrap' && options.beforeStart)
+      data = {
+        ...bootstrap,
+        rounds: bootstrap.rounds.map((r) => ({
+          ...r,
+          status: 'DRAFT',
+          started_at: null,
+          ends_at: null,
+        })),
+      };
+    else if (rpc === 'get_bootstrap')
       data = options.overtime
         ? {
             ...bootstrap,

@@ -396,7 +396,9 @@
         }
       ],
       "mottos": ["ONE TEAM. ONE SPIRIT."]
-    }
+    },
+    "teamLocked": "Team choice is locked because the first round has started.",
+    "teamLockedLink": "This link is for another team, but team choice is locked because the first round has started."
   },
   "live": {
     "title": "Live control",

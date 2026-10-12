@@ -1,12 +1,15 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { AuthStore } from '../auth/auth.store';
 import { EventStore } from './event.store';
 import { TeamSelectionStore } from './team-selection.store';
-import type { PublicEvent, PublicTeam } from './public-types';
+import type { PublicEvent, PublicRound, PublicTeam } from './public-types';
 
 describe('event-scoped player team choice', () => {
   const event = signal<PublicEvent | null>(null);
   const teams = signal<PublicTeam[]>([]);
+  const rounds = signal<PublicRound[]>([]);
+  const profile = signal<unknown>(null);
   const roster = [
     { id: 't1', code: 'T01' },
     { id: 't2', code: 'T02' },
@@ -15,8 +18,13 @@ describe('event-scoped player team choice', () => {
     localStorage.clear();
     event.set({ id: 'one' } as PublicEvent);
     teams.set(roster);
+    rounds.set([]);
+    profile.set(null);
     TestBed.configureTestingModule({
-      providers: [{ provide: EventStore, useValue: { event, teams } }],
+      providers: [
+        { provide: EventStore, useValue: { event, teams, rounds } },
+        { provide: AuthStore, useValue: { profile } },
+      ],
     });
   });
   afterEach(() => vi.restoreAllMocks());
@@ -74,5 +82,35 @@ describe('event-scoped player team choice', () => {
     event.set(null);
     expect(store.selectedCode()).toBeNull();
     expect(store.choose('T01')).toBe(false);
+  });
+
+  it('locks switching for players after the first round starts but allows a first pick', () => {
+    const store = TestBed.inject(TeamSelectionStore);
+    rounds.set([{ id: 'r1', started_at: '2026-10-12T10:00:00Z' } as PublicRound]);
+    expect(store.locked()).toBe(true);
+    expect(store.canChange()).toBe(true);
+    expect(store.choose('T01')).toBe(true);
+    expect(store.canChange()).toBe(false);
+    expect(store.choose('T02')).toBe(false);
+    expect(store.selectedCode()).toBe('T01');
+    expect(localStorage.getItem('bts.team.one')).toBe('T01');
+    expect(store.choose('T01')).toBe(true);
+  });
+
+  it('keeps switching open before any round starts and for event staff after', () => {
+    const store = TestBed.inject(TeamSelectionStore);
+    rounds.set([{ id: 'r1', started_at: null } as PublicRound]);
+    store.choose('T01');
+    expect(store.choose('T02')).toBe(true);
+    rounds.set([{ id: 'r1', started_at: '2026-10-12T10:00:00Z' } as PublicRound]);
+    profile.set({ system_role: 'MEMBER', roles: [{ event_id: 'one', role: 'GUIDE' }] });
+    expect(store.locked()).toBe(true);
+    profile.set({ system_role: 'MEMBER', roles: [{ event_id: 'one', role: 'REFEREE' }] });
+    expect(store.locked()).toBe(false);
+    expect(store.choose('T01')).toBe(true);
+    profile.set({ system_role: 'MEMBER', roles: [{ event_id: 'other', role: 'EVENT_ADMIN' }] });
+    expect(store.locked()).toBe(true);
+    profile.set({ system_role: 'OWNER', roles: [] });
+    expect(store.locked()).toBe(false);
   });
 });

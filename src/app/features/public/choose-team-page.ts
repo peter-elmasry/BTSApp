@@ -72,12 +72,18 @@ export class ChooseTeamPage {
       if (link === this.processedLink) return;
       this.processedLink = link;
       const team = this.store.teams().find((team) => team.code === code);
-      if (team) this.pendingCode.set(team.code);
-      else this.notice.set('player.invalidTeamLink');
+      if (!team) this.notice.set('player.invalidTeamLink');
+      else if (!this.selection.canChange() && this.selection.selectedCode() !== team.code)
+        this.notice.set('player.teamLockedLink');
+      else this.pendingCode.set(team.code);
     });
   }
 
   preview(team: PublicTeam) {
+    if (!this.selection.canChange()) {
+      this.notice.set('player.teamLocked');
+      return;
+    }
     this.notice.set('');
     this.pendingCode.set(team.code);
   }

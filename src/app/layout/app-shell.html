@@ -123,10 +123,17 @@
   <ds-toast />
   @if (switchSheet()) {
     <ds-bottom-sheet [title]="t('team.switch')" (close)="switchSheet.set(false)">
-      <p class="mb-5">{{ t('team.switch.confirm') }}</p>
-      <button class="ds-button primary w-full" (click)="switchTeam()">
-        {{ t('team.switch') }}
-      </button>
+      @if (selection.canChange()) {
+        <p class="mb-5">{{ t('team.switch.confirm') }}</p>
+        <button class="ds-button primary w-full" (click)="switchTeam()">
+          {{ t('team.switch') }}
+        </button>
+      } @else {
+        <p class="mb-5" role="status" data-testid="team-locked">{{ t('player.teamLocked') }}</p>
+        <button class="ds-button ghost w-full" (click)="switchSheet.set(false)">
+          {{ t('common.close') }}
+        </button>
+      }
     </ds-bottom-sheet>
   }
 </div>
