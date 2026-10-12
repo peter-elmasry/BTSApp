@@ -2,6 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Publish and verify PR #13 database repairs — DONE
+
+- **Requested by:** Gendy; edit and proceed, authorizing publication and CI follow-through.
+- **Preflight:** Clean `codex/phase-7-readiness`; fetched origin and confirmed no remote-only commits. Reviewed fix diff and whitespace.
+- **Published:** `be40a7a` is pushed to PR #13 without rewriting history.
+- **Cloud verification:** Run `38227505696` on `be40a7a` passes database and frontend jobs. All 775 pgTAP assertions across ten files pass, as do fresh migrations/reset, real member/Auth integration and full login lockout/concurrent admission/completion integration. Vercel passes.
+- **Handoff:** PR #13 repair is verified and ready for review; no merge or production deployment performed. This final evidence-only log update is committed locally, leaving the remotely checked PR head at `be40a7a`. Remaining implementation audit/Phase 7 requirements stay open.
+
 ## 2026-10-12 — Repair PR #13 database fixture failures — HANDOFF
 
 - **Requested by:** Gendy; database check still fails after migration fix.
