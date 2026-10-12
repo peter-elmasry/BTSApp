@@ -1,5 +1,18 @@
 # Implementation decisions
 
+## D034 — Prepare game photos before upload
+
+Game setup accepts JPEG, PNG and WebP sources up to 20 MiB and 40 megapixels.
+The browser decodes the source, applies its image orientation, preserves aspect
+ratio and reduces the longest edge to at most 1024 px without upscaling. Canvas
+encodes WebP at quality 0.85; unsupported encoder fallback and outputs exceeding
+the existing 5 MiB storage cap are rejected. Source limits bound local resource
+use and do not change the storage policy. Preview and upload use only the
+converted file. Decode resources and blob previews are released; superseded,
+cancelled or destroyed selections cannot replace the current game photo. Save
+is blocked during conversion. The existing authorized storage upload path and
+database permissions remain in force.
+
 ## D033 — Event audit history uses private cursor reads
 
 `get_audit_log(p_event,p_limit,p_before,p_action,p_entity)` permits only an active

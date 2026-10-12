@@ -2,11 +2,31 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-12 — Publish A04 audit viewer and verify CI — STARTED
+## 2026-10-12 — Publish A05 game-photo processing — STARTED
+
+- **Requested by:** Gendy; publish the finished fix and verify cloud CI.
+- **Preflight:** Clean `codex/game-photo-processing` at `921bc1d`; fetched origin, inspected branch commits and change summary, whitespace check passes.
+- **Scope:** Push the branch, open a PR against master and verify/fix frontend/database CI. Merge is a subsequent step.
+- **Milestone:** PR #15 opened at `edd7e4c`; Vercel passes. First CI `38241086227` passes unit/build/format/translation/edge checks but one of 42 browser cases races the Save completion against the next invalid-image selection. Test now waits for form reset and enabled input after upload; product conversion assertions already passed.
+
+## 2026-10-12 — Merge A04 and implement A05 game photos — HANDOFF
+
+- **Requested by:** Gendy; proceed with merge, master verification and next audit remediation.
+- **Preflight:** Clean audit branch with one local evidence commit. PR #14 had four passing checks, clean merge status and no submitted reviews; merged via signed-in browser at `67a7cd8` after connector permission failure. Fetched master, created `codex/game-photo-processing`, carried evidence via cherry-pick.
+- **Milestone:** Supabase deployment `38239432392` and master CI `38239432229` both pass on merged `67a7cd8`.
+- **Scope:** Decode PNG/JPEG/WebP game photos, preserve proportions, resize longest edge to at most 1024 px, encode WebP before preview/upload; cover browser conversion and async selection races. No publication of A05 branch requested.
+- **Implemented:** Browser conversion helper with decode/encoder validation, 20 MiB/40 MP source bounds and existing 5 MiB output limit; bilingual picker/progress/errors; conversion blocks Save; game switch/destroy invalidate pending selection and previews are released. D034 and A05 audit entry updated.
+- **Checks:** Five focused unit tests pass (three conversion failures/resource cleanup, two pending selection/save/destruction cases). Both EN/AR browser journeys report passing real PNG/JPEG/WebP dimensions, upload-byte decoding and corrupt-image rejection; runner stalled after test completion during server teardown and was interrupted, with port 4300 confirmed closed. Initial async unit mock used unsupported Angular relative-module mocking; replaced with browser API mocks and rerun passed. App/spec TypeScript, 599-key translations, production build (373.91 kB initial), formatting and whitespace checks pass. Full frontend suite not run locally; no SQL changed.
+- **Handoff:** Finished A05 implementation committed locally on `codex/game-photo-processing`; not pushed. Next: publish A05 PR and verify cloud CI before merge.
+
+## 2026-10-12 — Publish A04 audit viewer and verify CI — DONE
 
 - **Requested by:** Gendy; proceed with publication and cloud verification.
 - **Preflight:** Clean `codex/admin-audit-viewer` at `43e9a80`; fetched origin and reviewed the full diff against master, with whitespace checks passing.
 - **Scope:** Publish this branch, open its PR against master and verify/fix cloud frontend/database checks. No merge or production deployment requested.
+- **Published:** Branch head `b7ee747` pushed and PR #14 opened. GitHub connector creation returned 403; signed-in browser creation succeeded.
+- **Cloud checks:** CI `38238549788` passes both jobs. Fresh migrations/reset, real member/Auth and login lockout/concurrency integration pass; all 802 pgTAP assertions across 11 files pass, including the 27 audit-reader assertions. Full frontend unit/browser suites, edge tests, formatting, translations, build and Lighthouse pass. Vercel preview is ready.
+- **Handoff:** A04 runtime acceptance verified; PR #14 is ready for review. No merge or production database deployment performed. Final evidence-only documentation commit stays local so the remotely checked head remains `b7ee747`. Next: review/merge PR #14, then A05 game-photo conversion/resize.
 
 ## 2026-10-12 — A04 administrator audit viewer — HANDOFF
 

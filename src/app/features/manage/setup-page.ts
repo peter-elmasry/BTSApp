@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -9,6 +16,7 @@ import { OpQueueService } from '../../core/offline/op-queue.service';
 import { ReadCacheService } from '../../core/offline/read-cache.service';
 import { availableTeamCodes, TEAM_AVATARS, validMatchSelection } from './setup-helpers';
 import { currencyLabel } from '../standings/rank-motion';
+import { prepareGameImage } from './game-image';
 
 type Row = any;
 type SetupData = {
@@ -164,8 +172,14 @@ export class EventSetupPage {
   readonly gameImage = signal<File | null>(null);
   readonly gameImagePath = signal<string | null>(null);
   readonly gameImagePreview = signal<string | null>(null);
+  readonly imageProcessing = signal(false);
+  private imageRequest = 0;
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      this.imageRequest++;
+      this.releaseImagePreview();
+    });
     this.updateStaffValidators();
     void this.reload();
   }
@@ -285,6 +299,8 @@ export class EventSetupPage {
     await this.mutate('delete_team', { p_team: row.id });
   }
   editGame(row?: Row) {
+    this.imageRequest++;
+    this.imageProcessing.set(false);
     const preview = this.gameImagePreview();
     if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
     this.editingGame.set(row?.id ?? null);
@@ -304,6 +320,7 @@ export class EventSetupPage {
     );
   }
   async saveGame() {
+    if (this.imageProcessing() || this.saving()) return;
     if (this.gameForm.invalid) {
       this.gameForm.markAllAsTouched();
       return;
@@ -510,23 +527,31 @@ export class EventSetupPage {
   isOwner() {
     return this.auth.profile()?.system_role === 'OWNER';
   }
-  selectGameImage(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+  async selectGameImage(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
     if (!file) return;
-    if (file.type !== 'image/webp' || file.size > 5 * 1024 * 1024) {
-      this.notice.set('manage.invalidImage');
-      (event.target as HTMLInputElement).value = '';
-      this.gameImage.set(null);
-      const preview = this.gameImagePreview();
-      if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
-      this.gameImagePreview.set(this.gameImageUrl(this.gameImagePath()) || null);
-      return;
+    input.value = '';
+    const request = ++this.imageRequest;
+    this.releaseImagePreview();
+    this.gameImage.set(null);
+    this.gameImagePreview.set(this.gameImageUrl(this.gameImagePath()) || null);
+    this.notice.set('');
+    this.imageProcessing.set(true);
+    try {
+      const image = await prepareGameImage(file);
+      if (request !== this.imageRequest) return;
+      this.gameImage.set(image);
+      this.gameImagePreview.set(URL.createObjectURL(image));
+    } catch {
+      if (request === this.imageRequest) this.notice.set('manage.invalidImage');
+    } finally {
+      if (request === this.imageRequest) this.imageProcessing.set(false);
     }
+  }
+  private releaseImagePreview() {
     const preview = this.gameImagePreview();
     if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
-    this.notice.set('');
-    this.gameImage.set(file);
-    this.gameImagePreview.set(URL.createObjectURL(file));
   }
   gameImageUrl(path: string | null) {
     if (!path) return '';
