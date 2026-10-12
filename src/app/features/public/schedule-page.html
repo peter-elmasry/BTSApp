@@ -1,5 +1,5 @@
 <div *transloco="let t" class="space-y-5">
-  <header class="flex flex-wrap items-center justify-between gap-3">
+  <header class="ds-page-header">
     <h1 class="text-2xl font-extrabold">{{ t('nav.schedule') }}</h1>
     <button class="ds-button ghost" [disabled]="store.loading()" (click)="store.refresh()">
       {{ t(store.loading() ? 'player.refreshing' : 'player.refresh') }}
@@ -20,6 +20,20 @@
         </button>
       }
     </nav>
+    <div class="ds-tabs sub" role="group" [attr.aria-label]="t('player.displayAs')">
+      @for (item of views; track item) {
+        <button
+          type="button"
+          class="ds-tab"
+          [attr.aria-pressed]="view() === item"
+          [attr.data-testid]="'view-' + item"
+          (click)="setView(item)"
+        >
+          <span aria-hidden="true" class="me-1">{{ item === 'table' ? '☰' : '▦' }}</span
+          >{{ t('player.view.' + item) }}
+        </button>
+      }
+    </div>
     @if (teamView.error()) {
       <div class="flex flex-wrap items-center gap-2 rounded-xl bg-white p-3">
         <p role="status">{{ t('player.resultsError') }}</p>
@@ -28,33 +42,121 @@
         </button>
       </div>
     }
-    @for (group of groups(); track group.id) {
-      <section class="space-y-3">
-        <h2 class="text-xl font-bold">
-          @if (group.game; as game) {
-            {{ name(game, direction.language()) }}
-          } @else if (group.round; as round) {
-            {{
-              name(round, direction.language()) ||
-                (round.type === 'OPENING'
-                  ? t('round.opening')
-                  : t('player.roundNumber', { n: round.number }))
-            }}
+    @if (view() === 'table') {
+      @if (tableRows().length) {
+        <div
+          class="overflow-x-auto rounded-card border border-mist bg-white shadow-card"
+          role="region"
+          tabindex="0"
+          [attr.aria-label]="t('player.' + tab())"
+        >
+          <table class="w-full border-collapse text-sm" data-testid="schedule-table">
+            <thead class="bg-navy text-white">
+              <tr>
+                <th scope="col" class="px-3 py-2 text-start">{{ t('live.roundColumn') }}</th>
+                <th scope="col" class="px-3 py-2 text-start">{{ t('manage.game') }}</th>
+                <th scope="col" class="px-3 py-2 text-start">{{ t('player.teamsColumn') }}</th>
+                <th scope="col" class="px-3 py-2 text-start">{{ t('player.resultColumn') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of tableRows(); track row.key) {
+                <tr
+                  class="border-t border-mist align-top"
+                  [class.bg-gold-soft]="row.round.status === 'ACTIVE'"
+                  [class.bg-ivory]="!row.match && row.round.status !== 'ACTIVE'"
+                >
+                  <th scope="row" class="px-3 py-2 text-start font-bold whitespace-nowrap">
+                    {{
+                      row.round.type === 'OPENING'
+                        ? t('round.opening')
+                        : t('player.roundNumber', { n: row.round.number })
+                    }}
+                  </th>
+                  <td class="px-3 py-2">
+                    @if (row.game; as game) {
+                      <a
+                        class="inline-flex min-h-11 items-center font-semibold text-navy underline"
+                        [routerLink]="['/games', game.code]"
+                        >{{ name(game, direction.language()) }}</a
+                      >
+                    } @else {
+                      <span class="text-slate">—</span>
+                    }
+                  </td>
+                  <td class="px-3 py-2">
+                    @if (row.match; as match) {
+                      @if (row.round.type === 'OPENING') {
+                        {{ t('live.allTeams', { n: match.participants.length }) }}
+                      } @else {
+                        @for (team of teamNames(match); track team.code; let last = $last) {
+                          <span [class.font-extrabold]="team.own">{{ team.name }}</span>
+                          @if (!last) {
+                            <span class="text-slate"> {{ t('match.vs') }} </span>
+                          }
+                        }
+                      }
+                    } @else {
+                      <span class="font-semibold" data-testid="table-break"
+                        >☕ {{ t('player.break') }}</span
+                      >
+                    }
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    @if (row.match; as match) {
+                      @if (ownOutcome(match); as outcome) {
+                        @if (outcome !== 'PENDING') {
+                          <span
+                            class="font-bold"
+                            [class.text-success]="outcome === 'WIN'"
+                            [class.text-error]="outcome === 'LOSS' || outcome === 'FORFEIT'"
+                            >{{ t('player.outcome.' + outcome) }}</span
+                          >
+                        } @else {
+                          {{ t('player.matchStatus.' + match.status) }}
+                        }
+                      } @else {
+                        {{ t('player.matchStatus.' + match.status) }}
+                      }
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="rounded-card bg-white p-5">{{ t('player.noMatches') }}</p>
+      }
+    } @else {
+      @for (group of groups(); track group.id) {
+        <section class="space-y-3">
+          <h2 class="text-xl font-bold">
+            @if (group.game; as game) {
+              {{ name(game, direction.language()) }}
+            } @else if (group.round; as round) {
+              {{
+                name(round, direction.language()) ||
+                  (round.type === 'OPENING'
+                    ? t('round.opening')
+                    : t('player.roundNumber', { n: round.number }))
+              }}
+            }
+          </h2>
+          @for (row of group.rows; track row.key) {
+            @if (row.match; as match) {
+              <app-public-match-card
+                [match]="match"
+                [selectedCode]="selection.selectedCode() ?? ''"
+              />
+            } @else {
+              <app-break-card [row]="row" />
+            }
           }
-        </h2>
-        @for (row of group.rows; track row.key) {
-          @if (row.match; as match) {
-            <app-public-match-card
-              [match]="match"
-              [selectedCode]="selection.selectedCode() ?? ''"
-            />
-          } @else {
-            <app-break-card [row]="row" />
-          }
-        }
-      </section>
-    } @empty {
-      <p class="rounded-card bg-white p-5">{{ t('player.noMatches') }}</p>
+        </section>
+      } @empty {
+        <p class="rounded-card bg-white p-5">{{ t('player.noMatches') }}</p>
+      }
     }
   </app-public-state>
   <app-life-lost-overlay />

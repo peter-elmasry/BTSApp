@@ -404,7 +404,14 @@
     "location": "Location",
     "break": "Break",
     "breakHint": "No match at this game in this round.",
-    "teamBreak": "Your team has no match this round — take a break."
+    "teamBreak": "Your team has no match this round — take a break.",
+    "displayAs": "Display as",
+    "view": {
+      "table": "Table",
+      "cards": "Cards"
+    },
+    "teamsColumn": "Teams",
+    "resultColumn": "Result"
   },
   "live": {
     "title": "Live control",

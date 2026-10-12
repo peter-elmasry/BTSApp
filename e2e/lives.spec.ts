@@ -127,9 +127,10 @@ for (const lang of ['en', 'ar'] as const) {
     await expect(overlay).toContainText(
       t.scoring.lifeLostLeft.replace('{{n}}', '2').replace('{{emoji}}', '💛'),
     );
-    // Audit once the decorative crack animation (aria-hidden) has settled.
-    await page.waitForTimeout(1800);
-    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    // The crack animation is aria-hidden decoration; audit everything else while it runs.
+    expect((await new AxeBuilder({ page }).exclude('.heart-stage').analyze()).violations).toEqual(
+      [],
+    );
     await overlay.getByRole('button', { name: t.scoring.lifeLostOk }).click();
     await expect(overlay).toHaveCount(0);
     await expect(page.getByTestId('home-lives')).toContainText(

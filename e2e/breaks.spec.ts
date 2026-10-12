@@ -48,12 +48,27 @@ for (const lang of ['en', 'ar'] as const) {
     await mockPublicEvent(page);
     await withBreaks(page);
     await page.goto('/schedule');
-    // My team: rounds 1 and 2 are matches, round 3 is a team break.
-    await expect(page.getByTestId('break-card')).toHaveCount(1);
-    await expect(page.getByTestId('break-card')).toContainText(t.player.teamBreak);
+    // Table is the default view. My team: rounds 1 and 2 are matches, round 3 is a break.
+    await expect(page.getByTestId('view-table')).toHaveAttribute('aria-pressed', 'true');
+    const table = page.getByTestId('schedule-table');
+    await expect(table.getByRole('rowheader')).toHaveCount(3);
+    await expect(table.getByTestId('table-break')).toHaveCount(1);
     await page.getByRole('button', { name: t.player.byRound }).click();
     // Round 1: G02 break; round 2: G02 break; round 3: both games break.
+    await expect(table.getByTestId('table-break')).toHaveCount(4);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    await page.getByTestId('view-cards').click();
+    await expect(page.getByTestId('schedule-table')).toHaveCount(0);
     await expect(page.getByTestId('break-card')).toHaveCount(4);
+    await page.getByRole('button', { name: t.player.myTeam }).click();
+    await expect(page.getByTestId('break-card')).toContainText(t.player.teamBreak);
+    // The chosen view is remembered on this device.
+    await page.reload();
+    await expect(page.getByTestId('view-cards')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByTestId('break-card')).toHaveCount(1);
     await page.goto('/games/G02');
     await expect(page.getByTestId('break-card')).toHaveCount(3);
     await expect(page.getByTestId('break-card').first()).toContainText(t.player.breakHint);
