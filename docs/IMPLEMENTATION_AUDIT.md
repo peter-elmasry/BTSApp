@@ -209,7 +209,8 @@ Seven focused unit tests and the setup/owner browser language-switch journey pas
 Production build, app/spec TypeScript, translations and formatting pass locally;
 Cloud acceptance passes on PR #16 head `22548f2`, CI `38243675816`: 146 unit
 tests, 43 browser tests and 802 SQL assertions; frontend/database jobs and Vercel
-preview pass. The PR is awaiting review/merge.
+preview pass. PR #16 merged at `df28e10`; master CI `38244996840` and Vercel
+production deployment pass.
 
 Requirement: §14.1, entity names follow the language with fallback.
 `setup-page.html:235` renders `team.name_en`; game/round/staff selectors and owner
@@ -222,7 +223,9 @@ parity remains green because the error is the chosen entity field.
 **Implementation update (2026-10-12):** The remove-admin control now has a
 non-shrinking 44×44 px minimum with centered content. The focused production
 browser journey passes target dimensions and no horizontal overflow in AR/EN
-at 360×740. Build and formatting pass; cloud acceptance pending publication.
+at 360×740. PR #17 head `352b2d9` passes CI `38248413574`: 146 unit tests,
+43 browser tests and 802 SQL assertions. Build, formatting and Vercel preview
+pass; PR awaiting review/merge.
 
 Requirement: §9.3, at least 44×44 px. The button at
 `owner-page.html:209` measures approximately **8.91×24 px** at 360×740. The
