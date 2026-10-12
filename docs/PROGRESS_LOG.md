@@ -10,7 +10,8 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Scope:** Enlarge owner remove-admin control to at least 44×44 px, verify EN/AR mobile layout; update collaboration instructions and publish PR.
 - **Implemented/checked:** Remove-admin uses a centered non-shrinking 44×44 px minimum target; existing handler and accessible name retained. Focused production browser journey passes both languages at 360×740, asserting target dimensions and no horizontal overflow. Production build (373.91 kB initial), formatting and whitespace pass. Updated AGENTS.md with standing publication authorization.
 - **Published/verified:** PR #17 at `352b2d9`; CI `38248413574` passes 146 unit tests, 43 browser tests and 802 SQL assertions. Frontend/database and Vercel preview/feedback checks pass.
-- **Handoff:** Final documentation evidence committed and published with this PR; no merge of #17 performed. Next: review/merge #17, verify master, then A08 localized masked password-reset form.
+- **Latest deployment blocker:** Documentation-only head `3db40fa` has a failed Vercel status after the application head deployed successfully. The inspector redirects to Vercel login; no local Vercel credentials are configured. Failure cause is unavailable through GitHub's reported status. Authenticated project access is needed to inspect deployment `CHaQxwJ5wKHDe852YWfZRV6ZfkZv`; do not infer an application regression from this status alone.
+- **Handoff:** Final documentation evidence committed and published with this PR; no merge of #17 performed. Next: inspect/retry the failed Vercel preview using project access, review/merge #17 when checks are acceptable, verify master, then A08 localized masked password-reset form.
 
 ## 2026-10-12 — Publish A06 entity-language fix — DONE
 
