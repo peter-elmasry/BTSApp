@@ -2,6 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Phase 8: team lock, referees, breaks, lives scoring, schedule table — HANDOFF
+
+- **Requested by:** Peter; approved slices 1–7 of the Phase 8 proposal. General inter-round breaks were cancelled; "no match for a game in a round = break" instead. Answers: first pick allowed after the lock; teams at zero lives stay at zero and keep playing; life emoji is free text with ten suggestions.
+- **Preflight:** Clean `master` at `df28e10` (CRLF-only noise on the Windows checkout). Implemented in a Linux copy of the same commit; finished files copied back and committed on `feat/phase-8-extensions`, one commit per slice.
+- **Implemented:** Slice 4 shared staff section bar/layout classes, 44 px remove-admin, masked localized owner password sheet (A07/A08, D040). Slice 1 team lock after the first round starts, staff exempt (D035). Slice 3 referee names on game details via migration `0016_game_referees.sql` (D036). Slice 2 derived per-game/team breaks on schedule, game details and setup builder, plus a referee round × game table on `/ref` (D037). Slice 5 LIVES scoring via migration `0017_lives_scoring.sql`: settings, lock after start, standings, tie invalidation, import workbook v4, export headings, lives meter and life-lost animation (D038). Slice 6 schedule Table (default) and Cards views (D039). Plan §20, README, FUTURE_PLANS (player market idea) and audit A07/A08 notes updated.
+- **Checks passed:** 157/157 unit tests (31 files); translation audit 654 EN/AR keys; production build, initial 377.12 kB. Browser: 58/59 — new admin-layout, breaks, lives and team-lock journeys pass in EN/AR; XLSX import/export journeys pass under Node 24 (fail under Node 22 only from the known test-side ExcelJS import). SQL: all 15 existing migrations plus 0016/0017 apply and 837/837 pgTAP assertions pass (802 existing + 35 new) on a local Postgres 16 with a minimal Supabase stub (roles, `auth.uid`, `realtime.send`, storage tables). That stub is a local check, not Supabase CLI/CI evidence.
+- **Not passed / environment:** `shell loads offline after service worker takes control` fails with Chromium's `in-incognito` installability error in the sandbox browser; it fails identically on untouched `df28e10`, so it is an environment issue. Cloud CI, hosted migrations and Lighthouse were not run.
+- **Merge (2026-10-13):** Merged master `f3ae6f1` (PR #17 A07 fix) into this branch. Owner remove-admin keeps PR #17's non-shrinking 44 px target plus the member-specific label; PR #17's touch-target check matches the label as a prefix. Audit/progress histories from both branches retained.
+- **Next:** Peter/Gendy review the branch, push `feat/phase-8-extensions`, open a PR and confirm cloud CI (expected 837 SQL assertions). Apply migrations 0016/0017 through the normal deploy workflow. Re-download the setup workbook after deploy (template v4).
+
 ## 2026-10-12 — Verify A06 merge and fix A07 touch target — DONE
 
 - **Requested by:** Gendy; verify PR #16 merge/master and fix/publish A07. Standing authorization now covers pushing completed checked changes and opening PRs; merges require separate authorization.

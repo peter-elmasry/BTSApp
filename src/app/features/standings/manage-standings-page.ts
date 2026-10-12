@@ -8,7 +8,8 @@ import {
   untracked,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { ManageNav } from '../manage/manage-nav';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { AuthStore } from '../../core/auth/auth.store';
 import { DirectionService } from '../../core/i18n/i18n.service';
@@ -63,7 +64,7 @@ export function standingsAdminError(error: unknown) {
 
 @Component({
   selector: 'app-manage-standings-page',
-  imports: [RouterLink, TranslocoDirective, DsBottomSheet],
+  imports: [ManageNav, TranslocoDirective, DsBottomSheet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './manage-standings-page.html',
 })

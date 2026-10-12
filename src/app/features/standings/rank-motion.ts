@@ -1,3 +1,4 @@
+import { isLivesMode, lifeEmoji } from '../../core/player/scoring';
 import type { PublicEvent, PublicMatch, PublicRound } from '../../core/player/public-types';
 import type { StandingRow } from '../../core/standings/standings-types';
 
@@ -17,9 +18,12 @@ export function currencyLabel(
     | 'currency_ar_one'
     | 'currency_ar_two'
     | 'currency_ar_plural'
-  >,
+  > &
+    Partial<Pick<PublicEvent, 'scoring_mode' | 'life_emoji'>>,
   language: 'en' | 'ar',
 ): string {
+  // LIVES mode shows the event's life symbol instead of a currency word (D038).
+  if (isLivesMode(event)) return lifeEmoji(event);
   const category = new Intl.PluralRules(language).select(Math.abs(count));
   if (language === 'en')
     return category === 'one' ? event.currency_en_one : event.currency_en_other;

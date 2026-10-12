@@ -88,6 +88,8 @@ export async function createStandingsWorkbook(
   const t = (key: string) => text(`phase6.workbook.${key}`);
   const stamp = `${snapshot.event.code} · ${t('generatedAt')}: ${cairoExportTime(snapshot.generated_at)} (Africa/Cairo)`;
   const rtl = language === 'ar';
+  // LIVES mode keeps the same numeric columns; only their headings change (D038).
+  const lives = snapshot.event.scoring_mode === 'LIVES';
   const date = (value: string | null) => (value ? cairoExportTime(value) : '');
   addSheet(
     workbook,
@@ -102,9 +104,9 @@ export async function createStandingsWorkbook(
       'draws',
       'losses',
       'forfeits',
-      'matchPoints',
+      lives ? 'livesFromMatches' : 'matchPoints',
       'adjustments',
-      'total',
+      lives ? 'livesLeft' : 'total',
       'tied',
       'manualPosition',
     ].map(t),

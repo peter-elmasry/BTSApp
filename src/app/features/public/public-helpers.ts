@@ -37,3 +37,11 @@ export function guideNames(
     .map((guide) => localizedName(guide, language))
     .join(language === 'ar' ? '، ' : ', ');
 }
+
+/** Localized, comma-separated referee names for a game ('' when none are assigned). */
+export function refereeNames(game: PublicGame | null | undefined, language: 'ar' | 'en') {
+  return (game?.referees ?? [])
+    .map((referee) => localizedName(referee, language))
+    .filter(Boolean)
+    .join(language === 'ar' ? '، ' : ', ');
+}

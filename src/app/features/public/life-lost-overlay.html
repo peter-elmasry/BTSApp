@@ -1,0 +1,33 @@
+@if (shown(); as value) {
+  <div
+    *transloco="let t"
+    class="life-lost fixed inset-0 z-50 flex items-center justify-center bg-navy/80 p-6"
+    role="status"
+    aria-live="assertive"
+    data-testid="life-lost"
+    (click)="dismiss()"
+  >
+    <div class="life-card relative w-full max-w-sm space-y-4 rounded-card bg-white p-6 text-center">
+      <div class="heart-stage" aria-hidden="true">
+        <span class="heart whole">{{ value.emoji }}</span>
+        <span class="heart half start">{{ value.emoji }}</span>
+        <span class="heart half end">{{ value.emoji }}</span>
+        <span class="minus" dir="ltr">−1</span>
+      </div>
+      <p class="text-2xl font-extrabold">{{ t('scoring.lifeLostTitle') }}</p>
+      <p class="text-lg">
+        @if (value.left === null) {
+          {{ t('scoring.lifeLostBody') }}
+        } @else if (value.left > 0) {
+          {{ t('scoring.lifeLostLeft', { n: value.left, emoji: value.emoji }) }}
+        } @else {
+          {{ t('scoring.lifeLostNone') }}
+        }
+      </p>
+      <p class="text-sm font-bold text-teal" dir="ltr">ONE TEAM. ONE SPIRIT.</p>
+      <button type="button" class="ds-button primary w-full" (click)="dismiss()">
+        {{ t('scoring.lifeLostOk') }}
+      </button>
+    </div>
+  </div>
+}

@@ -1,5 +1,5 @@
 <div *transloco="let t" class="space-y-5">
-  <header class="flex flex-wrap items-center justify-between gap-3">
+  <header class="ds-page-header">
     <h1 class="text-2xl font-extrabold">{{ t('live.refereeTitle') }}</h1>
     <button class="ds-button ghost" [disabled]="reader.loading()" (click)="reader.refresh()">
       {{ t('player.refresh') }}
@@ -19,8 +19,8 @@
     <p class="rounded-card bg-white p-4">{{ t('player.noEvent') }}</p>
   } @else if (reader.data(); as data) {
     @for (match of data.matches; track match.id) {
-      <article class="space-y-3 rounded-card bg-white p-4 shadow-card">
-        <app-live-match-summary [snapshot]="data" [match]="match" /><a
+      <article class="ds-card space-y-4">
+        <app-live-match-summary class="block" [snapshot]="data" [match]="match" /><a
           class="ds-button primary inline-flex items-center"
           [routerLink]="['/ref/match', match.id]"
           >{{ t(match.status === 'COMPLETED' ? 'live.correctResult' : 'live.enterResult') }}</a
@@ -29,5 +29,8 @@
     } @empty {
       <p class="rounded-card bg-white p-5">{{ t('live.noAssignedMatches') }}</p>
     }
+  }
+  @if (events.event()) {
+    <app-referee-schedule />
   }
 </div>

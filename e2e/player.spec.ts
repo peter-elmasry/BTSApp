@@ -53,6 +53,9 @@ for (const lang of ['en', 'ar']) {
         exact: true,
       }),
     ).toBeVisible();
+    await expect(page.getByTestId('game-referees')).toContainText(
+      `${labels.player.referee}: ${lang === 'ar' ? 'مينا الحكم' : 'Mina Referee'}`,
+    );
     await page.goto('/home');
     await page.getByRole('button', { name: new RegExp('^' + labels['team.switch']) }).click();
     await expect(page.locator('dialog')).toBeVisible();
@@ -61,15 +64,22 @@ for (const lang of ['en', 'ar']) {
     expect(await page.evaluate((key) => localStorage.getItem(key), `bts.team.${eventId}`)).toBe(
       'T01',
     );
+    // Round 1 has started in this fixture, so the player keeps the chosen team (D035).
     await page.getByRole('button', { name: new RegExp('^' + labels['team.switch']) }).click();
-    await page
-      .locator('dialog')
-      .getByRole('button', { name: labels['team.switch'], exact: true })
-      .click();
-    await page.getByTestId('team-card-T02').click();
-    await page.getByTestId('confirm-team').click();
+    await expect(page.locator('dialog').getByTestId('team-locked')).toHaveText(
+      labels.player.teamLocked,
+    );
     await expect(
-      page.getByRole('heading', { level: 2, name: teamName(1), exact: true }),
+      page.locator('dialog').getByRole('button', { name: labels['team.switch'], exact: true }),
+    ).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await page.goto('/choose-team');
+    await expect(page.getByTestId('team-locked')).toBeVisible();
+    await expect(page.getByTestId('team-card-T02')).toBeDisabled();
+    await expect(page.getByTestId('confirm-team')).toHaveCount(0);
+    await page.goto('/home');
+    await expect(
+      page.getByRole('heading', { level: 2, name: teamName(0), exact: true }),
     ).toBeVisible();
     await page.screenshot({ path: `artifacts/player-home-${lang}.png`, fullPage: true });
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
@@ -85,7 +95,7 @@ test('QR team link requires confirmation even when a different team is saved', a
     localStorage.setItem(key, 'T02');
     localStorage.setItem('bts.lang', 'en');
   }, `bts.team.${eventId}`);
-  await mockPublicEvent(page);
+  await mockPublicEvent(page, { beforeStart: true });
   await page.goto('/?team=T01');
   await expect(page).toHaveURL(/choose-team.*team=T01/);
   await expect(page.getByTestId('confirm-team')).toBeVisible();
@@ -115,4 +125,43 @@ test('overtime counts up without closing the round and invalid team links stay u
   expect(await page.evaluate((key) => localStorage.getItem(key), `bts.team.${eventId}`)).toBe(
     'T01',
   );
+});
+
+test('players switch freely before the first round starts', async ({ page }) => {
+  await page.addInitScript((key) => {
+    localStorage.setItem(key, 'T01');
+    localStorage.setItem('bts.lang', 'en');
+  }, `bts.team.${eventId}`);
+  await mockPublicEvent(page, { beforeStart: true });
+  await page.goto('/home');
+  await page.getByRole('button', { name: /^Switch team/ }).click();
+  await page.locator('dialog').getByRole('button', { name: 'Switch team', exact: true }).click();
+  await page.getByTestId('team-card-T02').click();
+  await page.getByTestId('confirm-team').click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Stars', exact: true })).toBeVisible();
+});
+
+test('after the first round starts a QR link cannot move a player to another team, but a first pick works', async ({
+  page,
+}) => {
+  const labels = JSON.parse(readFileSync('public/i18n/en.json', 'utf8'));
+  await page.addInitScript((key) => {
+    if (!sessionStorage.getItem('seeded')) {
+      localStorage.setItem(key, 'T02');
+      sessionStorage.setItem('seeded', '1');
+    }
+    localStorage.setItem('bts.lang', 'en');
+  }, `bts.team.${eventId}`);
+  await mockPublicEvent(page);
+  await page.goto('/?team=T01');
+  await expect(page.getByRole('alert')).toHaveText(labels.player.teamLockedLink);
+  await expect(page.getByTestId('confirm-team')).toHaveCount(0);
+  expect(await page.evaluate((key) => localStorage.getItem(key), `bts.team.${eventId}`)).toBe(
+    'T02',
+  );
+  // A device that never picked a team can still join after the lock.
+  await page.evaluate((key) => localStorage.removeItem(key), `bts.team.${eventId}`);
+  await page.goto('/?team=T01');
+  await page.getByTestId('confirm-team').click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Falcons', exact: true })).toBeVisible();
 });

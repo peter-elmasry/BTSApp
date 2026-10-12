@@ -1,28 +1,12 @@
 <div *transloco="let t" class="space-y-5">
   <header class="space-y-3">
-    <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="ds-page-header">
       <h1 class="text-2xl font-extrabold">{{ t('phase6.title') }}</h1>
       <button class="ds-button ghost" [disabled]="loading() || exporting()" (click)="refresh()">
         {{ t('phase6.refresh') }}
       </button>
     </div>
-    <nav class="flex flex-wrap gap-4">
-      <a
-        class="inline-flex min-h-11 items-center font-semibold text-teal"
-        [routerLink]="['/manage', eventId(), 'live']"
-        >{{ t('phase6.liveControl') }}</a
-      >
-      <a
-        class="inline-flex min-h-11 items-center font-semibold text-teal"
-        [routerLink]="['/manage', eventId(), 'setup']"
-        >{{ t('phase6.eventSetup') }}</a
-      >
-    </nav>
-    <a
-      class="inline-flex min-h-11 items-center font-semibold text-teal"
-      [routerLink]="['/manage', eventId(), 'audit']"
-      >{{ t('audit.title') }}</a
-    >
+    <app-manage-nav [eventId]="eventId()" />
   </header>
   @if (notice()) {
     <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>

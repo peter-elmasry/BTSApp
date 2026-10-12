@@ -1,7 +1,9 @@
 import { TEAM_AVATARS } from './setup-helpers';
 
 /** Arabic-first event setup workbook (template v3) — fixed layout shared by the generator and parser. */
-export const TEMPLATE_VERSION = '3';
+export const TEMPLATE_VERSION = '4';
+/** v3 workbooks lack the scoring rows only; they still import and keep current scoring. */
+export const ACCEPTED_TEMPLATE_VERSIONS = ['3', TEMPLATE_VERSION];
 export const MAX_TEAMS = 20;
 export const MAX_GAMES = 12;
 export const MAX_ROUNDS = 20;
@@ -29,6 +31,8 @@ export const GRID_LAST_COL = GRID_COL + 2 * MAX_GAMES - 1;
 export const ROLE_LABELS = { REFEREE: 'حكم', GUIDE: 'مرشد' } as const;
 export const YES = 'نعم';
 export const NO = 'لا';
+/** Workbook labels for the event scoring mode (D038). */
+export const SCORING_LABELS = { POINTS: 'نقط', LIVES: 'قلوب' } as const;
 
 /** 20 distinct team colours; Excel shows the Arabic name, the app stores the hex. */
 export const TEAM_PALETTE: readonly { name: string; hex: string }[] = [
@@ -170,6 +174,19 @@ export const EVENT_FIELDS: readonly {
     required: true,
     hint: 'نعم = اللاعيبة يشوفوا ترتيب كل الفرق',
   },
+  {
+    key: 'scoring_mode',
+    label: 'نظام الحساب',
+    required: false,
+    hint: 'نقط أو قلوب. بيتقفل بعد أول جولة.',
+  },
+  {
+    key: 'initial_lives',
+    label: 'عدد القلوب في البداية',
+    required: false,
+    hint: 'لنظام القلوب بس: ١ – ٩٩',
+  },
+  { key: 'life_emoji', label: 'رمز القلب', required: false, hint: 'أي إيموجي: ❤️ 💛 💙 🔥 ⭐' },
   {
     key: 'opening_game',
     label: 'لعبة الافتتاح',

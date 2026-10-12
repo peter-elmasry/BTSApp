@@ -52,11 +52,24 @@ describe('owner member operation reconciliation', () => {
     expect(page.memberForm.controls.password.value).toBe('');
   });
   it('shows a pending password reset without announcing success', async () => {
-    vi.spyOn(window, 'prompt').mockReturnValue('fixture-password');
-    await page.setPassword(member);
+    page.openPassword(member);
+    page.passwordForm.setValue({ password: 'fixture-password', confirm: 'fixture-password' });
+    await page.savePassword();
     expect(page.pendingOperation()).toBe('operation-reference');
     expect(page.notice()).not.toBe('owner.passwordSaved');
     expect(invoke).toHaveBeenCalledTimes(1);
+    expect(page.passwordMember()).toBeNull();
+    expect(page.passwordForm.controls.password.value).toBe('');
+  });
+  it('rejects short or mismatched passwords before calling the server', async () => {
+    page.openPassword(member);
+    page.passwordForm.setValue({ password: 'short', confirm: 'short' });
+    await page.savePassword();
+    expect(page.passwordError()).toBe('owner.passwordTooShort');
+    page.passwordForm.setValue({ password: 'fixture-password', confirm: 'different-password' });
+    await page.savePassword();
+    expect(page.passwordError()).toBe('owner.passwordMismatch');
+    expect(invoke).not.toHaveBeenCalled();
   });
   it('shows pending activation changes without announcing success', async () => {
     await page.toggleActive(member);

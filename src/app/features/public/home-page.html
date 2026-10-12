@@ -32,6 +32,16 @@
           @if (team.guide) {
             <p>{{ t('team.guide') }}: {{ guideNames(team, direction.language()) }}</p>
           }
+          @if (livesMode() && lives() !== null) {
+            <div class="mt-2 flex flex-wrap items-center gap-2" data-testid="home-lives">
+              <ds-lives-meter
+                [lives]="lives()!"
+                [initial]="store.event()?.initial_lives ?? lives()!"
+                [emoji]="emoji()"
+              />
+              <span class="text-sm font-bold">{{ t('scoring.livesLeft', { n: lives() }) }}</span>
+            </div>
+          }
           @if (ownStanding(); as row) {
             @if (store.event(); as event) {
               <p class="mt-2 font-bold tabular" data-testid="home-standing">
@@ -105,4 +115,5 @@
       }}</a>
     }
   </app-public-state>
+  <app-life-lost-overlay />
 </div>

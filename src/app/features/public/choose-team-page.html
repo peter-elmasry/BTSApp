@@ -3,7 +3,12 @@
     <h1 class="text-2xl font-extrabold">{{ t('team.choose.title') }}</h1>
     <p class="text-slate">{{ t('player.chooseHint') }}</p>
   </header>
-  @if (notice()) {
+  @if (!selection.canChange()) {
+    <p role="status" class="rounded-xl bg-gold-soft p-4 font-semibold" data-testid="team-locked">
+      {{ t('player.teamLocked') }}
+    </p>
+  }
+  @if (notice() && notice() !== 'player.teamLocked') {
     <p role="alert" class="rounded-xl bg-white p-4 text-error">{{ t(notice()) }}</p>
   }
   <app-public-state>
@@ -26,6 +31,8 @@
             [class.selected]="pendingCode() === team.code"
             [style.--team-color]="team.color_hex"
             [attr.aria-pressed]="selection.selectedCode() === team.code"
+            [attr.aria-disabled]="!selection.canChange() || null"
+            [class.opacity-60]="!selection.canChange() && selection.selectedCode() !== team.code"
             [attr.data-testid]="'team-card-' + team.code"
             (click)="preview(team)"
           >

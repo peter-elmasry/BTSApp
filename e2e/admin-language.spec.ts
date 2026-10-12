@@ -105,7 +105,8 @@ test('admin and owner entity labels switch languages with fallback', async ({ pa
   await expect(page.getByRole('heading', { name: 'المهرجان (LANG)' })).toBeVisible();
   await expect(page.locator('app-owner-page li').filter({ hasText: 'مينا (@mina)' })).toBeVisible();
   const assertAdminTouchTarget = async (lang: 'ar' | 'en') => {
-    const remove = page.getByRole('button', { name: labels(lang).owner.removeAdmin, exact: true });
+    // The label adds the member name (D040); match the action as a prefix.
+    const remove = page.getByRole('button', { name: labels(lang).owner.removeAdmin });
     const box = await remove.boundingBox();
     expect(box).not.toBeNull();
     expect(box!.width).toBeGreaterThanOrEqual(44);

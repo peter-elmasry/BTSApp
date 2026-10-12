@@ -8,7 +8,15 @@ import {
   type ImportValidationContext,
 } from './import-workbook';
 import type { ImportPayload } from './import-types';
-import { GRID_COL, GRID_ROW, SHEETS, TABLE_ROW, TEAM_PALETTE, eventRow } from './template-catalog';
+import {
+  GRID_COL,
+  GRID_ROW,
+  SCORING_LABELS,
+  SHEETS,
+  TABLE_ROW,
+  TEAM_PALETTE,
+  eventRow,
+} from './template-catalog';
 
 const arrayBuffer = (bytes: Uint8Array) => Uint8Array.from(bytes).buffer;
 const members = [
@@ -136,12 +144,49 @@ async function edit(
   return parseImportWorkbook(arrayBuffer(new Uint8Array(await book.xlsx.writeBuffer())), context);
 }
 
-describe('XLSX event setup template v3', () => {
+describe('XLSX event setup template v4', () => {
   let fresh: Uint8Array;
   let liveBook: Uint8Array;
   beforeAll(async () => {
     fresh = await createImportTemplate({ event: { code: 'NEW', name_en: 'New day' } });
     liveBook = await createImportTemplate(live);
+  });
+
+  it('round-trips lives scoring and keeps scoring unchanged when its cells are blank', async () => {
+    const livesBook = await createImportTemplate({
+      ...live,
+      event: { ...live.event, scoring_mode: 'LIVES', initial_lives: 5, life_emoji: '💛' },
+    });
+    const book = new Workbook();
+    await book.xlsx.load(arrayBuffer(livesBook));
+    const ev = book.getWorksheet(SHEETS.event)!;
+    expect(ev.getCell(eventRow('scoring_mode'), 2).value).toBe(SCORING_LABELS.LIVES);
+    const parsed = await parseImportWorkbook(arrayBuffer(livesBook), live);
+    expect(parsed.errors).toEqual([]);
+    expect(parsed.payload.event).toMatchObject({
+      scoring_mode: 'LIVES',
+      initial_lives: 5,
+      life_emoji: '💛',
+    });
+    const cleared = await edit(livesBook, (wb) => {
+      const sheet = wb.getWorksheet(SHEETS.event)!;
+      for (const key of ['scoring_mode', 'initial_lives', 'life_emoji'])
+        sheet.getCell(eventRow(key), 2).value = null;
+    });
+    expect(cleared.errors).toEqual([]);
+    expect(Object.keys(cleared.payload.event)).not.toContain('scoring_mode');
+    expect(Object.keys(cleared.payload.event)).not.toContain('initial_lives');
+    const invalid = await edit(livesBook, (wb) => {
+      wb.getWorksheet(SHEETS.event)!.getCell(eventRow('initial_lives'), 2).value = 0;
+    });
+    expect(invalid.errors.map((error) => error.code)).toContain('INVALID_NUMBER');
+  });
+
+  it('still accepts version 3 workbooks without scoring rows', async () => {
+    const parsed = await edit(fresh, (book) => {
+      book.getWorksheet(SHEETS.meta)!.getCell(1, 2).value = '3';
+    });
+    expect(parsed.errors).toEqual([]);
   });
 
   it('builds the Arabic RTL workbook with dropdowns and a hidden version stamp', async () => {

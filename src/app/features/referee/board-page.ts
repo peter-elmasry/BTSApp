@@ -4,10 +4,11 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { EventStore } from '../../core/player/event.store';
 import { LiveReader } from '../live/live-reader';
 import { LiveMatchSummary } from '../live/match-summary';
+import { RefereeSchedule } from './referee-schedule';
 
 @Component({
   selector: 'app-referee-board-page',
-  imports: [RouterLink, TranslocoDirective, LiveMatchSummary],
+  imports: [RouterLink, TranslocoDirective, LiveMatchSummary, RefereeSchedule],
   providers: [LiveReader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './board-page.html',

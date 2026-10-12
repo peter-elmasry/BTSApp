@@ -147,7 +147,17 @@
     "team": "Team",
     "assign": "Assign",
     "assignedGames": "Assigned games",
-    "noStaff": "No event staff assigned yet."
+    "noStaff": "No event staff assigned yet.",
+    "nav": {
+      "label": "Event administration sections",
+      "live": "Live",
+      "setup": "Setup",
+      "standings": "Standings",
+      "import": "Import",
+      "audit": "Audit log"
+    },
+    "entityNameEn": "Name (English)",
+    "entityNameAr": "Name (Arabic)"
   },
   "import": {
     "intro": "Upload an Excel workbook, review its rows, then confirm the import.",
@@ -303,7 +313,10 @@
     "chooseMemberError": "Choose a member first.",
     "assign": "Assign",
     "removeAdmin": "Remove Event Admin",
-    "openSetup": "Open event setup"
+    "openSetup": "Open event setup",
+    "passwordFor": "New password for {{name}}",
+    "passwordMismatch": "The passwords do not match.",
+    "passwordTooShort": "Use at least 12 characters."
   },
   "errors.REQUIRED": "Please enter a name",
   "foundation": {
@@ -383,7 +396,22 @@
         }
       ],
       "mottos": ["ONE TEAM. ONE SPIRIT."]
-    }
+    },
+    "teamLocked": "Team choice is locked because the first round has started.",
+    "teamLockedLink": "This link is for another team, but team choice is locked because the first round has started.",
+    "referee": "Referee",
+    "referees": "Referees",
+    "location": "Location",
+    "break": "Break",
+    "breakHint": "No match at this game in this round.",
+    "teamBreak": "Your team has no match this round — take a break.",
+    "displayAs": "Display as",
+    "view": {
+      "table": "Table",
+      "cards": "Cards"
+    },
+    "teamsColumn": "Teams",
+    "resultColumn": "Result"
   },
   "live": {
     "title": "Live control",
@@ -469,7 +497,13 @@
       "reopen_round": "Reopen this round? Its original timer is kept. Enter the reason below.",
       "reset_match_result": "Clear this match’s result and restore it to scheduled? Any cancellation is removed. Bonuses and penalties stay recorded.",
       "void_match": "Cancel this match? It will no longer count towards results. Enter the reason below."
-    }
+    },
+    "mySchedule": "My games by round",
+    "myScheduleHint": "Each row is a round; each column is one of your games.",
+    "allTeams": "All teams ({{n}})",
+    "breakCell": "Break",
+    "roundColumn": "Round",
+    "activeRound": "Now"
   },
   "errors.ROUND_NOT_DRAFT": "Only a draft round can be started.",
   "errors.ROUND_NOT_ACTIVE": "This round is no longer active. Refresh to see its current state.",
@@ -605,7 +639,9 @@
       "nameAr": "Name AR",
       "role": "Role",
       "games": "Games",
-      "team": "Team"
+      "team": "Team",
+      "livesFromMatches": "Lives from matches",
+      "livesLeft": "Lives left"
     }
   },
   "pwa": {
@@ -627,5 +663,27 @@
   "errors.PASSWORD_TOO_WEAK": "The password cannot contain your username.",
   "errors.DUPLICATE_ROUND_NUMBER": "This round number already exists. Pick another number or edit the existing round.",
   "errors.DUPLICATE_TEAM_CODE": "This team code already exists.",
-  "errors.DUPLICATE_GAME_CODE": "This game code already exists."
+  "errors.DUPLICATE_GAME_CODE": "This game code already exists.",
+  "scoring": {
+    "title": "Scoring mode",
+    "points": "Points",
+    "pointsHint": "Wins, draws and losses earn the points configured below.",
+    "lives": "Lives",
+    "livesHint": "Every team starts with the same number of lives and loses one for each loss.",
+    "initialLives": "Starting lives per team (1–99)",
+    "initialLivesError": "Enter a number of lives from 1 to 99.",
+    "lifeEmoji": "Life symbol (any emoji)",
+    "emojiSuggestions": "Suggestions",
+    "useEmoji": "Use {{emoji}}",
+    "preview": "Each team starts with",
+    "livesRules": "A win or draw keeps lives. A loss or forfeit costs one life. Lives never go below zero, and teams at zero keep playing. Bonuses and penalties add or remove lives.",
+    "locked": "Scoring mode and starting lives are fixed because a round has already started.",
+    "livesLeft": "Lives left: {{n}}",
+    "lifeLostTitle": "You lost a life!",
+    "lifeLostLeft": "Keep going — {{n}} {{emoji}} left.",
+    "lifeLostNone": "Out of lives, but the game goes on. Play for the spirit! 💪",
+    "lifeLostBody": "Shake it off — the next one is yours.",
+    "lifeLostOk": "Got it"
+  },
+  "errors.SCORING_LOCKED": "Scoring mode and starting lives cannot change after a round has started."
 }

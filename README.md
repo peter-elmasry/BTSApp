@@ -86,6 +86,17 @@ Owners and event administrators can open **Import event setup** from the event s
 
 Migration `0006_phase3_import.sql` adds the import RPC; its pgTAP suite runs through `npm run test:db` and GitHub CI. Frontend browser tests mock the RPC boundary and exercise actual workbook generation/parsing; they do not replace database tests.
 
+## Phase 8 extensions
+
+- **Team lock:** after the first round starts, players and guides keep their team; a device that never chose may still pick once. Staff are exempt (D035).
+- **Breaks:** a game with no match in a regular round is on a break. Breaks show on the schedule, game details and setup match builder; `/ref` adds a round × game table of the referee's games (D037).
+- **Referees on games:** game details and match cards list referee names (D036).
+- **Lives scoring:** Setup → Settings → Scoring mode offers Points (default) or Lives with a starting count and any emoji (ten suggested). Loss/forfeit costs one life, lives stop at zero and teams keep playing. Mode and starting lives lock once a round starts. Players see their lives and a once-only life-lost animation (D038). Migration `0017_lives_scoring.sql`; workbook template v4 adds the fields (v3 still imports).
+- **Schedule views:** `/schedule` defaults to a table, with cards available and remembered per device (D039).
+- **Staff layout:** one section bar across event administration screens, shared spacing classes and a masked password sheet for owners (D040).
+
+Ideas not yet agreed are kept in [FUTURE_PLANS.md](docs/FUTURE_PLANS.md).
+
 ## Readiness (Phase 7 in progress)
 
 About includes bilingual installation guidance and a browser install button when

@@ -1,0 +1,78 @@
+<div *transloco="let t" class="ds-card space-y-3" data-testid="referee-schedule">
+  <h2 id="referee-schedule-title" class="text-xl font-bold">{{ t('live.mySchedule') }}</h2>
+  @if (!games().length) {
+    <p>{{ t('live.noAssignedMatches') }}</p>
+  } @else {
+    <p class="text-sm text-slate">{{ t('live.myScheduleHint') }}</p>
+    <div
+      class="overflow-x-auto rounded-xl border border-mist"
+      role="region"
+      tabindex="0"
+      aria-labelledby="referee-schedule-title"
+    >
+      <table class="w-full min-w-max border-collapse text-sm">
+        <thead class="bg-navy text-white">
+          <tr>
+            <th scope="col" class="sticky start-0 bg-navy px-3 py-2 text-start">
+              {{ t('live.roundColumn') }}
+            </th>
+            @for (game of games(); track game.id) {
+              <th scope="col" class="px-3 py-2 text-start">
+                {{ name(game, direction.language()) }}
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.round.id) {
+            <tr
+              class="border-t border-mist"
+              [class.bg-gold-soft]="row.round.status === 'ACTIVE'"
+              [class.bg-white]="row.round.status !== 'ACTIVE'"
+            >
+              <th
+                scope="row"
+                class="sticky start-0 px-3 py-2 text-start font-bold whitespace-nowrap"
+                [class.bg-gold-soft]="row.round.status === 'ACTIVE'"
+                [class.bg-white]="row.round.status !== 'ACTIVE'"
+              >
+                {{
+                  row.round.type === 'OPENING'
+                    ? t('round.opening')
+                    : t('player.roundNumber', { n: row.round.number })
+                }}
+                @if (row.round.status === 'ACTIVE') {
+                  <span class="ms-1 rounded-full bg-teal px-2 text-xs text-white">{{
+                    t('live.activeRound')
+                  }}</span>
+                }
+              </th>
+              @for (cell of row.cells; track cell.game.id) {
+                <td class="px-3 py-2 align-top">
+                  @if (cell.match; as match) {
+                    @if (row.round.type === 'OPENING') {
+                      {{ t('live.allTeams', { n: match.participants.length }) }}
+                    } @else {
+                      <span class="font-semibold">{{
+                        teams(match).join(' ' + t('match.vs') + ' ')
+                      }}</span>
+                    }
+                    @if (match.status !== 'SCHEDULED') {
+                      <span class="block text-xs text-slate">{{
+                        t('player.matchStatus.' + match.status)
+                      }}</span>
+                    }
+                  } @else {
+                    <span class="text-slate" data-testid="referee-break"
+                      >☕ {{ t('live.breakCell') }}</span
+                    >
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

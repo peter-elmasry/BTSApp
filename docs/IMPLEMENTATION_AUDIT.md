@@ -227,12 +227,21 @@ at 360×740. PR #17 head `352b2d9` passes CI `38248413574`: 146 unit tests,
 43 browser tests and 802 SQL assertions. Build, formatting and Vercel preview
 pass; PR awaiting review/merge.
 
+**Remediation update (2026-10-13):** The control is a 44×44 px button with a
+member-specific accessible name (D040). A new EN/AR browser test measures it and
+checks the staff screens for 360 px overflow and axe violations.
+
 Requirement: §9.3, at least 44×44 px. The button at
 `owner-page.html:209` measures approximately **8.91×24 px** at 360×740. The
 browser probe fails both dimensions. Existing shell button checks do not cover
 this owner screen.
 
 ### A08 — P2: password reset uses an untranslated, unmasked native prompt
+
+**Remediation update (2026-10-13):** Replaced by a localized bottom-sheet form with
+masked new/confirm inputs, a 12-character check, mismatch error and cleared values
+on close (D040). Unit tests cover pending/short/mismatch paths; a browser test
+confirms masking and that no native dialog opens.
 
 Requirements: §9.1 Reactive Forms; §14 runtime EN/AR. At
 `owner-page.ts:133`, `window.prompt('Set password ...')` is hardcoded English and

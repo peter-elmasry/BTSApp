@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthStore } from '../../core/auth/auth.store';
 import { supabase } from '../../core/supabase/client';
@@ -19,6 +19,11 @@ import { currencyLabel } from '../standings/rank-motion';
 import { prepareGameImage } from './game-image';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { entityLabel } from '../../core/i18n/entity-label';
+import { ManageNav } from './manage-nav';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { startWith } from 'rxjs';
+import { LIFE_EMOJI_SUGGESTIONS } from '../../core/player/scoring';
+import { DsLivesMeter } from '../../shared/ui/lives-meter';
 
 type Row = any;
 type SetupData = {
@@ -36,7 +41,7 @@ type SetupTab = 'settings' | 'teams' | 'games' | 'rounds' | 'staff';
 
 @Component({
   selector: 'app-event-setup-page',
-  imports: [CommonModule, ReactiveFormsModule, TranslocoDirective, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, TranslocoDirective, ManageNav, DsLivesMeter],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './setup-page.html',
 })
@@ -114,7 +119,34 @@ export class EventSetupPage {
     event_penalty_cap: new FormControl<number | null>(null, [Validators.min(0)]),
     leaderboard_public: new FormControl(false, { nonNullable: true }),
     show_guide_phone: new FormControl(false, { nonNullable: true }),
+    scoring_mode: new FormControl<'POINTS' | 'LIVES'>('POINTS', { nonNullable: true }),
+    initial_lives: new FormControl<number | null>(null, [Validators.min(1), Validators.max(99)]),
+    life_emoji: new FormControl('❤️', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(16)],
+    }),
   });
+  readonly LIFE_EMOJI_SUGGESTIONS = LIFE_EMOJI_SUGGESTIONS;
+  readonly scoringMode = toSignal(
+    this.settingsForm.controls.scoring_mode.valueChanges.pipe(
+      startWith(this.settingsForm.controls.scoring_mode.value),
+    ),
+    { initialValue: 'POINTS' as const },
+  );
+  readonly lifeEmojiValue = toSignal(
+    this.settingsForm.controls.life_emoji.valueChanges.pipe(
+      startWith(this.settingsForm.controls.life_emoji.value),
+    ),
+    { initialValue: '❤️' },
+  );
+  readonly initialLivesValue = toSignal(
+    this.settingsForm.controls.initial_lives.valueChanges.pipe(
+      startWith(this.settingsForm.controls.initial_lives.value),
+    ),
+    { initialValue: null },
+  );
+  /** Scoring rules are fixed once any round has started (D038); the server enforces it too. */
+  readonly scoringLocked = computed(() => this.rounds().some((round) => !!round.started_at));
   readonly teamForm = new FormGroup({
     code: new FormControl('', {
       nonNullable: true,
@@ -234,7 +266,16 @@ export class EventSetupPage {
         })),
     }));
     this.setup.set({ ...value, rounds, staff: roles });
-    this.settingsForm.patchValue(value.event as any);
+    this.settingsForm.patchValue({
+      ...(value.event as any),
+      scoring_mode: value.event.scoring_mode ?? 'POINTS',
+      life_emoji: value.event.life_emoji ?? '❤️',
+    });
+    for (const name of ['scoring_mode', 'initial_lives'] as const) {
+      const control = this.settingsForm.controls[name];
+      if (rounds.some((round) => !!round.started_at)) control.disable({ emitEvent: false });
+      else control.enable({ emitEvent: false });
+    }
     if (!this.matchForm.controls.round_id.value && value.rounds[0])
       this.matchForm.controls.round_id.setValue(value.rounds[0].id);
   }
@@ -264,14 +305,25 @@ export class EventSetupPage {
     }
   }
 
+  chooseLifeEmoji(emoji: string) {
+    this.settingsForm.controls.life_emoji.setValue(emoji);
+    this.settingsForm.controls.life_emoji.markAsDirty();
+  }
   async saveSettings() {
+    const value = this.settingsForm.getRawValue();
+    if (value.scoring_mode === 'LIVES' && !value.initial_lives) {
+      this.settingsForm.controls.initial_lives.setErrors({ required: true });
+    }
     if (this.settingsForm.invalid) {
       this.settingsForm.markAllAsTouched();
       return;
     }
     await this.mutate('upsert_event_settings', {
       p_event: this.eventId,
-      p_settings: this.settingsForm.getRawValue(),
+      p_settings: {
+        ...this.settingsForm.getRawValue(),
+        life_emoji: this.settingsForm.controls.life_emoji.value.trim(),
+      },
     });
   }
   editTeam(row?: Row) {
@@ -423,6 +475,10 @@ export class EventSetupPage {
         .map((match) => match.game_id),
     );
     return this.games().filter((game) => !used.has(game.id));
+  }
+  /** Games with no match in a regular round are on a break there (D037). */
+  breakGames(round: Row) {
+    return round.type === 'OPENING' ? [] : this.matchGameOptions(round.id);
   }
   async saveMatch() {
     const value = this.matchForm.getRawValue();
