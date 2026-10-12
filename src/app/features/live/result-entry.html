@@ -1,0 +1,111 @@
+<div *transloco="let t" class="space-y-4" data-testid="result-entry">
+  @if (notice()) {
+    <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
+  }
+  @if (!canEdit()) {
+    <p class="ds-card">{{ t('live.readOnly') }}</p>
+  } @else if (reviewing()) {
+    <section class="ds-card space-y-3" aria-live="polite">
+      <h3 class="font-bold">{{ t('live.confirmResultHint') }}</h3>
+      <ul class="space-y-2">
+        @for (outcome of outcomes(); track outcome.team_id) {
+          <li class="flex flex-wrap justify-between gap-2">
+            <span class="font-semibold">{{ teamName(outcome.team_id) }}</span>
+            <span>{{ t('player.outcome.' + outcome.outcome) }}</span>
+          </li>
+        }
+      </ul>
+      <div class="ds-actions">
+        <button class="ds-button ghost" [disabled]="saving()" (click)="reviewing.set(false)">
+          {{ t('common.cancel') }}
+        </button>
+        <button
+          class="ds-button primary"
+          data-testid="confirm-result"
+          [disabled]="!queue.ready() || saving()"
+          (click)="submit()"
+        >
+          {{ t(saving() ? 'live.saving' : 'ref.confirm') }}
+        </button>
+      </div>
+    </section>
+  } @else {
+    @if (round()?.type === 'OPENING') {
+      <p class="font-semibold">{{ t('live.winnerCount', { n: winners() }) }}</p>
+      <p class="text-sm text-slate">{{ t('live.openingHint') }}</p>
+      <ul class="space-y-3">
+        @for (team of teams(); track team.team_id) {
+          <li class="space-y-2 rounded-xl border border-mist bg-white p-3">
+            <p class="font-semibold">{{ name(team.team) }}</p>
+            <div class="ds-actions">
+              <button
+                class="ds-button"
+                [class.primary]="opening()[team.team_id] === 'WIN'"
+                [class.ghost]="opening()[team.team_id] !== 'WIN'"
+                [attr.aria-pressed]="opening()[team.team_id] === 'WIN'"
+                [disabled]="saving() || queued()"
+                (click)="toggle(team.team_id, 'WIN')"
+              >
+                {{ t('live.winner') }}
+              </button>
+              <button
+                class="ds-button"
+                [class.danger]="opening()[team.team_id] === 'FORFEIT'"
+                [class.ghost]="opening()[team.team_id] !== 'FORFEIT'"
+                [attr.aria-pressed]="opening()[team.team_id] === 'FORFEIT'"
+                [disabled]="saving() || queued()"
+                (click)="toggle(team.team_id, 'FORFEIT')"
+              >
+                {{ t('player.outcome.FORFEIT') }}
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    } @else {
+      <div class="grid gap-3">
+        @for (choice of primaryChoices; track choice) {
+          <button
+            class="ds-button min-h-14"
+            [class.primary]="this.choice() === choice"
+            [class.ghost]="this.choice() !== choice"
+            [attr.aria-pressed]="this.choice() === choice"
+            [disabled]="saving() || queued()"
+            (click)="select(choice)"
+          >
+            {{ t('live.choice.' + choice) }}
+            @if (choice !== 'draw') {
+              : {{ name(teams()[choice === 'aWins' ? 0 : 1]?.team) }}
+            }
+          </button>
+        }
+      </div>
+      <details>
+        <summary class="min-h-11 cursor-pointer py-3 font-semibold">
+          {{ t('live.forfeitOptions') }}
+        </summary>
+        <div class="grid gap-2">
+          @for (choice of forfeitChoices; track choice) {
+            <button
+              class="ds-button ghost"
+              [class.bg-gold-soft]="this.choice() === choice"
+              [attr.aria-pressed]="this.choice() === choice"
+              [disabled]="saving() || queued()"
+              (click)="select(choice)"
+            >
+              {{ t('live.choice.' + choice) }}
+            </button>
+          }
+        </div>
+      </details>
+    }
+    <button
+      class="ds-button primary w-full"
+      data-testid="review-result"
+      [disabled]="!queue.ready() || !valid() || saving() || queued()"
+      (click)="review()"
+    >
+      {{ t('live.reviewResult') }}
+    </button>
+  }
+</div>

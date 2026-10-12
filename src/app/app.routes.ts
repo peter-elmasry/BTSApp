@@ -93,9 +93,15 @@ export const routes: Routes = [
     loadComponent: () => import('./features/manage/manage-layout').then((m) => m.ManageLayout),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'live' },
-      // Results and Adjustments get their own screens in U4; until then they open Control.
-      { path: 'results', redirectTo: 'live' },
-      { path: 'adjustments', redirectTo: 'live' },
+      {
+        path: 'results',
+        loadComponent: () => import('./features/manage/results-page').then((m) => m.ResultsPage),
+      },
+      {
+        path: 'adjustments',
+        loadComponent: () =>
+          import('./features/manage/adjustments-page').then((m) => m.AdjustmentsPage),
+      },
       {
         path: 'audit',
         loadComponent: () => import('./features/manage/audit-page').then((m) => m.AuditPage),

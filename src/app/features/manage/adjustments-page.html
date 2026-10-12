@@ -1,0 +1,121 @@
+<div *transloco="let t" class="space-y-4">
+  <header class="ds-page-header">
+    <h1 class="text-2xl font-extrabold">{{ t('adjustments.title') }}</h1>
+    @if (canAdmin()) {
+      <button class="ds-button primary" data-testid="add-adjustment" (click)="adding.set(true)">
+        + {{ t('adjustments.add') }}
+      </button>
+    }
+  </header>
+  @if (notice()) {
+    <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
+  }
+  <section class="ds-card grid gap-3 sm:grid-cols-3" [attr.aria-label]="t('adjustments.filters')">
+    <label class="space-y-1"
+      ><span class="text-sm font-semibold">{{ t('adjustments.scope') }}</span
+      ><select
+        class="ds-control w-full"
+        [value]="scope()"
+        (change)="scope.set($any($event.target).value)"
+      >
+        <option value="ALL">{{ t('adjustments.allScopes') }}</option>
+        <option value="MATCH">{{ t('player.adjustmentScope.MATCH') }}</option>
+        <option value="EVENT">{{ t('player.adjustmentScope.EVENT') }}</option>
+      </select></label
+    >
+    <label class="space-y-1"
+      ><span class="text-sm font-semibold">{{ t('adjustments.team') }}</span
+      ><select
+        class="ds-control w-full"
+        [value]="team()"
+        (change)="team.set($any($event.target).value)"
+      >
+        <option value="">{{ t('adjustments.allTeams') }}</option>
+        @for (item of reader.data()?.teams ?? []; track item.id) {
+          <option [value]="item.id">{{ name(item) }}</option>
+        }
+      </select></label
+    >
+    <label class="flex min-h-11 items-center gap-3 self-end rounded-xl bg-ivory px-3"
+      ><input
+        type="checkbox"
+        [checked]="revoked()"
+        (change)="revoked.set($any($event.target).checked)"
+      />{{ t('adjustments.showRevoked') }}</label
+    >
+  </section>
+  <ds-data-table
+    [rows]="rows()"
+    [columns]="columns(t)"
+    [trackBy]="track"
+    [caption]="t('adjustments.title')"
+    [loading]="reader.loading()"
+    [emptyText]="t('player.noAdjustments')"
+    [rowStatus]="rowStatus"
+  >
+    <ng-template dsCell="team" let-item>
+      <button
+        type="button"
+        class="min-h-11 text-start font-semibold text-teal"
+        (click)="teamOf(item) && drill.set(teamOf(item)!.code)"
+      >
+        {{ name(teamOf(item)) }}
+      </button>
+    </ng-template>
+    <ng-template dsCell="points" let-item>
+      <span
+        class="font-bold"
+        [class.text-success]="item.points > 0"
+        [class.text-error]="item.points < 0"
+        [class.line-through]="!!item.revoked_at"
+        >{{ signed(item.points) }}</span
+      >
+    </ng-template>
+    <ng-template dsCell="actions" let-item>
+      @if (canAdmin() && !item.revoked_at) {
+        <button type="button" class="ds-button sm ghost-danger" (click)="openRevoke(item)">
+          {{ t('live.revoke') }}
+        </button>
+      } @else if (item.revoked_at) {
+        <span class="text-sm text-slate">{{ t('live.revoked') }}: {{ item.revoke_reason }}</span>
+      }
+    </ng-template>
+  </ds-data-table>
+
+  @if (adding() && reader.data(); as data) {
+    <ds-bottom-sheet [title]="t('adjustments.add')" (close)="adding.set(false)">
+      <app-adjustments-panel
+        [snapshot]="data"
+        [showList]="false"
+        [totals]="totals()"
+        (changed)="changed(); adding.set(false)"
+      />
+    </ds-bottom-sheet>
+  }
+  @if (revokeTarget(); as item) {
+    <ds-bottom-sheet [title]="t('live.revokeTitle')" (close)="!saving() && revokeTarget.set(null)">
+      <div class="space-y-3">
+        <p>{{ name(teamOf(item)) }} · {{ signed(item.points) }} · {{ item.reason }}</p>
+        <label class="block space-y-1"
+          ><span>{{ t('live.reason') }}</span
+          ><textarea class="ds-control w-full" rows="3" [formControl]="revokeReason"></textarea>
+        </label>
+        <div class="ds-actions">
+          <button class="ds-button ghost" [disabled]="saving()" (click)="revokeTarget.set(null)">
+            {{ t('common.cancel') }}
+          </button>
+          <button
+            class="ds-button danger"
+            [disabled]="saving() || revokeReason.invalid"
+            (click)="revoke()"
+          >
+            {{ t('live.revoke') }}
+          </button>
+        </div>
+      </div>
+    </ds-bottom-sheet>
+  }
+  @if (drill(); as code) {
+    <app-team-breakdown-sheet [code]="code" (close)="drill.set(null)" />
+  }
+</div>

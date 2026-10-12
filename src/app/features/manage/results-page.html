@@ -1,0 +1,156 @@
+<div *transloco="let t" class="space-y-4">
+  <header class="ds-page-header">
+    <h1 class="text-2xl font-extrabold">{{ t('results.title') }}</h1>
+    <button class="ds-button ghost" [disabled]="reader.loading()" (click)="reader.refresh()">
+      {{ t('player.refresh') }}
+    </button>
+  </header>
+  @if (notice()) {
+    <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
+  }
+  @if (reader.error()) {
+    <p role="alert" class="ds-card">{{ t(reader.error()) }}</p>
+  }
+  @if (rounds().length) {
+    <ds-tabs [items]="roundTabs()" [label]="t('live.rounds')" [(active)]="selectedId" />
+  }
+  <ds-data-table
+    [rows]="rows()"
+    [columns]="columns(t)"
+    [trackBy]="track"
+    [caption]="t('results.title')"
+    [loading]="reader.loading()"
+    [emptyText]="t('player.noMatches')"
+    [rowStatus]="rowStatus"
+    [clickable]="canAdmin()"
+    (rowClick)="open('entry', $event)"
+  >
+    <ng-template dsCell="game" let-match>
+      <span class="font-bold">{{ name(game(match.game_id)) }}</span>
+      @if (location(match.game_id)) {
+        <span class="block text-sm text-slate">{{ location(match.game_id) }}</span>
+      }
+    </ng-template>
+    <ng-template dsCell="matchup" let-match>
+      <span class="flex flex-col gap-1">
+        @for (participant of match.participants; track participant.team_id) {
+          <span class="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              class="min-h-11 text-start font-semibold text-teal underline-offset-2 hover:underline"
+              data-testid="results-team"
+              (click)="openTeam(participant.team_code); $event.stopPropagation()"
+            >
+              {{ name(team(participant.team_id)) || participant.team_code }}
+            </button>
+            @if (participant.outcome && participant.outcome !== 'PENDING') {
+              <ds-outcome [outcome]="participant.outcome" />
+            }
+          </span>
+        }
+      </span>
+    </ng-template>
+    <ng-template dsCell="status" let-match>
+      <ds-status-pill [status]="status(match)" />
+    </ng-template>
+    <ng-template dsCell="referee" let-match>
+      @for (referee of referees(match.game_id); track referee.member_id) {
+        <ds-phone-link [name]="name(referee)" [phone]="referee.phone" [showNumber]="false" />
+      } @empty {
+        <span class="text-slate">—</span>
+      }
+    </ng-template>
+    <ng-template dsCell="actions" let-match>
+      @if (canAdmin()) {
+        <span class="inline-flex flex-wrap justify-end gap-1">
+          <button
+            type="button"
+            class="ds-button sm primary"
+            data-testid="results-enter"
+            [disabled]="match.status === 'VOID'"
+            (click)="open('entry', match); $event.stopPropagation()"
+          >
+            {{ t(match.status === 'COMPLETED' ? 'live.correctResult' : 'live.enterResult') }}
+          </button>
+          <details class="relative" (click)="$event.stopPropagation()">
+            <summary
+              class="ds-button sm ghost list-none"
+              [attr.aria-label]="t('results.more')"
+              data-testid="results-more"
+            >
+              ⋯
+            </summary>
+            <div
+              class="absolute end-0 z-10 mt-1 grid min-w-40 gap-1 rounded-xl bg-white p-2 shadow-card"
+            >
+              @if (match.status !== 'SCHEDULED') {
+                <button type="button" class="menu-row" (click)="open('reset', match)">
+                  {{ t('live.resetResult') }}
+                </button>
+              }
+              @if (match.status !== 'VOID') {
+                <button type="button" class="menu-row text-error" (click)="open('void', match)">
+                  {{ t('live.voidMatch') }}
+                </button>
+              }
+            </div>
+          </details>
+        </span>
+      }
+    </ng-template>
+  </ds-data-table>
+
+  @if (action(); as item) {
+    <ds-bottom-sheet
+      [title]="
+        item.kind === 'entry'
+          ? name(game(item.match.game_id))
+          : t('live.action.' + (item.kind === 'void' ? 'void_match' : 'reset_match_result'))
+      "
+      (close)="!saving() && action.set(null)"
+    >
+      @if (item.kind === 'entry' && reader.data(); as data) {
+        <app-result-entry [snapshot]="data" [match]="item.match" (saved)="saved($event)" />
+      } @else {
+        <div class="space-y-4">
+          <p>
+            {{
+              t(
+                'live.confirmAction.' + (item.kind === 'void' ? 'void_match' : 'reset_match_result')
+              )
+            }}
+          </p>
+          @if (item.kind === 'void') {
+            <label class="block space-y-1"
+              ><span>{{ t('live.reason') }}</span
+              ><textarea
+                class="ds-control w-full"
+                rows="3"
+                maxlength="500"
+                [formControl]="reason"
+              ></textarea>
+            </label>
+          }
+          <div class="ds-actions">
+            <button class="ds-button ghost" [disabled]="saving()" (click)="action.set(null)">
+              {{ t('common.cancel') }}
+            </button>
+            <button
+              class="ds-button"
+              [class.danger]="item.kind === 'void'"
+              [class.primary]="item.kind !== 'void'"
+              data-testid="confirm-results-action"
+              [disabled]="saving() || (item.kind === 'void' && reason.invalid)"
+              (click)="confirm()"
+            >
+              {{ t(saving() ? 'live.saving' : 'live.confirm') }}
+            </button>
+          </div>
+        </div>
+      }
+    </ds-bottom-sheet>
+  }
+  @if (drill(); as code) {
+    <app-team-breakdown-sheet [code]="code" (close)="drill.set(null)" />
+  }
+</div>

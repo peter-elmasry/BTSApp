@@ -17,6 +17,8 @@ import { ReadCacheService } from '../../core/offline/read-cache.service';
 import { rpcFailure } from '../../core/offline/rpc-errors';
 import { EventChannelService } from '../../core/realtime/event-channel.service';
 import { StandingsApi } from '../../core/standings/standings-api';
+import { ExportSheet } from './export-sheet';
+import { TeamBreakdownSheet } from './team-breakdown-sheet';
 import type { StandingRow, StandingsExport } from '../../core/standings/standings-types';
 import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
 import { isLiveAdmin } from '../live/live-helpers';
@@ -63,7 +65,7 @@ export function standingsAdminError(error: unknown) {
 
 @Component({
   selector: 'app-manage-standings-page',
-  imports: [TranslocoDirective, DsBottomSheet],
+  imports: [TranslocoDirective, DsBottomSheet, ExportSheet, TeamBreakdownSheet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './manage-standings-page.html',
 })
@@ -117,6 +119,8 @@ export class ManageStandingsPage {
   readonly saving = signal(false);
   readonly exporting = signal(false);
   readonly preview = signal(false);
+  readonly exportSheet = signal(false);
+  readonly drill = signal<string | null>(null);
   readonly error = signal('');
   readonly notice = signal('');
   readonly action = signal<Action | null>(null);
@@ -128,9 +132,9 @@ export class ManageStandingsPage {
   private dragId: string | null = null;
 
   constructor() {
-    // The Export toolbar button (D045) opens this page ready to download.
+    // "Preview first" in the Export sheet (D045) opens this page with a frozen preview.
     effect(() => {
-      if (this.query().get('export') !== '1' || this.exportRequested) return;
+      if (this.query().get('preview') !== '1' || this.exportRequested) return;
       if (!this.snapshot() || this.loading() || this.preview()) return;
       this.exportRequested = true;
       untracked(() => void this.prepareExport());

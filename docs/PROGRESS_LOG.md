@@ -2,6 +2,18 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — UX enhancement U4 admin Control, Results, Adjustments, export, drill-down — DONE
+
+- **Branch:** `codex/ux-u4-admin` (stacked on U3).
+- **Control (`live-page`):** round tabs with late badges, timer ring, status pill, count-up KPIs (results in x/y, waiting, late, bonuses & penalties), tie banner, a "matches waiting for a result" table with referee one-tap calls and inline result entry, and a fixed action bar: Start (now / X minutes ago with planned end and overtime warning), +5/+10/custom, End round (late-results notice), End & start next (two queued operations with a retry for the start), Reopen. Results cards and the event-adjustments panel moved out.
+- **Results (`/manage/:id/results`):** `ds-data-table` per round sorted late → waiting → done → void; row or button opens the reusable `app-result-entry` in a sheet; ⋯ menu for reset/void; team names open the team breakdown.
+- **Adjustments (`/manage/:id/adjustments`):** filterable table (type, team, revoked), revoke sheet, "Add" sheet reusing the adjustments panel with current → projected total.
+- **Export (D045):** one-tap `app-export-sheet` (fresh snapshot → .xlsx download, phones excluded) from the toolbar, the More menu (`?export=1`) and Standings; "Preview first" keeps the frozen-preview flow (`?preview=1`).
+- **Team breakdown sheet:** match-by-match outcome and points/lives from the server, adjustments table and a reconciliation footer; opened from Results, Adjustments and admin Standings.
+- **Fix:** `StandingsReader` treats a non-array response as empty (an empty response previously broke rendering).
+- **Checks:** 194 unit tests, i18n (792 keys), build (initial 401.51 kB), 73/73 browser tests incl. new `admin-control.spec.ts` (inline entry, End & start next 10 minutes ago, drill-down, export sheet, adjustments) in EN/AR.
+- **Next:** privacy requirements from 2026-10-13 (anonymous scope, phones, logout clearing), then U5.
+
 ## 2026-10-13 — UX enhancement U3 round lifecycle, contacts and breakdown — DONE
 
 - **Branch:** `codex/ux-u3-backend` (stacked on U2).

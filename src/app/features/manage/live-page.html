@@ -1,20 +1,26 @@
-<div *transloco="let t" class="space-y-5">
-  <header class="space-y-3">
-    <div class="ds-page-header">
-      <h1 class="text-2xl font-extrabold">{{ t('live.title') }}</h1>
-      <button class="ds-button ghost" [disabled]="reader.loading()" (click)="reader.refresh()">
-        {{ t('player.refresh') }}
-      </button>
-    </div>
+<div *transloco="let t" class="space-y-4 pb-28">
+  <header class="ds-page-header">
+    <h1 class="text-2xl font-extrabold">{{ t('control.title') }}</h1>
+    <button class="ds-button ghost" [disabled]="reader.loading()" (click)="reader.refresh()">
+      {{ t('player.refresh') }}
+    </button>
   </header>
   @if (notice()) {
     <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
   }
-  @if (reader.loading()) {
+  @if (retryStart(); as id) {
+    <p role="alert" class="ds-card flex flex-wrap items-center gap-2 text-error">
+      {{ t('control.startFailed') }}
+      <button class="ds-button sm secondary" [disabled]="saving()" (click)="retry()">
+        {{ t('control.retryStart') }}
+      </button>
+    </p>
+  }
+  @if (reader.loading() && !reader.data()) {
     <p role="status">{{ t('player.loading') }}</p>
   }
   @if (reader.error()) {
-    <section class="space-y-3 rounded-card bg-white p-4">
+    <section class="ds-card space-y-3">
       <p role="alert">{{ t(reader.error()) }}</p>
       <button class="ds-button secondary" (click)="reader.refresh()">
         {{ t('player.retry') }}
@@ -22,73 +28,280 @@
     </section>
   }
   @if (reader.data(); as data) {
-    <nav class="ds-tabs sub" [attr.aria-label]="t('live.rounds')">
-      @for (item of rounds(); track item.id) {
-        <button
-          class="ds-tab"
-          [attr.aria-pressed]="selectedId() === item.id"
-          (click)="selectRound(item.id)"
-        >
-          {{
-            item.type === 'OPENING'
-              ? t('round.opening')
-              : t('player.roundNumber', { n: item.number })
-          }}
-        </button>
-      }
-    </nav>
+    @if (rounds().length) {
+      <ds-tabs [items]="roundTabs()" [label]="t('live.rounds')" [(active)]="selectedId" />
+    }
     @if (round(); as item) {
-      <section class="ds-card space-y-4">
-        <div class="ds-page-header">
-          <h2 class="text-xl font-bold">
-            {{
-              name(item, direction.language()) ||
-                (item.type === 'OPENING'
-                  ? t('round.opening')
-                  : t('player.roundNumber', { n: item.number }))
-            }}
-          </h2>
-          <span
-            class="rounded-full px-3 py-1 text-sm font-bold"
-            [class.bg-teal]="item.status === 'ACTIVE'"
-            [class.text-white]="item.status === 'ACTIVE'"
-            [class.bg-ivory]="item.status !== 'ACTIVE'"
-            >{{ t('live.roundStatus.' + item.status) }}</span
-          >
+      <section class="ds-card flex flex-wrap items-center gap-4" data-testid="control-header">
+        @if (item.status === 'ACTIVE') {
+          <ds-timer-ring [round]="item" [size]="76" />
+        }
+        <div class="min-w-0 flex-1 space-y-1">
+          <h2 class="text-xl font-bold">{{ roundTitle(t, item.id) }}</h2>
+          <ds-status-pill
+            [status]="
+              item.status === 'ACTIVE' ? 'live' : item.status === 'CLOSED' ? 'done' : 'scheduled'
+            "
+          />
+          <p class="text-sm text-slate">{{ t('live.roundStatus.' + item.status) }}</p>
         </div>
-        @if (canAdmin()) {
-          @if (item.status === 'DRAFT') {
-            <button
-              class="ds-button primary"
-              [disabled]="saving() || !!active()"
-              (click)="open('start_round')"
-            >
-              {{ t('admin.round.start') }}
-            </button>
-          } @else if (item.status === 'ACTIVE') {
-            <div class="ds-actions">
+      </section>
+      <dl class="grid grid-cols-2 gap-2 text-center sm:grid-cols-4" data-testid="control-kpis">
+        <div class="ds-card">
+          <dt class="text-sm text-slate">{{ t('control.completed') }}</dt>
+          <dd class="text-2xl font-extrabold tabular" data-testid="kpi-completed">
+            <app-count-up [value]="completed()" [fromZero]="true" />/{{ counted().length }}
+          </dd>
+        </div>
+        <div class="ds-card">
+          <dt class="text-sm text-slate">{{ t('control.pending') }}</dt>
+          <dd class="text-2xl font-extrabold tabular text-warning" data-testid="kpi-pending">
+            <app-count-up [value]="open().length" [fromZero]="true" />
+          </dd>
+        </div>
+        <div class="ds-card">
+          <dt class="text-sm text-slate">{{ t('control.late') }}</dt>
+          <dd class="text-2xl font-extrabold tabular" data-testid="kpi-late">
+            <app-count-up [value]="late().length" [fromZero]="true" />
+          </dd>
+        </div>
+        <div class="ds-card">
+          <dt class="text-sm text-slate">{{ t('control.adjustments') }}</dt>
+          <dd class="text-2xl font-extrabold tabular" data-testid="kpi-adjustments">
+            <app-count-up [value]="adjustmentCount()" [fromZero]="true" />
+          </dd>
+        </div>
+      </dl>
+      @if (ties()) {
+        <a
+          class="ds-card flex items-center justify-between gap-2 bg-gold-soft font-bold"
+          [routerLink]="['/manage', eventId(), 'standings']"
+          data-testid="tie-banner"
+          >{{ t('control.ties', { n: ties() }) }} <span aria-hidden="true">›</span></a
+        >
+      }
+      <section class="space-y-2">
+        <div class="ds-page-header">
+          <h2 class="text-lg font-bold">{{ t('control.chase') }}</h2>
+          <a class="font-semibold text-teal" [routerLink]="['/manage', eventId(), 'results']">{{
+            t('control.allResults')
+          }}</a>
+        </div>
+        <ds-data-table
+          [rows]="chase()"
+          [columns]="columns(t)"
+          [trackBy]="track"
+          [caption]="t('control.chase')"
+          [emptyText]="t('now.noPending')"
+          [rowStatus]="rowStatus"
+        >
+          <ng-template dsCell="game" let-match>
+            <span class="font-bold">{{ gameName(match.game_id) }}</span>
+            <span class="block text-sm text-slate">
+              <ds-status-pill [status]="status(match)" />
+            </span>
+          </ng-template>
+          <ng-template dsCell="referee" let-match>
+            @for (referee of referees(match.game_id); track referee.member_id) {
+              <ds-phone-link [name]="name(referee)" [phone]="referee.phone" [showNumber]="false" />
+            } @empty {
+              <span class="text-slate">—</span>
+            }
+          </ng-template>
+          <ng-template dsCell="action" let-match>
+            @if (canAdmin()) {
               <button
-                class="ds-button ghost"
-                [disabled]="saving()"
-                (click)="open('extend_round', undefined, 5)"
+                type="button"
+                class="ds-button sm primary"
+                data-testid="control-enter"
+                (click)="openSheet({ kind: 'entry', roundId: match.round_id, matchId: match.id })"
               >
-                {{ t('live.plusMinutes', { n: 5 }) }}</button
-              ><button
-                class="ds-button ghost"
-                [disabled]="saving()"
-                (click)="open('extend_round', undefined, 10)"
+                {{ t('live.enterResult') }}
+              </button>
+            }
+          </ng-template>
+        </ds-data-table>
+      </section>
+
+      @if (canAdmin()) {
+        <div
+          class="fixed inset-x-0 bottom-20 z-10 px-4"
+          data-testid="control-actions"
+          [attr.aria-label]="t('control.actions')"
+          role="group"
+        >
+          <div
+            class="mx-auto flex max-w-3xl flex-wrap items-center gap-2 rounded-card p-3 shadow-card"
+            [class.bg-error]="!!overtime()"
+            [class.text-white]="!!overtime()"
+            [class.bg-white]="!overtime()"
+          >
+            @if (overtime(); as elapsed) {
+              <p class="w-full font-bold" role="status">
+                {{ t('control.overtime', { time: elapsed, n: open().length }) }}
+              </p>
+            }
+            @if (item.status === 'DRAFT') {
+              <button
+                class="ds-button primary flex-1"
+                [disabled]="saving() || !!active()"
+                (click)="openSheet({ kind: 'start_round', roundId: item.id })"
               >
-                {{ t('live.plusMinutes', { n: 10 }) }}</button
-              ><button
+                {{ t('admin.round.start') }}
+              </button>
+              @if (active()) {
+                <p class="w-full text-sm text-slate">{{ t('control.otherActive') }}</p>
+              }
+            } @else if (item.status === 'ACTIVE') {
+              <button
+                class="ds-button sm ghost bg-white text-navy"
+                [disabled]="saving()"
+                (click)="extend(5)"
+              >
+                {{ t('live.plusMinutes', { n: 5 }) }}
+              </button>
+              <button
+                class="ds-button sm ghost bg-white text-navy"
+                [disabled]="saving()"
+                (click)="extend(10)"
+              >
+                {{ t('live.plusMinutes', { n: 10 }) }}
+              </button>
+              <button
+                class="ds-button sm ghost bg-white text-navy"
+                [attr.aria-label]="t('live.extendMinutes')"
+                [disabled]="saving()"
+                (click)="openSheet({ kind: 'extend_round', roundId: item.id, custom: true })"
+              >
+                ⋯
+              </button>
+              <button
                 class="ds-button secondary"
                 [disabled]="saving()"
-                (click)="open('close_round')"
+                (click)="openSheet({ kind: 'close_round', roundId: item.id })"
               >
                 {{ t('admin.round.close') }}
               </button>
-            </div>
-            <div class="flex flex-wrap items-end gap-2">
-              <label class="min-w-0 flex-1 space-y-1"
+              @if (next(); as following) {
+                <button
+                  class="ds-button primary"
+                  data-testid="end-and-start"
+                  [disabled]="saving()"
+                  (click)="
+                    openSheet({ kind: 'close_and_start', roundId: item.id, nextId: following.id })
+                  "
+                >
+                  {{ t('control.endAndStart') }}
+                </button>
+              }
+            } @else {
+              <button
+                class="ds-button ghost"
+                [disabled]="saving() || !!active()"
+                (click)="openSheet({ kind: 'reopen_round', roundId: item.id })"
+              >
+                {{ t('live.reopen') }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    } @else {
+      <p class="ds-card">{{ t('manage.noRounds') }}</p>
+    }
+
+    @if (sheet(); as current) {
+      <ds-bottom-sheet
+        [title]="
+          current.kind === 'entry'
+            ? gameName(matchById(current.matchId)?.game_id ?? '')
+            : current.kind === 'close_and_start'
+              ? t('control.endAndStart')
+              : t('live.action.' + current.kind)
+        "
+        (close)="!saving() && sheet.set(null)"
+      >
+        <div class="space-y-4">
+          @if (current.kind === 'entry') {
+            @if (matchById(current.matchId); as match) {
+              <app-result-entry [snapshot]="data" [match]="match" (saved)="saved($event)" />
+            }
+          } @else {
+            @if (current.kind === 'close_round' || current.kind === 'close_and_start') {
+              @if (pendingIn(current.roundId).length) {
+                <p data-testid="late-notice">
+                  {{ t('live.endLateHint', { n: pendingIn(current.roundId).length }) }}
+                </p>
+                <ul class="grid gap-1">
+                  @for (match of pendingIn(current.roundId); track match.id) {
+                    <li class="flex flex-wrap items-center gap-2 font-semibold">
+                      ⏰ {{ gameName(match.game_id) }}
+                      @for (referee of referees(match.game_id); track referee.member_id) {
+                        <ds-phone-link
+                          [name]="name(referee)"
+                          [phone]="referee.phone"
+                          [showNumber]="false"
+                        />
+                      }
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p>{{ t('control.endConfirm', { name: roundTitle(t, current.roundId) }) }}</p>
+              }
+            }
+            @if (current.kind === 'start_round' || current.kind === 'close_and_start') {
+              <fieldset class="space-y-2" data-testid="start-options">
+                <legend class="font-bold">
+                  {{
+                    current.kind === 'close_and_start'
+                      ? t('control.nextStarts', { name: roundTitle(t, current.nextId) })
+                      : t('control.started')
+                  }}
+                </legend>
+                <label class="flex min-h-11 items-center gap-3"
+                  ><input
+                    type="radio"
+                    name="start-mode"
+                    [checked]="startMode() === 'now'"
+                    (change)="startMode.set('now')"
+                  />{{ t('control.startNow') }}</label
+                >
+                <label class="flex min-h-11 flex-wrap items-center gap-3"
+                  ><input
+                    type="radio"
+                    name="start-mode"
+                    data-testid="start-ago"
+                    [checked]="startMode() === 'ago'"
+                    (change)="startMode.set('ago')"
+                  />
+                  <input
+                    type="number"
+                    class="ds-control w-24"
+                    min="0"
+                    max="180"
+                    step="1"
+                    data-testid="start-minutes"
+                    [attr.aria-label]="t('control.minutesAgo')"
+                    [formControl]="minutesAgo"
+                    (focus)="startMode.set('ago')"
+                  />
+                  {{ t('control.minutesAgo') }}</label
+                >
+                @if (startPreview(); as preview) {
+                  <p class="font-semibold" data-testid="start-ends">
+                    {{ t('control.endsAt', { time: preview.end }) }}
+                  </p>
+                  @if (preview.overtime) {
+                    <p class="rounded-xl bg-gold-soft p-2 text-warning" role="status">
+                      {{ t('control.startsInOvertime') }}
+                    </p>
+                  }
+                }
+              </fieldset>
+            }
+            @if (current.kind === 'extend_round') {
+              <label class="block space-y-1"
                 ><span>{{ t('live.extendMinutes') }}</span
                 ><input
                   type="number"
@@ -96,135 +309,11 @@
                   min="1"
                   max="120"
                   step="1"
-                  [formControl]="minutes" /></label
-              ><button
-                class="ds-button ghost"
-                [disabled]="saving() || minutes.invalid"
-                (click)="open('extend_round', undefined, minutes.value)"
-              >
-                {{ t('admin.round.extend') }}
-              </button>
-            </div>
-            <p class="text-sm text-slate">{{ t('live.noAutoClose') }}</p>
-          } @else {
-            <button
-              class="ds-button ghost"
-              [disabled]="saving() || !!active()"
-              (click)="open('reopen_round')"
-            >
-              {{ t('live.reopen') }}
-            </button>
-          }
-        }
-      </section>
-      @if (pending().length) {
-        <section class="space-y-3 rounded-card bg-gold-soft p-4">
-          <h2 class="text-lg font-bold">{{ t('admin.round.pending', { n: pending().length }) }}</h2>
-          <p>{{ t('live.pendingHint') }}</p>
-          <ul>
-            @for (match of pending(); track match.id) {
-              <li>
-                <a
-                  class="inline-flex min-h-11 items-center font-semibold underline"
-                  [routerLink]="['/ref/match', match.id]"
-                  >{{ t('live.enterResult') }} · {{ gameName(match.game_id) }}</a
-                >
-              </li>
+                  [formControl]="minutes"
+              /></label>
             }
-          </ul>
-        </section>
-      }
-      <section class="space-y-3">
-        <h2 class="text-xl font-bold">{{ t('live.roundResults') }}</h2>
-        @for (match of matches(); track match.id) {
-          <article class="ds-card space-y-4">
-            <app-live-match-summary class="block" [snapshot]="data" [match]="match" />
-            <div class="ds-actions">
-              <a
-                class="ds-button primary inline-flex items-center"
-                [routerLink]="['/ref/match', match.id]"
-                >{{
-                  t(
-                    match.status === 'VOID'
-                      ? 'live.viewMatch'
-                      : match.status === 'COMPLETED'
-                        ? 'live.correctResult'
-                        : 'live.enterResult'
-                  )
-                }}</a
-              >
-              @if (canAdmin()) {
-                @if (match.status === 'COMPLETED' || match.status === 'VOID') {
-                  <button
-                    class="ds-button ghost"
-                    [disabled]="saving()"
-                    (click)="open('reset_match_result', match.id)"
-                  >
-                    {{ t('live.resetResult') }}
-                  </button>
-                }
-                @if (match.status !== 'VOID') {
-                  <button
-                    class="ds-button danger"
-                    [disabled]="saving()"
-                    (click)="open('void_match', match.id)"
-                  >
-                    {{ t('live.voidMatch') }}
-                  </button>
-                }
-              }
-            </div>
-          </article>
-        } @empty {
-          <p class="rounded-card bg-white p-4">{{ t('player.noMatches') }}</p>
-        }
-      </section>
-    } @else {
-      <p class="rounded-card bg-white p-4">{{ t('manage.noRounds') }}</p>
-    }
-    <app-adjustments-panel [snapshot]="data" [disabled]="saving()" (changed)="reader.refresh()" />
-    @if (overtime(); as elapsed) {
-      <aside
-        class="sticky bottom-20 z-10 space-y-2 rounded-card bg-error p-4 text-white shadow-card"
-      >
-        <p role="status" class="font-bold">
-          {{ t('live.overtime', { time: elapsed, n: activePending() }) }}
-        </p>
-        <div class="ds-actions">
-          <button class="ds-button ghost bg-white" (click)="selectActive()">
-            {{ t('live.showActiveRound') }}
-          </button>
-          <button
-            class="ds-button ghost bg-white"
-            [disabled]="saving()"
-            (click)="openActive('extend_round')"
-          >
-            {{ t('live.plusMinutes', { n: 5 }) }}</button
-          ><button
-            class="ds-button ghost bg-white"
-            [disabled]="saving()"
-            (click)="openActive('close_round')"
-          >
-            {{ t('admin.round.close') }}
-          </button>
-        </div>
-      </aside>
-    }
-    @if (action(); as item) {
-      <ds-bottom-sheet
-        [title]="t('live.action.' + item.name)"
-        (close)="!saving() && action.set(null)"
-        ><div class="space-y-4">
-          @if (item.name === 'close_round' && pending().length) {
-            <p data-testid="late-notice">{{ t('live.endLateHint', { n: pending().length }) }}</p>
-            <ul>
-              @for (match of pending(); track match.id) {
-                <li class="font-semibold">⏰ {{ gameName(match.game_id) }}</li>
-              }
-            </ul>
-          } @else {
-            <p>{{ t('live.confirmAction.' + item.name, { n: item.minutes }) }}</p>
-            @if (needsReason()) {
+            @if (current.kind === 'reopen_round') {
+              <p>{{ t('live.confirmAction.reopen_round') }}</p>
               <label class="block space-y-1"
                 ><span>{{ t('live.reason') }}</span
                 ><textarea
@@ -235,22 +324,22 @@
                 ></textarea>
               </label>
             }
+            <div class="ds-actions">
+              <button class="ds-button ghost" [disabled]="saving()" (click)="sheet.set(null)">
+                {{ t('common.cancel') }}
+              </button>
+              <button
+                class="ds-button primary"
+                data-testid="confirm-live-action"
+                [disabled]="saving() || (current.kind === 'reopen_round' && reason.invalid)"
+                (click)="confirm()"
+              >
+                {{ t(saving() ? 'live.saving' : 'live.confirm') }}
+              </button>
+            </div>
           }
-          <div class="ds-actions">
-            <button
-              class="ds-button primary"
-              data-testid="confirm-live-action"
-              [disabled]="saving() || (needsReason() && reason.invalid)"
-              (click)="confirmAction()"
-            >
-              {{ t(saving() ? 'live.saving' : 'live.confirm') }}
-            </button>
-            <button class="ds-button ghost" [disabled]="saving()" (click)="action.set(null)">
-              {{ t('common.cancel') }}
-            </button>
-          </div>
-        </div></ds-bottom-sheet
-      >
+        </div>
+      </ds-bottom-sheet>
     }
   }
 </div>

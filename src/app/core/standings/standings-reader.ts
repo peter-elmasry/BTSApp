@@ -66,7 +66,7 @@ export class StandingsReader {
         .then((rows) => {
           if (request !== this.request || context !== this.context() || !this.allowed()) return;
           this.responseContext.set(context);
-          this.result.set(rows);
+          this.result.set(Array.isArray(rows) ? rows : []);
         })
         .catch((error: unknown) => {
           if (request !== this.request || context !== this.context()) return;
