@@ -17,7 +17,7 @@
       >{{ t('import.title') }}</a
     >
     @if (setup(); as data) {
-      <p class="text-sm text-slate">{{ data.event.name_en }} · {{ data.event.code }}</p>
+      <p class="text-sm text-slate">{{ label(data.event) }} · {{ data.event.code }}</p>
     }
     <a
       class="inline-flex min-h-11 items-center font-semibold text-teal"
@@ -237,9 +237,8 @@
               />
               <div class="min-w-0 flex-1">
                 <h3 class="font-bold">
-                  {{ team.name_en }} <span class="text-slate">({{ team.code }})</span>
+                  {{ label(team) }} <span class="text-slate">({{ team.code }})</span>
                 </h3>
-                <p class="text-sm text-slate">{{ team.name_ar }}</p>
               </div>
               <span
                 class="h-7 w-7 rounded-full border"
@@ -356,9 +355,9 @@
               }
               <div class="flex-1">
                 <h3 class="font-bold">
-                  {{ game.name_en }} <span class="text-slate">({{ game.code }})</span>
+                  {{ label(game) }} <span class="text-slate">({{ game.code }})</span>
                 </h3>
-                <p class="text-sm text-slate">{{ game.location_en }} · {{ game.location_ar }}</p>
+                <p class="text-sm text-slate">{{ label(game, 'location') }}</p>
               </div>
               <div class="flex gap-1">
                 <button type="button" class="min-h-11 rounded-lg px-2" (click)="editGame(game)">
@@ -455,7 +454,7 @@
               ><select class="ds-control w-full" formControlName="game_id">
                 <option value="">{{ t('common.choose') }}</option>
                 @for (game of matchGameOptions(matchForm.controls.round_id.value); track game.id) {
-                  <option [value]="game.id">{{ game.name_en }}</option>
+                  <option [value]="game.id">{{ label(game) }}</option>
                 }
               </select></label
             >
@@ -498,7 +497,7 @@
                   {{ t('manage.round') }} {{ round.number }} · {{ t(roundLabel(round.type)) }}
                 </h3>
                 <p class="text-sm text-slate">
-                  {{ round.duration_min }} {{ t('manage.minutes') }} · {{ round.name_en }}
+                  {{ round.duration_min }} {{ t('manage.minutes') }} · {{ label(round) }}
                 </p>
               </div>
               <div class="flex gap-1">
@@ -524,7 +523,7 @@
                     class="min-h-11 rounded-xl bg-ivory px-3 font-semibold"
                     (click)="generateOpening(round, game.id)"
                   >
-                    {{ game.name_en }}
+                    {{ label(game) }}
                   </button>
                 }
               </div>
@@ -564,7 +563,7 @@
               <option value="">{{ t('common.choose') }}</option>
               @for (member of members(); track member.id) {
                 <option [value]="member.id" [disabled]="!member.has_login && !isGuide()">
-                  {{ member.full_name_en }} (@{{ member.username }}){{
+                  {{ label(member, 'full_name') || member.username }} (@{{ member.username }}){{
                     member.has_login ? '' : ' · ' + t('manage.noLogin')
                   }}
                 </option>
@@ -591,7 +590,7 @@
               ><select class="ds-control w-full" formControlName="team_id">
                 <option value="">{{ t('common.choose') }}</option>
                 @for (team of teams(); track team.id) {
-                  <option [value]="team.id">{{ team.name_en }}</option>
+                  <option [value]="team.id">{{ label(team) }}</option>
                 }
               </select></label
             >
@@ -610,14 +609,14 @@
           <article class="space-y-3 rounded-card bg-white p-4 shadow-card">
             <div class="flex items-center justify-between gap-2">
               <div>
-                <h3 class="font-bold">{{ person.full_name_en || person.username }}</h3>
+                <h3 class="font-bold">{{ label(person, 'full_name') || person.username }}</h3>
                 <p class="text-sm text-slate">
                   {{
                     person.role === 'EVENT_ADMIN'
                       ? t('manage.eventAdmin')
                       : t(person.role === 'REFEREE' ? 'manage.referee' : 'manage.guide')
                   }}
-                  · {{ person.team_name || '' }}
+                  · {{ label(person, 'team_name') }}
                 </p>
               </div>
               @if (person.role !== 'EVENT_ADMIN' || isOwner()) {
@@ -651,7 +650,7 @@
                             person.game_ids ?? []
                           )
                         "
-                      />{{ game.name_en }}</label
+                      />{{ label(game) }}</label
                     >
                   }
                 </div>

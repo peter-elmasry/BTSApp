@@ -6,6 +6,8 @@ import { supabase } from '../../core/supabase/client';
 import { DsButton } from '../../shared/ui/button';
 import { OpQueueService } from '../../core/offline/op-queue.service';
 import { ReadCacheService } from '../../core/offline/read-cache.service';
+import { DirectionService } from '../../core/i18n/i18n.service';
+import { entityLabel } from '../../core/i18n/entity-label';
 
 type Member = {
   id: string;
@@ -35,6 +37,10 @@ type EventRow = {
   templateUrl: './owner-page.html',
 })
 export class OwnerPage implements OnInit {
+  private readonly direction = inject(DirectionService);
+  label(row: Member | EventRow, field = 'name') {
+    return entityLabel(row, this.direction.language(), field);
+  }
   private readonly route = inject(ActivatedRoute);
   private readonly queue = inject(OpQueueService);
   private readonly cache = inject(ReadCacheService);
@@ -232,6 +238,6 @@ export class OwnerPage implements OnInit {
   }
   memberLabel(id: string) {
     const m = this.members().find((x) => x.id === id);
-    return m ? `${m.full_name_en} (@${m.username})` : id;
+    return m ? `${this.label(m, 'full_name') || m.username} (@${m.username})` : id;
   }
 }

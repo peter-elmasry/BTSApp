@@ -187,6 +187,11 @@ conversion blocks Save and is discarded on game switch or destruction. EN/AR
 browser tests verify real landscape PNG, portrait JPEG, small WebP, uploaded
 WebP bytes and corrupt-image rejection. D034 records source/output bounds.
 
+**Cloud verification (2026-10-12):** PR #15 run `38241429066` passes 144 unit
+tests and all 42 browser cases, including both photo journeys, plus Lighthouse,
+build, formatting and translations. Database regression passes all 802 assertions
+and real Auth integration. A05 conversion/upload acceptance is verified.
+
 Requirement: §7.4. `setup-page.html:306` accepts only WebP, and
 `setup-page.ts:489` rejects other formats and retains the original file unchanged.
 There is no decode/resize/WebP conversion. A real PNG file-input browser probe
@@ -195,6 +200,14 @@ uploading a large file can waste mobile bandwidth. Storage enforces a 5 MiB
 WebP limit, which does not substitute for client resizing.
 
 ### A06 — P2: Arabic admin/owner entity names remain English
+
+**Implementation update (2026-10-12):** Setup and owner entity labels now select
+the active language with trimmed opposite-language fallback. Event/team/game/
+round/member names, staff team assignments, locations and selectors update on
+runtime language switching; explicit bilingual edit inputs retain their fields.
+Seven focused unit tests and the setup/owner browser language-switch journey pass.
+Production build, app/spec TypeScript, translations and formatting pass locally;
+cloud acceptance is pending publication.
 
 Requirement: §14.1, entity names follow the language with fallback.
 `setup-page.html:235` renders `team.name_en`; game/round/staff selectors and owner

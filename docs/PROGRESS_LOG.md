@@ -2,12 +2,30 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-12 — Publish A05 game-photo processing — STARTED
+## 2026-10-12 — Publish A06 entity-language fix — STARTED
+
+- **Requested by:** Gendy; publish the finished fix and verify cloud CI.
+- **Preflight:** Clean `codex/admin-entity-language` at `3c492b8`; fetched origin and reviewed branch commits/change summary; whitespace passes.
+- **Scope:** Publish branch, open PR against master, verify/fix cloud checks. No merge requested in this session.
+
+## 2026-10-12 — Merge A05 and fix A06 entity language — HANDOFF
+
+- **Requested by:** Gendy; merge PR #15, verify master and continue audit remediation.
+- **Preflight:** Clean photo branch with one local evidence commit. PR #15 clean/mergeable, four checks green, no submitted review objections; merged via signed-in browser at `ac89603`. Fetched master, created `codex/admin-entity-language`, carried prior CI evidence via cherry-pick.
+- **Scope:** Localize owner/setup display names, locations and selectors using the current language with opposite-language fallback; preserve explicit bilingual edit fields and payloads. Verify EN/AR and live switching. Master CI/deployment verification pending.
+- **Master verification:** CI `38242121889` and Vercel deployment pass on `ac89603`. Supabase workflow intentionally does not trigger without changes under its configured paths; PR #15 changed no backend files.
+- **Implemented:** Shared trimmed entity-label helper and current-language reads in setup/owner cards, selectors, round/game labels, locations, member/admin labels and staff team assignments. Removed duplicate secondary Arabic names; form field data remains bilingual.
+- **Checks:** Seven focused unit tests pass (fallback plus owner and photo-selection regression). App/spec TypeScript, 599-key translations, production build (373.91 kB initial), formatting and whitespace pass. Browser journey reports passing runtime switching, Arabic labels and blank-translation fallback across setup/owner. Initial browser failures were ambiguous header/hidden option locators and fixture language reset on navigation; corrected and rerun passed. Windows runner cleanup remains slow after test completion. Full frontend suite and cloud A06 acceptance not claimed; no SQL changed.
+- **Handoff:** Commit finished A06 locally on `codex/admin-entity-language`; not pushed. Next: publish A06 PR and verify CI, then A07 minimum touch size on remove-admin.
+
+## 2026-10-12 — Publish A05 game-photo processing — DONE
 
 - **Requested by:** Gendy; publish the finished fix and verify cloud CI.
 - **Preflight:** Clean `codex/game-photo-processing` at `921bc1d`; fetched origin, inspected branch commits and change summary, whitespace check passes.
 - **Scope:** Push the branch, open a PR against master and verify/fix frontend/database CI. Merge is a subsequent step.
 - **Milestone:** PR #15 opened at `edd7e4c`; Vercel passes. First CI `38241086227` passes unit/build/format/translation/edge checks but one of 42 browser cases races the Save completion against the next invalid-image selection. Test now waits for form reset and enabled input after upload; product conversion assertions already passed.
+- **Published/verified:** Correction `3cf4ce3` pushed without rewriting history. CI `38241429066` passes frontend and database: 144 unit tests, 42 browser cases, 599 translation keys, edge checks, formatting, build and Lighthouse; all 802 SQL assertions and real member/Auth/login integration pass. Container registry throttling delayed startup but recovered. Vercel is ready.
+- **Handoff:** PR #15 ready for review/merge. Final evidence documentation committed locally, leaving the checked remote head at `3cf4ce3`. No merge performed. Next: merge PR #15, verify master CI/deployment, then continue remaining implementation-audit findings.
 
 ## 2026-10-12 — Merge A04 and implement A05 game photos — HANDOFF
 

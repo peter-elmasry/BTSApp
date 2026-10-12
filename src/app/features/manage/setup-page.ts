@@ -17,6 +17,8 @@ import { ReadCacheService } from '../../core/offline/read-cache.service';
 import { availableTeamCodes, TEAM_AVATARS, validMatchSelection } from './setup-helpers';
 import { currencyLabel } from '../standings/rank-motion';
 import { prepareGameImage } from './game-image';
+import { DirectionService } from '../../core/i18n/i18n.service';
+import { entityLabel } from '../../core/i18n/entity-label';
 
 type Row = any;
 type SetupData = {
@@ -39,6 +41,10 @@ type SetupTab = 'settings' | 'teams' | 'games' | 'rounds' | 'staff';
   templateUrl: './setup-page.html',
 })
 export class EventSetupPage {
+  private readonly direction = inject(DirectionService);
+  label(row: Row, field = 'name') {
+    return entityLabel(row, this.direction.language(), field);
+  }
   private readonly auth = inject(AuthStore);
   private readonly queue = inject(OpQueueService);
   private readonly cache = inject(ReadCacheService);
@@ -211,7 +217,8 @@ export class EventSetupPage {
       return {
         ...member,
         ...role,
-        team_name: team?.name_en ?? '',
+        team_name_en: team?.name_en ?? '',
+        team_name_ar: team?.name_ar ?? '',
         game_ids: gamesByMember.get(role.member_id) ?? [],
       };
     });
@@ -496,7 +503,7 @@ export class EventSetupPage {
     return type === 'OPENING' ? 'manage.opening' : 'manage.regular';
   }
   roundGameName(match: Row) {
-    return this.games().find((game) => game.id === match.game_id)?.name_en ?? match.game_id;
+    return this.label(this.games().find((game) => game.id === match.game_id)) || match.game_id;
   }
   isOpeningSelected() {
     return (

@@ -4,6 +4,7 @@ import { supabase } from '../../core/supabase/client';
 import { OpQueueService } from '../../core/offline/op-queue.service';
 import { ReadCacheService } from '../../core/offline/read-cache.service';
 import { OwnerPage } from './owner-page';
+import { DirectionService } from '../../core/i18n/i18n.service';
 
 describe('owner member operation reconciliation', () => {
   const member = {
@@ -21,6 +22,7 @@ describe('owner member operation reconciliation', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
+        { provide: DirectionService, useValue: { language: () => 'en' } },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { routeConfig: { path: 'owner/members' } } },
