@@ -2,6 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Repair PR #13 database fixture failures — HANDOFF
+
+- **Requested by:** Gendy; database check still fails after migration fix.
+- **Preflight:** Clean `codex/phase-7-readiness` at `a305419`, now published by the user and matching PR #13 head. Run `38226245094` applies all migrations and passes real member/Auth/login integration; pgTAP reports 2 failures among 775 assertions.
+- **Changed:** Foundations receipt count now filters its test operation; member audit-failure regression uses a third, unlinked Auth fixture. Production constraints, expected audit exception and rollback assertions remain intact.
+- **Checks:** Changed-file Prettier, whitespace and diff review pass. Local database retry fails ECONNREFUSED at port 54322; repaired assertions require cloud execution. Previous cloud run passed 773/775 assertions and real member/login integration, not a fully passing suite.
+- **Handoff:** Repair committed locally; no push/deployment. Next: publish this commit to PR #13 and verify its complete database job. Repository instructions require user authorization to push.
+
 ## 2026-10-12 — Repair PR #13 migration numbering — HANDOFF
 
 - **Requested by:** Gendy; database check is still failing.

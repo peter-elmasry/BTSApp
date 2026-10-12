@@ -2,7 +2,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
 select no_plan();
-insert into auth.users(id) values ('19000000-0000-0000-0000-000000000001'), ('19000000-0000-0000-0000-000000000002');
+insert into auth.users(id) values ('19000000-0000-0000-0000-000000000001'), ('19000000-0000-0000-0000-000000000002'), ('19000000-0000-0000-0000-000000000003');
 insert into public.members(id, auth_user_id, username, full_name_en, system_role)
 values ('29000000-0000-0000-0000-000000000001', '19000000-0000-0000-0000-000000000001', 'audit_owner', 'Audit Owner', 'OWNER');
 insert into public.members(id, auth_user_id, username, full_name_en, must_change_password)
@@ -41,7 +41,7 @@ select set_config('test.fail_member_audit', 'yes', true);
 set local role service_role;
 select throws_ok($$select public.member_admin_write(gen_random_uuid(), '19000000-0000-0000-0000-000000000001', 'update', '29000000-0000-0000-0000-000000000002', '{"full_name_en":"Changed"}')$$, 'P0001', 'TEST_AUDIT_FAILED', 'failed audit aborts edit');
 select throws_ok($$select public.member_admin_write(gen_random_uuid(), '19000000-0000-0000-0000-000000000001', 'deactivate', '29000000-0000-0000-0000-000000000002')$$, 'P0001', 'TEST_AUDIT_FAILED', 'failed audit aborts deactivation');
-select throws_ok($$select public.member_admin_write(gen_random_uuid(), '19000000-0000-0000-0000-000000000001', 'link', '29000000-0000-0000-0000-000000000002', '{"auth_user_id":"19000000-0000-0000-0000-000000000002"}')$$, 'P0001', 'TEST_AUDIT_FAILED', 'failed audit aborts Auth link');
+select throws_ok($$select public.member_admin_write(gen_random_uuid(), '19000000-0000-0000-0000-000000000001', 'link', '29000000-0000-0000-0000-000000000002', '{"auth_user_id":"19000000-0000-0000-0000-000000000003"}')$$, 'P0001', 'TEST_AUDIT_FAILED', 'failed audit aborts Auth link');
 reset role;
 select is((select full_name_en from public.members where username = 'audit_guide'), 'Guide', 'failed edit rolled back');
 select is((select is_active from public.members where username = 'audit_guide'), true, 'failed deactivation rolled back');

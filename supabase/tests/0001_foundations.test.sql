@@ -77,7 +77,7 @@ select set_config('request.jwt.claim.sub','10000000-0000-0000-0000-000000000001'
 select is(op_result('80000000-0000-0000-0000-000000000001','test_rpc'),null::jsonb,'fresh operation');
 select is(op_complete('80000000-0000-0000-0000-000000000001','test_rpc','{"ok":true}'::jsonb),'{"ok":true}'::jsonb,'store result');
 select is(op_complete('80000000-0000-0000-0000-000000000001','test_rpc','{"ok":false}'::jsonb),'{"ok":true}'::jsonb,'retry returns first result');
-select is((select count(*) from client_ops),1::bigint,'one operation stored');
+select is((select count(*) from client_ops where op_id = '80000000-0000-0000-0000-000000000001'),1::bigint,'one operation stored');
 select ok(not has_function_privilege('anon','public.block_auth_email(jsonb)','EXECUTE'),'anonymous cannot call mail hook');
 select ok(not has_function_privilege('authenticated','public.block_auth_email(jsonb)','EXECUTE'),'authenticated cannot call mail hook');
 select ok(has_function_privilege('supabase_auth_admin','public.block_auth_email(jsonb)','EXECUTE'),'GoTrue can call mail hook');
