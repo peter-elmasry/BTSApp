@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Publish A05 game-photo processing — STARTED
+
+- **Requested by:** Gendy; publish the finished fix and verify cloud CI.
+- **Preflight:** Clean `codex/game-photo-processing` at `921bc1d`; fetched origin, inspected branch commits and change summary, whitespace check passes.
+- **Scope:** Push the branch, open a PR against master and verify/fix frontend/database CI. Merge is a subsequent step.
+
 ## 2026-10-12 — Merge A04 and implement A05 game photos — HANDOFF
 
 - **Requested by:** Gendy; proceed with merge, master verification and next audit remediation.
