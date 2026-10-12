@@ -19,6 +19,11 @@
     @if (setup(); as data) {
       <p class="text-sm text-slate">{{ data.event.name_en }} · {{ data.event.code }}</p>
     }
+    <a
+      class="inline-flex min-h-11 items-center font-semibold text-teal"
+      [routerLink]="['/manage', eventId, 'audit']"
+      >{{ t('audit.title') }}</a
+    >
   </header>
 
   @if (notice()) {

@@ -2,6 +2,29 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Publish A04 audit viewer and verify CI — STARTED
+
+- **Requested by:** Gendy; proceed with publication and cloud verification.
+- **Preflight:** Clean `codex/admin-audit-viewer` at `43e9a80`; fetched origin and reviewed the full diff against master, with whitespace checks passing.
+- **Scope:** Publish this branch, open its PR against master and verify/fix cloud frontend/database checks. No merge or production deployment requested.
+
+## 2026-10-12 — A04 administrator audit viewer — HANDOFF
+
+- **Requested by:** Gendy; PR #13 is merged, continue with the next audit remediation.
+- **Preflight:** Clean prior branch; fetched and verified PR #13 merged at `6eb89a4`. Master CI `38228132819` and Deploy Supabase `38228132808` pass. New `codex/admin-audit-viewer` starts from merged master and carries the prior local verification log via cherry-pick.
+- **Scope:** Event-admin/owner-only paginated audit RPC, typed client, bilingual filterable viewer and navigation, permission/pagination and frontend/session regression coverage. No hosted member/password mutations for verification.
+- **Milestone:** Implemented migration `0015`, typed online AuditApi and EN/AR audit route/navigation with server action/entity filters, precision-safe ID cursors, actor names, Cairo timestamps and safely escaped before/after details. Added 27 pgTAP assertions, seven audit unit cases and EN/AR mobile browser journeys; cross-tab logout coverage now includes the ninth privileged route.
+- **Checks so far:** Seven audit unit tests pass; all 11 browser journeys pass (two EN/AR filter/pagination/escaping/axe/mobile checks plus nine cross-tab logout routes). App/spec TypeScript, 598-key translations and production build pass at 373.91 kB initial. Initial unit worker startup timed out before tests; serial retry passed. Initial browser label locator was corrected; final browser run passes. EN/AR screenshots inspected. Additional guard/session unit regression passes 16/16, for 23 focused unit passes total. No full frontend-suite pass claimed.
+- **Database/hand-off:** Local `npm run test:db` reaches Postgres but fails ECONNREFUSED at 54322; all 27 new SQL assertions remain runtime-unverified (expected combined total 802). D033 records cursor/read semantics; audit report now separates PR #13 cloud acceptance from this new implementation. Commit locally on `codex/admin-audit-viewer`; nothing pushed or deployed. Next: publish a PR and verify cloud database CI before accepting A04, then A05 game-photo conversion/resize.
+
+## 2026-10-12 — Publish and verify PR #13 database repairs — DONE
+
+- **Requested by:** Gendy; edit and proceed, authorizing publication and CI follow-through.
+- **Preflight:** Clean `codex/phase-7-readiness`; fetched origin and confirmed no remote-only commits. Reviewed fix diff and whitespace.
+- **Published:** `be40a7a` is pushed to PR #13 without rewriting history.
+- **Cloud verification:** Run `38227505696` on `be40a7a` passes database and frontend jobs. All 775 pgTAP assertions across ten files pass, as do fresh migrations/reset, real member/Auth integration and full login lockout/concurrent admission/completion integration. Vercel passes.
+- **Handoff:** PR #13 repair is verified and ready for review; no merge or production deployment performed. This final evidence-only log update is committed locally, leaving the remotely checked PR head at `be40a7a`. Remaining implementation audit/Phase 7 requirements stay open.
+
 ## 2026-10-12 — Repair PR #13 database fixture failures — HANDOFF
 
 - **Requested by:** Gendy; database check still fails after migration fix.

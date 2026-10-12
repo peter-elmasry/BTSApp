@@ -92,6 +92,10 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'live' },
       {
+        path: 'audit',
+        loadComponent: () => import('./features/manage/audit-page').then((m) => m.AuditPage),
+      },
+      {
         path: 'live',
         loadComponent: () => import('./features/manage/live-page').then((m) => m.LiveControlPage),
       },

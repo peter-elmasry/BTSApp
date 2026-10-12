@@ -1,4 +1,21 @@
 {
+  "audit": {
+    "title": "Audit log",
+    "intro": "Event history, newest first. Times are shown in Cairo time.",
+    "action": "Action",
+    "entity": "Record type",
+    "allActions": "All actions",
+    "allEntities": "All record types",
+    "apply": "Apply filters",
+    "actor": "Changed by",
+    "system": "System / unavailable member",
+    "details": "View changes",
+    "before": "Before",
+    "after": "After",
+    "more": "Load older entries",
+    "empty": "No audit entries match these filters.",
+    "failed": "Could not load audit history. Check your connection and try again."
+  },
   "nav.home": "Home",
   "nav.schedule": "Schedule",
   "nav.leaderboard": "Standings",

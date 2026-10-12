@@ -12,6 +12,7 @@ for (const [path, selector] of [
   [`/manage/${eventId}/import`, 'app-event-import-page'],
   [`/manage/${eventId}/live`, 'app-live-control-page'],
   [`/manage/${eventId}/standings`, 'app-manage-standings-page'],
+  [`/manage/${eventId}/audit`, 'app-audit-page'],
   ['/ref', 'app-referee-board-page'],
   [`/ref/match/${matches[0].id}`, 'app-match-entry-page'],
 ]) {

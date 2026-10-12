@@ -16,6 +16,11 @@
       [routerLink]="['/manage', eventId(), 'setup']"
       >{{ t('manage.setupTitle') }}</a
     >
+    <a
+      class="inline-flex min-h-11 items-center font-semibold text-teal"
+      [routerLink]="['/manage', eventId(), 'audit']"
+      >{{ t('audit.title') }}</a
+    >
   </header>
   @if (notice()) {
     <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>

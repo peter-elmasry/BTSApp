@@ -1,0 +1,100 @@
+<div *transloco="let t" class="min-w-0 space-y-5">
+  <header class="space-y-3">
+    <h1 class="text-2xl font-extrabold">{{ t('audit.title') }}</h1>
+    <nav class="flex flex-wrap gap-4">
+      <a
+        class="inline-flex min-h-11 items-center font-semibold text-teal"
+        [routerLink]="['/manage', eventId(), 'live']"
+        >{{ t('live.title') }}</a
+      >
+      <a
+        class="inline-flex min-h-11 items-center font-semibold text-teal"
+        [routerLink]="['/manage', eventId(), 'setup']"
+        >{{ t('manage.setupTitle') }}</a
+      >
+    </nav>
+    <p class="text-sm text-slate">{{ t('audit.intro') }}</p>
+  </header>
+  @if (allowed()) {
+    <form
+      [formGroup]="filters"
+      (ngSubmit)="apply()"
+      class="grid gap-3 rounded-card bg-white p-4 sm:grid-cols-2"
+    >
+      <label class="grid gap-1 font-semibold"
+        >{{ t('audit.action') }}
+        <select
+          formControlName="action"
+          class="min-h-11 min-w-0 rounded-xl border border-slate px-3"
+        >
+          <option value="">{{ t('audit.allActions') }}</option>
+          @for (action of actions(); track action) {
+            <option [value]="action">{{ action }}</option>
+          }
+        </select>
+      </label>
+      <label class="grid gap-1 font-semibold"
+        >{{ t('audit.entity') }}
+        <select
+          formControlName="entity"
+          class="min-h-11 min-w-0 rounded-xl border border-slate px-3"
+        >
+          <option value="">{{ t('audit.allEntities') }}</option>
+          @for (entity of entities(); track entity) {
+            <option [value]="entity">{{ entity }}</option>
+          }
+        </select>
+      </label>
+      <button type="submit" class="ds-button primary" [disabled]="loading()">
+        {{ t('audit.apply') }}
+      </button>
+      <button type="button" class="ds-button secondary" [disabled]="loading()" (click)="refresh()">
+        {{ t('player.refresh') }}
+      </button>
+    </form>
+    @if (loading()) {
+      <p role="status">{{ t('player.loading') }}</p>
+    }
+    @if (error()) {
+      <p role="alert" class="rounded-xl bg-white p-4 text-error">{{ t(error()) }}</p>
+    }
+    @for (row of rows(); track row.id) {
+      <article
+        class="min-w-0 space-y-2 rounded-card bg-white p-4 shadow-card"
+        data-testid="audit-entry"
+      >
+        <h2 class="break-words font-extrabold" dir="ltr">{{ row.action }}</h2>
+        <p class="break-words">
+          {{ t('audit.actor') }}:
+          {{ row.actor ? name(row.actor, direction.language()) : t('audit.system') }}
+        </p>
+        <time class="block text-sm text-slate" [attr.datetime]="row.at">{{ time(row.at) }}</time>
+        <p class="break-words text-sm" dir="ltr">{{ row.entity }} · {{ row.entity_id || '—' }}</p>
+        <details class="rounded-xl border border-mist p-3">
+          <summary class="flex min-h-11 cursor-pointer items-center font-semibold">
+            {{ t('audit.details') }}
+          </summary>
+          <h3 class="mt-3 font-bold">{{ t('audit.before') }}</h3>
+          <pre
+            class="max-h-80 overflow-auto rounded-lg bg-mist p-3 text-xs whitespace-pre-wrap break-all"
+            dir="ltr"
+            >{{ format(row.before) }}</pre>
+          <h3 class="mt-3 font-bold">{{ t('audit.after') }}</h3>
+          <pre
+            class="max-h-80 overflow-auto rounded-lg bg-mist p-3 text-xs whitespace-pre-wrap break-all"
+            dir="ltr"
+            >{{ format(row.after) }}</pre>
+        </details>
+      </article>
+    } @empty {
+      @if (!loading() && !error()) {
+        <p class="rounded-card bg-white p-4">{{ t('audit.empty') }}</p>
+      }
+    }
+    @if (next()) {
+      <button class="ds-button secondary w-full" [disabled]="loading()" (click)="more()">
+        {{ t('audit.more') }}
+      </button>
+    }
+  }
+</div>
