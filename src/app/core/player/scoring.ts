@@ -1,4 +1,4 @@
-import type { Outcome, PublicAdjustment, PublicEvent, PublicMatch } from './public-types';
+import type { Outcome, PublicEvent, PublicTeamView } from './public-types';
 
 type ScoringEvent = Pick<PublicEvent, 'scoring_mode' | 'initial_lives' | 'life_emoji'>;
 
@@ -20,27 +20,10 @@ export function costsLife(outcome: Outcome | undefined): boolean {
   return !!outcome && LOSES_LIFE.includes(outcome);
 }
 
-/**
- * Lives left for one team from its own (always visible) results, mirroring the
- * server's phase6_standings rule: lives from matches and the total both stop at zero.
- */
-export function teamLives(
-  event: Partial<ScoringEvent> | null | undefined,
-  matches: readonly PublicMatch[],
-  adjustments: readonly Pick<PublicAdjustment, 'points' | 'match_id'>[],
-  teamCode: string,
+/** Lives left for a team, as computed by the server for its team view (R6, no client scoring). */
+export function livesLeft(
+  view: Pick<PublicTeamView, 'breakdown'> | null | undefined,
 ): number | null {
-  if (!isLivesMode(event) || !event?.initial_lives) return null;
-  const voided = new Set(matches.filter((match) => match.status === 'VOID').map((m) => m.id));
-  const lost = matches.filter(
-    (match) =>
-      match.status === 'COMPLETED' &&
-      match.participants.some(
-        (participant) => participant.team_code === teamCode && costsLife(participant.outcome),
-      ),
-  ).length;
-  const bonus = adjustments
-    .filter((adjustment) => !adjustment.match_id || !voided.has(adjustment.match_id))
-    .reduce((sum, adjustment) => sum + adjustment.points, 0);
-  return Math.max(0, Math.max(0, event.initial_lives - lost) + bonus);
+  const breakdown = view?.breakdown;
+  return breakdown?.scoring_mode === 'LIVES' ? breakdown.total : null;
 }

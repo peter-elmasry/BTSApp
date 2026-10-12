@@ -18,7 +18,7 @@
   } @else if (!events.event() && !events.loading()) {
     <p class="rounded-card bg-white p-4">{{ t('player.noEvent') }}</p>
   } @else if (reader.data(); as data) {
-    @for (match of data.matches; track match.id) {
+    @for (match of actionable(data.matches); track match.id) {
       <article class="ds-card space-y-4">
         <app-live-match-summary class="block" [snapshot]="data" [match]="match" /><a
           class="ds-button primary inline-flex items-center"

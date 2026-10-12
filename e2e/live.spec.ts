@@ -100,28 +100,21 @@ test('airplane-mode submission waits for reconnection', async ({ page, context }
   await expect(page.getByText(t.player.outcome.DRAW, { exact: true }).first()).toBeVisible();
 });
 
-test('admin resolves pending overtime matches before closing, then reopens with a reason', async ({
+test('admin ends an overtime round with a late result, then reopens with a reason', async ({
   page,
 }) => {
   const fixture = await mockLiveEvent(page, { role: 'EVENT_ADMIN', overtime: true });
   const t = labels('en');
   await page.goto(`/manage/${eventId}/live`);
   await page.getByRole('button', { name: t['admin.round.close'], exact: true }).first().click();
-  await expect(
-    page.locator('dialog').getByText(t.live.closeBlocked, { exact: true }),
-  ).toBeVisible();
-  expect(fixture.calls.some((c) => c.name === 'close_round')).toBe(false);
-  await page.locator('dialog').getByRole('button', { name: t.common.cancel, exact: true }).click();
-  await page.getByRole('button', { name: t.live.voidMatch, exact: true }).click();
-  await page
-    .locator('dialog')
-    .getByRole('textbox', { name: t.live.reason, exact: true })
-    .fill('Station unavailable');
-  await page.getByTestId('confirm-live-action').click();
-  await expect.poll(() => fixture.snapshot.matches[0].status).toBe('VOID');
-  await page.getByRole('button', { name: t['admin.round.close'], exact: true }).first().click();
+  // D041: pending matches no longer block ending the round; they stay as late results.
+  await expect(page.locator('dialog').getByTestId('late-notice')).toHaveText(
+    t.live.endLateHint.replace('{{n}}', '1'),
+  );
   await page.getByTestId('confirm-live-action').click();
   await expect.poll(() => fixture.snapshot.rounds[0].status).toBe('CLOSED');
+  expect(fixture.snapshot.matches[0].status).toBe('SCHEDULED');
+  expect(fixture.calls.some((c) => c.name === 'void_match')).toBe(false);
   await page.getByRole('button', { name: t.live.reopen, exact: true }).click();
   await page
     .locator('dialog')

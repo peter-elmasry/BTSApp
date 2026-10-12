@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { LiveAdjustment } from '../../core/live/live-types';
-import { remainingAllowance, validOutcomes } from './live-helpers';
+import type { StaffProfile } from '../../core/auth/auth.store';
+import type { LiveAdjustment, LiveMatch, LiveSnapshot } from '../../core/live/live-types';
+import { canEditLiveMatch, remainingAllowance, validOutcomes } from './live-helpers';
 
 describe('live result combinations', () => {
   const ids = ['a', 'b'];
@@ -71,5 +72,24 @@ describe('remaining adjustment cap', () => {
     expect(remainingAllowance(4, adjustments, 'a', 'MATCH', 'm', false)).toBe(2);
     expect(remainingAllowance(null, adjustments, 'a', 'MATCH', 'm', true)).toBeNull();
     expect(remainingAllowance(0, [], 'a', 'EVENT', null, true)).toBe(0);
+  });
+});
+
+describe('referee editing window (D041)', () => {
+  const referee = {
+    system_role: 'MEMBER',
+    roles: [{ event_id: 'e', role: 'REFEREE', team_id: null }],
+    assigned_games: [{ event_id: 'e', game_id: 'g' }],
+  } as unknown as StaffProfile;
+  const snapshot = (status: 'DRAFT' | 'ACTIVE' | 'CLOSED') =>
+    ({ event: { id: 'e' }, rounds: [{ id: 'r', status }] }) as unknown as LiveSnapshot;
+  const match = (status: LiveMatch['status'], game = 'g') =>
+    ({ id: 'm', round_id: 'r', game_id: game, status }) as LiveMatch;
+  it('allows the active round and the first result of a late match only', () => {
+    expect(canEditLiveMatch(snapshot('ACTIVE'), match('COMPLETED'), referee)).toBe(true);
+    expect(canEditLiveMatch(snapshot('CLOSED'), match('SCHEDULED'), referee)).toBe(true);
+    expect(canEditLiveMatch(snapshot('CLOSED'), match('COMPLETED'), referee)).toBe(false);
+    expect(canEditLiveMatch(snapshot('DRAFT'), match('SCHEDULED'), referee)).toBe(false);
+    expect(canEditLiveMatch(snapshot('CLOSED'), match('SCHEDULED', 'other'), referee)).toBe(false);
   });
 });

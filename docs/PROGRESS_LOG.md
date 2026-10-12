@@ -2,6 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — UX enhancement U3 round lifecycle, contacts and breakdown — DONE
+
+- **Branch:** `codex/ux-u3-backend` (stacked on U2).
+- **Migration `0018_ux_round_contacts_breakdown.sql`:** `close_round` ends a round with pending matches kept `SCHEDULED` as late results and returns `late_match_ids` (no automatic void/forfeit, D041); `start_round(p_op_id,p_round,p_started_minutes_ago)` backdates 0–180 min and refuses a start before the previous round's `closed_at` (D042; the 2-argument start still works and queued old operations replay unchanged); assigned referees may enter the first result of a late match, corrections in ended rounds stay admin-only; `get_referee_board` returns current/upcoming/late buckets with `editable` and the guides of teams at the station; `get_live_event` adds `game_referee_contacts` and `team_guides`; new `get_event_contacts` for event members; `get_bootstrap` rounds add `late_count`; `get_team_view` adds per-match `points`/`lives_delta` and a `breakdown` computed from `phase6_standings` in both scoring modes.
+- **Deviation:** the late-results count is `rounds[].late_count` in `get_bootstrap` instead of a field on `get_standings`, so the standings array contract, export and display stay unchanged.
+- **Client:** End round no longer blocked (late-results notice instead of `closeBlocked`); referee board hides upcoming matches until U5; home/life-lost overlay read lives from the server breakdown (`livesLeft`), client `teamLives` removed (R6); referees may open late matches; new error strings.
+- **Tests:** new `0012_ux_round_contacts.test.sql` (62 assertions: offsets, replay, late first result vs correction, no auto void/forfeit, buckets, phone scoping, contacts permissions, POINTS and LIVES reconciliation incl. floor at zero, locks after a backdated start). Updated `0006` for the agreed rules. Full SQL suite (898 assertions) passed on a local Postgres 16 + pgTAP with Supabase stubs (no Docker on this machine); CI must still confirm on real Supabase. 185 unit tests, build (399.87 kB) and 69/69 browser tests pass.
+- **Next:** U4 admin Control, Results, Adjustments, one-tap export and team drill-down.
+
 ## 2026-10-13 — UX enhancement U2 landing, navigation and Now sheet — DONE
 
 - **Branch:** `codex/ux-u2-navigation` (stacked on U1).

@@ -154,7 +154,6 @@ export class LiveControlPage {
     const action = this.action();
     if (!action || !this.canAdmin() || this.saving() || action.roundId !== this.selectedId())
       return;
-    if (action.name === 'close_round' && this.pending().length) return;
     if (this.needsReason() && (this.reason.invalid || this.reason.value.trim().length < 3)) {
       this.reason.markAsTouched();
       return;
@@ -175,10 +174,7 @@ export class LiveControlPage {
     } catch (error) {
       if (version === this.actionVersion) {
         this.notice.set(liveErrorKey(error));
-        if (liveErrorKey(error) === 'errors.PENDING_MATCHES') {
-          this.action.set(null);
-          this.reader.refresh();
-        }
+        if (liveErrorKey(error) === 'errors.ACTIVE_ROUND_EXISTS') this.reader.refresh();
       }
     } finally {
       if (version === this.actionVersion) this.saving.set(false);

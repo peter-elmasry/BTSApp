@@ -111,7 +111,20 @@ for (const lang of ['en', 'ar'] as const) {
         }));
       if (rpc === 'server_now') data = new Date().toISOString();
       if (rpc === 'get_team_view')
-        data = { team: bootstrap.teams[0], matches: current, adjustments: [] };
+        data = {
+          team: bootstrap.teams[0],
+          matches: current,
+          adjustments: [],
+          // Lives come from the server breakdown (R6), not from client-side scoring.
+          breakdown: {
+            scoring_mode: 'LIVES',
+            initial_lives: 3,
+            match_points: lost ? 2 : 3,
+            adjustment_points: 0,
+            total: lost ? 2 : 3,
+            lives_lost: lost ? 1 : 0,
+          },
+        };
       return route.fulfill({ status: 200, headers, json: data });
     });
     await page.goto('/home');

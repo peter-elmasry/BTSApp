@@ -216,16 +216,10 @@
         (close)="!saving() && action.set(null)"
         ><div class="space-y-4">
           @if (item.name === 'close_round' && pending().length) {
-            <p>{{ t('live.closeBlocked') }}</p>
+            <p data-testid="late-notice">{{ t('live.endLateHint', { n: pending().length }) }}</p>
             <ul>
               @for (match of pending(); track match.id) {
-                <li>
-                  <a
-                    class="inline-flex min-h-11 items-center font-semibold text-teal"
-                    [routerLink]="['/ref/match', match.id]"
-                    >{{ t('live.enterResult') }} · {{ gameName(match.game_id) }}</a
-                  >
-                </li>
+                <li class="font-semibold">⏰ {{ gameName(match.game_id) }}</li>
               }
             </ul>
           } @else {
@@ -243,16 +237,14 @@
             }
           }
           <div class="ds-actions">
-            @if (!(item.name === 'close_round' && pending().length)) {
-              <button
-                class="ds-button primary"
-                data-testid="confirm-live-action"
-                [disabled]="saving() || (needsReason() && reason.invalid)"
-                (click)="confirmAction()"
-              >
-                {{ t(saving() ? 'live.saving' : 'live.confirm') }}
-              </button>
-            }
+            <button
+              class="ds-button primary"
+              data-testid="confirm-live-action"
+              [disabled]="saving() || (needsReason() && reason.invalid)"
+              (click)="confirmAction()"
+            >
+              {{ t(saving() ? 'live.saving' : 'live.confirm') }}
+            </button>
             <button class="ds-button ghost" [disabled]="saving()" (click)="action.set(null)">
               {{ t('common.cancel') }}
             </button>

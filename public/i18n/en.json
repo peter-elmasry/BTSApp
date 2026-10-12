@@ -67,7 +67,7 @@
   "ref.confirm": "Confirm result",
   "admin.round.start": "Start round",
   "admin.round.extend": "Add time",
-  "admin.round.close": "Close round",
+  "admin.round.close": "End round",
   "admin.round.pending": "{{n}} matches still without a result",
   "errors.CAP_EXCEEDED": "Bonus/penalty cap reached ({{left}} left)",
   "offline.queued": "No connection — we'll send it once you're back online",
@@ -516,7 +516,8 @@
     "allTeams": "All teams ({{n}})",
     "breakCell": "Break",
     "roundColumn": "Round",
-    "activeRound": "Now"
+    "activeRound": "Now",
+    "endLateHint": "{{n}} matches still have no result. They stay open as late results: the referee or an admin can still enter them. Nothing is cancelled."
   },
   "errors.ROUND_NOT_DRAFT": "Only a draft round can be started.",
   "errors.ROUND_NOT_ACTIVE": "This round is no longer active. Refresh to see its current state.",
@@ -751,5 +752,7 @@
     "game": "Game",
     "teams": "Teams",
     "status": "Status"
-  }
+  },
+  "errors.INVALID_START_OFFSET": "Choose between 0 and 180 minutes ago.",
+  "errors.START_BEFORE_PREVIOUS_ROUND_END": "A round can't start before the previous round ended."
 }

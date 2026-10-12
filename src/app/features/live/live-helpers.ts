@@ -20,8 +20,12 @@ export function canEditLiveMatch(
 ) {
   if (!snapshot || !match || match.status === 'VOID') return false;
   if (isLiveAdmin(profile, snapshot.event.id)) return true;
+  // Referees enter results while the round runs, plus the first result of a late match (D041).
+  const round = snapshot.rounds.find((item) => item.id === match.round_id);
+  const open =
+    round?.status === 'ACTIVE' || (round?.status === 'CLOSED' && match.status === 'SCHEDULED');
   return (
-    snapshot.rounds.some((round) => round.id === match.round_id && round.status === 'ACTIVE') &&
+    open &&
     !!profile?.roles.some(
       (role) => role.event_id === snapshot.event.id && role.role === 'REFEREE',
     ) &&
@@ -105,6 +109,8 @@ export function liveErrorKey(error: unknown) {
     'INVALID_PARTICIPANTS',
     'INVALID_REASON',
     'INVALID_MINUTES',
+    'INVALID_START_OFFSET',
+    'START_BEFORE_PREVIOUS_ROUND_END',
     'MATCH_VOID',
     'ADJUSTMENT_REVOKED',
     'INVALID_POINTS',

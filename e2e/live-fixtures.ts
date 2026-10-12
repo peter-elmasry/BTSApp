@@ -93,15 +93,6 @@ export async function mockLiveEvent(
       else {
         const round = snapshot.rounds.find((r) => r.id === args.p_round);
         const match = snapshot.matches.find((m) => m.id === args.p_match);
-        if (
-          name === 'close_round' &&
-          snapshot.matches.some((m) => m.round_id === args.p_round && m.status === 'SCHEDULED')
-        )
-          return fail('PENDING_MATCHES', {
-            match_ids: snapshot.matches
-              .filter((m) => m.round_id === args.p_round && m.status === 'SCHEDULED')
-              .map((m) => m.id),
-          });
         if (name === 'start_round' && round) {
           round.status = 'ACTIVE';
           round.started_at = new Date().toISOString();
@@ -113,6 +104,7 @@ export async function mockLiveEvent(
             Date.parse(round.ends_at!) + args.p_minutes * 60000,
           ).toISOString();
         }
+        // D041: ending a round keeps pending matches as late results.
         if (name === 'close_round' && round) round.status = 'CLOSED';
         if (name === 'reopen_round' && round) round.status = 'ACTIVE';
         if (name === 'submit_match_result' && match) {

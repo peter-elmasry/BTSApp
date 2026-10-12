@@ -67,7 +67,7 @@
   "ref.confirm": "تأكيد النتيجة",
   "admin.round.start": "ابدأ الجولة",
   "admin.round.extend": "زوّد الوقت",
-  "admin.round.close": "اقفل الجولة",
+  "admin.round.close": "خلّص الجولة",
   "admin.round.pending": "فيه {{n}} ماتشات لسه من غير نتيجة",
   "errors.CAP_EXCEEDED": "وصلت للحد الأقصى (فاضل {{left}})",
   "offline.queued": "النت فاصل — هنبعت النتيجة أول ما يرجع",
@@ -537,7 +537,8 @@
     "allTeams": "كل الفرق ({{n}})",
     "breakCell": "استراحة",
     "roundColumn": "الجولة",
-    "activeRound": "دلوقتي"
+    "activeRound": "دلوقتي",
+    "endLateHint": "فيه {{n}} ماتشات لسه من غير نتيجة. هتفضل مفتوحة كنتايج متأخرة: الحكم أو الأدمن يقدروا يدخلوها بعدين. مفيش حاجة هتتلغي."
   },
   "errors.ROUND_NOT_DRAFT": "ممكن تبدأ جولة مسودة بس.",
   "errors.ROUND_NOT_ACTIVE": "الجولة دي مش شغّالة دلوقتي. حدّث عشان تشوف حالتها.",
@@ -772,5 +773,7 @@
     "game": "اللعبة",
     "teams": "الفرق",
     "status": "الحالة"
-  }
+  },
+  "errors.INVALID_START_OFFSET": "اختار من 0 لحد 180 دقيقة فاتوا.",
+  "errors.START_BEFORE_PREVIOUS_ROUND_END": "الجولة مينفعش تبدأ قبل ما الجولة اللي قبلها تخلص."
 }

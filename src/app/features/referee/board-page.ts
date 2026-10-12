@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/cor
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { EventStore } from '../../core/player/event.store';
+import type { LiveMatch } from '../../core/live/live-types';
 import { LiveReader } from '../live/live-reader';
 import { LiveMatchSummary } from '../live/match-summary';
 import { RefereeSchedule } from './referee-schedule';
@@ -16,6 +17,10 @@ import { RefereeSchedule } from './referee-schedule';
 export class RefereeBoardPage {
   readonly events = inject(EventStore);
   readonly reader = inject(LiveReader);
+  /** Current and late matches get entry cards; upcoming ones appear in the schedule table (U5). */
+  actionable(matches: readonly LiveMatch[]) {
+    return matches.filter((match) => match.bucket !== 'upcoming');
+  }
   constructor() {
     void this.events.initialize();
     effect(() => {
