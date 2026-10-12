@@ -2,12 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-12 — Publish A05 game-photo processing — STARTED
+## 2026-10-12 — Publish A05 game-photo processing — DONE
 
 - **Requested by:** Gendy; publish the finished fix and verify cloud CI.
 - **Preflight:** Clean `codex/game-photo-processing` at `921bc1d`; fetched origin, inspected branch commits and change summary, whitespace check passes.
 - **Scope:** Push the branch, open a PR against master and verify/fix frontend/database CI. Merge is a subsequent step.
 - **Milestone:** PR #15 opened at `edd7e4c`; Vercel passes. First CI `38241086227` passes unit/build/format/translation/edge checks but one of 42 browser cases races the Save completion against the next invalid-image selection. Test now waits for form reset and enabled input after upload; product conversion assertions already passed.
+- **Published/verified:** Correction `3cf4ce3` pushed without rewriting history. CI `38241429066` passes frontend and database: 144 unit tests, 42 browser cases, 599 translation keys, edge checks, formatting, build and Lighthouse; all 802 SQL assertions and real member/Auth/login integration pass. Container registry throttling delayed startup but recovered. Vercel is ready.
+- **Handoff:** PR #15 ready for review/merge. Final evidence documentation committed locally, leaving the checked remote head at `3cf4ce3`. No merge performed. Next: merge PR #15, verify master CI/deployment, then continue remaining implementation-audit findings.
 
 ## 2026-10-12 — Merge A04 and implement A05 game photos — HANDOFF
 
