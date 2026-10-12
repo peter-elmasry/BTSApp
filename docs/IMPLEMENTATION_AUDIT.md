@@ -170,8 +170,13 @@ pagination. A typed online client and EN/AR `/manage/:eventId/audit` viewer show
 actors, Cairo timestamps and before/after changes. New pgTAP permission/pagination
 cases are prepared; 23 focused unit and 11 browser checks pass, including EN/AR
 filters, pagination, escaped snapshots, axe, mobile width and nine logout routes. Runtime
-database acceptance remains pending; implementation does not mark all Phase 7
+database acceptance was pending at implementation; implementation does not mark all Phase 7
 requirements complete.
+
+**Cloud verification (2026-10-12):** PR #14 run `38238549788` passes all 802 SQL
+assertions across 11 files, including the 27 audit-reader permission/pagination
+assertions, fresh migration/reset and real Auth integration. Full frontend CI also
+passes, including unit/browser suites and Lighthouse. A04 runtime acceptance is verified.
 
 ### A05 — P2: game-photo conversion and 1024 px resize are missing
 

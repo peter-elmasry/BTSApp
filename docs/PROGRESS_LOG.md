@@ -2,11 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-12 — Publish A04 audit viewer and verify CI — STARTED
+## 2026-10-12 — Publish A04 audit viewer and verify CI — DONE
 
 - **Requested by:** Gendy; proceed with publication and cloud verification.
 - **Preflight:** Clean `codex/admin-audit-viewer` at `43e9a80`; fetched origin and reviewed the full diff against master, with whitespace checks passing.
 - **Scope:** Publish this branch, open its PR against master and verify/fix cloud frontend/database checks. No merge or production deployment requested.
+- **Published:** Branch head `b7ee747` pushed and PR #14 opened. GitHub connector creation returned 403; signed-in browser creation succeeded.
+- **Cloud checks:** CI `38238549788` passes both jobs. Fresh migrations/reset, real member/Auth and login lockout/concurrency integration pass; all 802 pgTAP assertions across 11 files pass, including the 27 audit-reader assertions. Full frontend unit/browser suites, edge tests, formatting, translations, build and Lighthouse pass. Vercel preview is ready.
+- **Handoff:** A04 runtime acceptance verified; PR #14 is ready for review. No merge or production database deployment performed. Final evidence-only documentation commit stays local so the remotely checked head remains `b7ee747`. Next: review/merge PR #14, then A05 game-photo conversion/resize.
 
 ## 2026-10-12 — A04 administrator audit viewer — HANDOFF
 
