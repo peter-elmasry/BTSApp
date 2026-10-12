@@ -2,6 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Phase 8: team lock, referees, breaks, lives scoring, schedule table — STARTED
+
+- **Requested by:** Peter; approved slices 1–7 of the Phase 8 proposal (general inter-round breaks cancelled).
+- **Preflight:** Clean `master` at `df28e10` (CRLF-only noise on the Windows checkout). Work happens in a Linux copy with its own `npm ci`; finished files are copied back and committed on `feat/phase-8-extensions`, one commit per slice.
+- **Scope:** Slice 4 admin/owner layout and audit A07/A08; slice 1 team-selection lock after the first round starts (first pick still allowed, staff exempt); slice 3 referee names on game details; slice 2 per-game breaks (no match = break) and a referee round × game table; slice 5 LIVES scoring mode with life-lost animation; slice 6 schedule table view (default) with cards view; slice 7 docs. FUTURE_PLANS.md records the player market idea.
+- **Decisions:** D035–D038 (below). Migration `0016_phase8.sql` adds scoring mode columns, event `first_round_started_at` and game referee names to public reads.
+
 ## 2026-10-12 — Publish A06 entity-language fix — STARTED
 
 - **Requested by:** Gendy; publish the finished fix and verify cloud CI.
