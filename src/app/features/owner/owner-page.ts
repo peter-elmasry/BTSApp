@@ -9,6 +9,13 @@ import {
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { DsSearchSelect } from '../../shared/ui/search-select';
+import {
+  DsCellDef,
+  DsDataTable,
+  type DsColumn,
+  type DsRowStatus,
+} from '../../shared/ui/data-table';
+import { DsPhoneLink } from '../../shared/ui/phone-link';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { supabase } from '../../core/supabase/client';
 import { DsButton } from '../../shared/ui/button';
@@ -49,6 +56,9 @@ type EventRow = {
     DsButton,
     DsBottomSheet,
     DsSearchSelect,
+    DsDataTable,
+    DsCellDef,
+    DsPhoneLink,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './owner-page.html',
@@ -81,6 +91,26 @@ export class OwnerPage implements OnInit {
   readonly busy = signal(false);
   readonly editing = signal<string | null>(null);
   readonly adminSelection = signal<Record<string, string>>({});
+  /** BTS-<year>, with -2, -3… when that code is taken (U8). */
+  readonly defaultCode = computed(() => {
+    const year = new Date().getFullYear();
+    const taken = new Set(this.events().map((event) => event.code.toUpperCase()));
+    let code = `BTS-${year}`;
+    for (let n = 2; taken.has(code); n++) code = `BTS-${year}-${n}`;
+    return code;
+  });
+  readonly trackMember = (member: Member) => member.id;
+  readonly memberSearch = (member: Member) =>
+    `${member.username} ${member.phone ?? ''} ${member.full_name_en} ${member.full_name_ar ?? ''}`;
+  readonly memberStatus = (member: Member): DsRowStatus => (member.is_active ? null : 'void');
+  memberColumns(t: (key: string) => string): DsColumn<Member>[] {
+    return [
+      { key: 'name', header: t('owner.memberColumn'), rowHeader: true },
+      { key: 'phone', header: t('owner.phone') },
+      { key: 'status', header: t('results.status') },
+      { key: 'actions', header: t('results.actions'), align: 'end' },
+    ];
+  }
   readonly filteredMembers = () => {
     const q = this.query().trim().toLowerCase();
     return this.members().filter(
@@ -99,7 +129,7 @@ export class OwnerPage implements OnInit {
     password: new FormControl('', { nonNullable: true }),
   });
   readonly eventForm = new FormGroup({
-    code: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    code: new FormControl('', { nonNullable: true }),
     name_en: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     name_ar: new FormControl('', { nonNullable: true }),
     starts_on: new FormControl('', { nonNullable: true }),
@@ -240,7 +270,7 @@ export class OwnerPage implements OnInit {
     if (this.eventForm.invalid || this.busy()) return;
     const v = this.eventForm.getRawValue();
     const accepted = await this.mutate('create_event', {
-      p_code: v.code.trim().toUpperCase(),
+      p_code: (v.code.trim() || this.defaultCode()).toUpperCase(),
       p_name_en: v.name_en,
       p_name_ar: v.name_ar || null,
       p_starts_on: v.starts_on || null,

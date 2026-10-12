@@ -2,6 +2,17 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — UX enhancement U7 setup steps and U8 owner members — DONE
+
+- **Branch:** `codex/ux-u7-setup` (stacked on U6).
+- **Setup (U7):** steps Settings → Teams → Games → Rounds → Staff → Review with a done tick per step; the XLSX import card sits on the first step; scoring presets with an "Advanced" fold; the leaderboard switch lives only in its section (no duplicate checkbox).
+- **Bulk add:** add N teams (next free codes, colour swatches and avatar grid), N games and N rounds in one sheet.
+- **Schedule grid:** rounds × games grid; tap a cell to set or clear its pairing; break cells shown; repeated pairs flagged.
+- **Review:** lists what is missing (name, teams, games, rounds, empty or incomplete rounds, a team twice in one round, games without referees, too many opening rounds) with a link to the step that fixes it; repeated pairings are flagged in the grid.
+- **Owner (U8):** members are a searchable table (name with @username as row header, call link, status, actions); a new event's code defaults to `BTS-YYYY[-n]` and may be left blank.
+- **Deviations:** the owner events list stays as cards (few rows, each with several actions). D-3 auto-fill of pairings was not built (undecided).
+- **Checks:** i18n, unit tests, build, full browser suite including the new `setup.spec.ts`.
+
 ## 2026-10-13 — UX enhancement U6 player and guide screens — DONE
 
 - **Branch:** `codex/ux-u6-public` (stacked on U5).

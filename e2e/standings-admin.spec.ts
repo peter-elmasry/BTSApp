@@ -14,10 +14,11 @@ test('Arabic setup renders choose, delete and remove labels instead of translati
   await mockStandingsEvent(page, { role: 'EVENT_ADMIN', lang: 'ar' });
   await page.goto(`/manage/${eventId}/setup`);
   await page.getByRole('button', { name: t.manage.tab.rounds, exact: true }).click();
+  await expect(page.getByTestId('schedule-grid')).toBeVisible();
+  await page.getByRole('button', { name: t.manage.tab.staff, exact: true }).click();
   await expect(page.getByRole('option', { name: t.common.choose, exact: true }).first()).toHaveText(
     t.common.choose,
   );
-  await page.getByRole('button', { name: t.manage.tab.staff, exact: true }).click();
   await expect(
     page.getByRole('button', { name: t.common.remove, exact: true }).first(),
   ).toBeVisible();
@@ -35,6 +36,7 @@ test('live scoring settings warn about recalculation and reuse Arabic currency r
   const fixture = await mockStandingsEvent(page, { role: 'EVENT_ADMIN' });
   await page.goto(`/manage/${eventId}/setup`);
   await expect(page.getByText(t.pointsWarning, { exact: true })).toBeVisible();
+  await page.getByTestId('advanced-settings').locator('summary').click();
   await page.locator('#currency-count').fill('11');
   await expect(page.locator('#currency-count + p')).toHaveText(
     `11 ${fixture.snapshot.event.currency_ar_one}`,
@@ -50,6 +52,7 @@ test('draft scoring settings do not show the live recalculation warning', async 
   const fixture = await mockStandingsEvent(page, { role: 'EVENT_ADMIN' });
   fixture.snapshot.event.status = 'DRAFT';
   await page.goto(`/manage/${eventId}/setup`);
+  await page.getByTestId('advanced-settings').locator('summary').click();
   await expect(page.locator('#currency-count')).toBeVisible();
   await expect(page.getByText(t.pointsWarning, { exact: true })).toHaveCount(0);
 });

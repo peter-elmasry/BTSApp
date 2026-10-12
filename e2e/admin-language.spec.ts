@@ -73,8 +73,8 @@ test('admin and owner entity labels switch languages with fallback', async ({ pa
   await page.goto(`/manage/${eventId}/setup`);
   await expect(page.getByText('المهرجان · LANG')).toBeVisible();
   await page.getByRole('button', { name: labels('ar').manage.tab.teams, exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'الصقور (T01)' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Fallback Team (T02)' })).toBeVisible();
+  await expect(page.getByRole('rowheader', { name: /الصقور\s*T01/ })).toBeVisible();
+  await expect(page.getByRole('rowheader', { name: /Fallback Team\s*T02/ })).toBeVisible();
   await page
     .locator('header')
     .first()
@@ -84,9 +84,9 @@ test('admin and owner entity labels switch languages with fallback', async ({ pa
       ),
     })
     .click();
-  await expect(page.getByRole('heading', { name: 'Falcons (T01)' })).toBeVisible();
+  await expect(page.getByRole('rowheader', { name: /Falcons\s*T01/ })).toBeVisible();
   await page.getByRole('button', { name: labels('en').manage.tab.games, exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Race (G01)' })).toBeVisible();
+  await expect(page.getByRole('rowheader', { name: /Race\s*G01/ })).toBeVisible();
   await page
     .locator('header')
     .first()
@@ -96,10 +96,10 @@ test('admin and owner entity labels switch languages with fallback', async ({ pa
       ),
     })
     .click();
-  await expect(page.getByRole('heading', { name: 'السباق (G01)' })).toBeVisible();
+  await expect(page.getByRole('rowheader', { name: /السباق\s*G01/ })).toBeVisible();
   await expect(page.getByText('القاعة', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: labels('ar').manage.tab.staff, exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'مينا', exact: true })).toBeVisible();
+  await expect(page.getByRole('rowheader', { name: 'مينا', exact: true })).toBeVisible();
   await expect(page.getByText('الصقور', { exact: false }).last()).toBeVisible();
   await page.goto('/owner/events');
   await expect(page.getByRole('heading', { name: 'المهرجان (LANG)' })).toBeVisible();
@@ -129,7 +129,7 @@ test('admin and owner entity labels switch languages with fallback', async ({ pa
   await expect(page.locator('app-owner-page li').filter({ hasText: 'Mina (@mina)' })).toBeVisible();
   await assertAdminTouchTarget('en');
   await page.goto('/owner/members');
-  await expect(page.getByRole('heading', { name: 'مينا (@mina)' })).toBeVisible();
+  await expect(page.getByRole('rowheader', { name: /مينا\s*@mina/ })).toBeVisible();
   await page
     .locator('header')
     .first()
@@ -139,5 +139,5 @@ test('admin and owner entity labels switch languages with fallback', async ({ pa
       ),
     })
     .click();
-  await expect(page.getByRole('heading', { name: 'Mina (@mina)' })).toBeVisible();
+  await expect(page.getByRole('rowheader', { name: /Mina\s*@mina/ })).toBeVisible();
 });

@@ -15,7 +15,20 @@ import { AuthStore } from '../../core/auth/auth.store';
 import { supabase } from '../../core/supabase/client';
 import { OpQueueService } from '../../core/offline/op-queue.service';
 import { ReadCacheService } from '../../core/offline/read-cache.service';
-import { availableTeamCodes, TEAM_AVATARS, validMatchSelection } from './setup-helpers';
+import {
+  availableTeamCodes,
+  newTeams,
+  nextCodes,
+  repeatedPair,
+  setupIssues,
+  TEAM_AVATARS,
+  TEAM_SWATCHES,
+  validMatchSelection,
+} from './setup-helpers';
+import { RouterLink } from '@angular/router';
+import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
+import { DsCellDef, DsDataTable, type DsColumn } from '../../shared/ui/data-table';
+import { DsSearchSelect } from '../../shared/ui/search-select';
 import { currencyLabel } from '../standings/rank-motion';
 import { prepareGameImage } from './game-image';
 import { DirectionService } from '../../core/i18n/i18n.service';
@@ -38,11 +51,21 @@ type SetupData = {
   staff?: Row[];
   eligible_members?: Row[];
 };
-type SetupTab = 'settings' | 'teams' | 'games' | 'rounds' | 'staff';
+type SetupTab = 'settings' | 'teams' | 'games' | 'rounds' | 'staff' | 'review';
 
 @Component({
   selector: 'app-event-setup-page',
-  imports: [CommonModule, ReactiveFormsModule, TranslocoDirective, DsLivesMeter],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    TranslocoDirective,
+    DsLivesMeter,
+    DsBottomSheet,
+    DsDataTable,
+    DsCellDef,
+    DsSearchSelect,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './setup-page.html',
 })
@@ -56,7 +79,26 @@ export class EventSetupPage {
   private readonly cache = inject(ReadCacheService);
   private readonly route = inject(ActivatedRoute);
   readonly eventId = this.route.snapshot.paramMap.get('eventId') ?? '';
-  readonly tabs: SetupTab[] = ['settings', 'teams', 'games', 'rounds', 'staff'];
+  /** Setup checklist steps (U7); the last one reviews readiness. */
+  readonly tabs: SetupTab[] = ['settings', 'teams', 'games', 'rounds', 'staff', 'review'];
+  readonly TEAM_SWATCHES = TEAM_SWATCHES;
+  readonly advancedOpen = signal(false);
+  /** Bulk "Add N …" sheet and its progress (sequential queued operations). */
+  readonly bulk = signal<'teams' | 'games' | 'rounds' | null>(null);
+  readonly bulkCount = new FormControl(8, {
+    nonNullable: true,
+    validators: [Validators.required, Validators.min(1), Validators.max(40)],
+  });
+  readonly bulkMinutes = new FormControl(15, {
+    nonNullable: true,
+    validators: [Validators.required, Validators.min(1), Validators.max(600)],
+  });
+  readonly bulkDone = signal(0);
+  readonly bulkTotal = signal(0);
+  /** Schedule-grid cell being edited. */
+  readonly cell = signal<{ round: Row; game: Row; match: Row | null } | null>(null);
+  /** Referee whose games are being assigned. */
+  readonly refereeSheet = signal<Row | null>(null);
   readonly TEAM_AVATARS = TEAM_AVATARS;
   readonly tab = signal<SetupTab>('settings');
   readonly setup = signal<SetupData | null>(null);
@@ -65,6 +107,34 @@ export class EventSetupPage {
   readonly rounds = computed(() => this.setup()?.rounds ?? []);
   readonly matches = computed(() => this.rounds().flatMap((round) => round.matches ?? []));
   readonly staff = computed(() => this.setup()?.staff ?? []);
+  readonly refereeGameIds = computed(
+    () => new Set((this.setup()?.referee_games ?? []).map((item) => item.game_id as string)),
+  );
+  readonly issues = computed(() =>
+    setupIssues({
+      name: this.setup()?.event?.name_en ?? '',
+      teams: this.teams(),
+      games: this.games(),
+      rounds: this.rounds(),
+      matches: this.matches(),
+      refereeGameIds: this.refereeGameIds(),
+    }),
+  );
+  /** A step is done when it has no open readiness issue (and has content). */
+  readonly done = computed(() => {
+    const open = new Set(this.issues().map((issue) => issue.tab));
+    return {
+      settings: !open.has('settings'),
+      teams: !open.has('teams'),
+      games: !open.has('games'),
+      rounds: !open.has('rounds'),
+      staff: !open.has('staff') && this.staff().length > 0,
+      review: this.issues().length === 0,
+    } as Record<SetupTab, boolean>;
+  });
+  readonly sortedRounds = computed(() =>
+    [...this.rounds()].sort((a, b) => Number(a.number) - Number(b.number)),
+  );
   readonly members = computed(() => {
     return this.setup()?.eligible_members ?? [];
   });
@@ -597,6 +667,242 @@ export class EventSetupPage {
   }
   isOwner() {
     return this.auth.profile()?.system_role === 'OWNER';
+  }
+  /** Points presets on the Basics step; Custom leaves the fields as they are. */
+  setPreset(win: number, draw: number, loss: number) {
+    this.settingsForm.patchValue({ points_win: win, points_draw: draw, points_loss: loss });
+    this.settingsForm.markAsDirty();
+  }
+  presetActive(win: number, draw: number, loss: number) {
+    const value = this.settingsForm.getRawValue();
+    return value.points_win === win && value.points_draw === draw && value.points_loss === loss;
+  }
+  chooseAvatar(key: string) {
+    this.teamForm.controls.avatar_key.setValue(key);
+  }
+  chooseColor(hex: string) {
+    this.teamForm.controls.color_hex.setValue(hex);
+  }
+  openBulk(kind: 'teams' | 'games' | 'rounds') {
+    this.bulkCount.reset(kind === 'teams' ? 8 : kind === 'games' ? 4 : 6);
+    this.bulkMinutes.reset(15);
+    this.bulkDone.set(0);
+    this.bulkTotal.set(0);
+    this.bulk.set(kind);
+  }
+  /** Runs the generated rows one by one through the offline queue, then reloads once. */
+  async runBulk() {
+    const kind = this.bulk();
+    if (!kind || this.saving() || this.bulkCount.invalid || this.bulkMinutes.invalid) return;
+    const count = this.bulkCount.value;
+    const calls: [string, Record<string, unknown>][] =
+      kind === 'teams'
+        ? newTeams(this.teams(), count).map((team) => [
+            'upsert_team',
+            { p_event: this.eventId, p_team: team },
+          ])
+        : kind === 'games'
+          ? nextCodes(
+              this.games().map((game) => game.code),
+              'G',
+              count,
+            ).map((code) => [
+              'upsert_game',
+              {
+                p_event: this.eventId,
+                p_game: {
+                  code,
+                  name_en: `Game ${Number(code.slice(1))}`,
+                  name_ar: `لعبة ${Number(code.slice(1))}`,
+                  location_en: '',
+                  location_ar: '',
+                  image_path: null,
+                },
+              },
+            ])
+          : Array.from({ length: count }, (_, index) => [
+              'upsert_round',
+              {
+                p_event: this.eventId,
+                p_round: {
+                  number: this.nextRoundNumber() + index,
+                  type: 'REGULAR',
+                  name_en: '',
+                  name_ar: '',
+                  duration_min: this.bulkMinutes.value,
+                },
+              },
+            ]);
+    this.saving.set(true);
+    this.bulkTotal.set(calls.length);
+    this.bulkDone.set(0);
+    try {
+      for (const [fn, args] of calls) {
+        await this.queue.execute(fn, args);
+        this.bulkDone.update((value) => value + 1);
+      }
+      this.notice.set('setup.bulkDone');
+      this.bulk.set(null);
+    } catch (error) {
+      const code = (error as { message?: string }).message;
+      this.notice.set(`errors.${/^[A-Z][A-Z_]+$/.test(code ?? '') ? code : 'SAVE_FAILED'}`);
+    } finally {
+      this.saving.set(false);
+      await this.reload();
+    }
+  }
+  /** Match on a game in a round, or null for a break (D037). */
+  cellMatch(round: Row, game: Row) {
+    return (round.matches ?? []).find((match: Row) => match.game_id === game.id) ?? null;
+  }
+  teamName(code: string) {
+    return this.label(this.teams().find((team) => team.code === code)) || code;
+  }
+  cellTeams(match: Row) {
+    return this.matchTeams(match).map((code: string) => this.teamName(code));
+  }
+  rematch(round: Row, match: Row) {
+    return repeatedPair(this.matches(), this.rounds(), round.id, this.matchTeams(match));
+  }
+  openCell(round: Row, game: Row) {
+    if (round.started_at) return;
+    const match = this.cellMatch(round, game);
+    const codes = match ? this.matchTeams(match) : [];
+    this.matchForm.reset({
+      round_id: round.id,
+      game_id: game.id,
+      team_a: codes[0] ?? '',
+      team_b: codes[1] ?? '',
+    });
+    this.cell.set({ round, game, match });
+  }
+  cellOptions() {
+    const cell = this.cell();
+    if (!cell) return [];
+    return availableTeamCodes(this.teams(), this.matches(), cell.round.id, cell.match?.id).map(
+      (code) => ({ value: code, label: this.teamName(code) }),
+    );
+  }
+  async saveCell() {
+    const cell = this.cell();
+    if (!cell) return;
+    const value = this.matchForm.getRawValue();
+    if (!validMatchSelection(value.team_a, value.team_b)) {
+      this.matchForm.markAllAsTouched();
+      this.notice.set('setup.pickTwoTeams');
+      return;
+    }
+    if (cell.match) {
+      const removed = await this.mutate('delete_match', { p_match: cell.match.id });
+      if (!removed) return;
+    }
+    const saved = await this.mutate('upsert_match', {
+      p_round: cell.round.id,
+      p_game: cell.game.id,
+      p_team_codes: [value.team_a, value.team_b],
+    });
+    if (saved) this.cell.set(null);
+  }
+  async clearCell() {
+    const cell = this.cell();
+    if (!cell?.match) return;
+    if (await this.mutate('delete_match', { p_match: cell.match.id })) this.cell.set(null);
+  }
+  refereeNames(gameId: string) {
+    return this.staff()
+      .filter((person) => person.role === 'REFEREE' && (person.game_ids ?? []).includes(gameId))
+      .map((person) => this.label(person, 'full_name') || person.username)
+      .join(this.direction.language() === 'ar' ? '، ' : ', ');
+  }
+  guideNames(teamId: string) {
+    return this.staff()
+      .filter((person) => person.role === 'GUIDE' && person.team_id === teamId)
+      .map((person) => this.label(person, 'full_name') || person.username)
+      .join(this.direction.language() === 'ar' ? '، ' : ', ');
+  }
+  roleLabel(role: string) {
+    return role === 'EVENT_ADMIN'
+      ? 'manage.eventAdmin'
+      : role === 'REFEREE'
+        ? 'manage.referee'
+        : 'manage.guide';
+  }
+  assignment(person: Row) {
+    if (person.role === 'GUIDE') return this.label(person, 'team_name');
+    if (person.role === 'REFEREE')
+      return (person.game_ids ?? [])
+        .map((id: string) => this.label(this.games().find((game) => game.id === id)))
+        .filter(Boolean)
+        .join(this.direction.language() === 'ar' ? '، ' : ', ');
+    return '';
+  }
+  memberOptions() {
+    return this.members().map((member) => ({
+      value: member.id,
+      label: `${this.label(member, 'full_name') || member.username} (@${member.username})${
+        member.has_login ? '' : ' · —'
+      }`,
+    }));
+  }
+  teamOptions() {
+    return this.teams().map((team) => ({ value: team.id, label: this.label(team) }));
+  }
+  readonly trackRow = (row: Row) => String(row.id ?? `${row.member_id}:${row.role}`);
+  teamColumns(t: (key: string) => string): DsColumn<Row>[] {
+    return [
+      {
+        key: 'team',
+        header: t('setup.team'),
+        rowHeader: true,
+        value: (row) => `${this.label(row)} ${row.code}`,
+      },
+      {
+        key: 'guides',
+        header: t('team.guide'),
+        priority: 2,
+        value: (row) => this.guideNames(row.id),
+      },
+      { key: 'actions', header: t('results.actions'), align: 'end' },
+    ];
+  }
+  gameColumns(t: (key: string) => string): DsColumn<Row>[] {
+    return [
+      {
+        key: 'game',
+        header: t('setup.game'),
+        rowHeader: true,
+        value: (row) => `${this.label(row)} ${row.code} ${this.label(row, 'location')}`,
+      },
+      {
+        key: 'referees',
+        header: t('results.referee'),
+        priority: 2,
+        value: (row) => this.refereeNames(row.id),
+      },
+      { key: 'actions', header: t('results.actions'), align: 'end' },
+    ];
+  }
+  staffColumns(t: (key: string) => string): DsColumn<Row>[] {
+    return [
+      {
+        key: 'member',
+        header: t('manage.member'),
+        rowHeader: true,
+        value: (row) => this.label(row, 'full_name') || row.username,
+      },
+      {
+        key: 'role',
+        header: t('manage.role'),
+        priority: 2,
+        value: (row) => t(this.roleLabel(row.role)),
+      },
+      {
+        key: 'assignment',
+        header: t('setup.assignment'),
+        value: (row) => this.assignment(row),
+      },
+      { key: 'actions', header: t('results.actions'), align: 'end' },
+    ];
   }
   async selectGameImage(event: Event) {
     const input = event.target as HTMLInputElement;
