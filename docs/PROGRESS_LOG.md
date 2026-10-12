@@ -2,11 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-12 — Publish A06 entity-language fix — STARTED
+## 2026-10-12 — Publish A06 entity-language fix — DONE
 
 - **Requested by:** Gendy; publish the finished fix and verify cloud CI.
 - **Preflight:** Clean `codex/admin-entity-language` at `3c492b8`; fetched origin and reviewed branch commits/change summary; whitespace passes.
 - **Scope:** Publish branch, open PR against master, verify/fix cloud checks. No merge requested in this session.
+- **Published:** PR #16 (`codex/admin-entity-language`) at `22548f2`; opened through the signed-in browser because connector writes lack permission.
+- **Cloud checks:** CI `38243675816` passes frontend and database on the published head: 146 unit tests, 43 browser tests, 802 SQL assertions across 11 files; formatting, 599-key translations, login/member handler checks and production build pass. Vercel preview and preview-feedback check pass.
+- **Handoff:** PR #16 ready for review/merge; no merge performed. Final CI evidence committed locally. Next: merge and verify master, then A07 remove-admin minimum touch size.
 
 ## 2026-10-12 — Merge A05 and fix A06 entity language — HANDOFF
 

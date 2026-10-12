@@ -207,7 +207,9 @@ round/member names, staff team assignments, locations and selectors update on
 runtime language switching; explicit bilingual edit inputs retain their fields.
 Seven focused unit tests and the setup/owner browser language-switch journey pass.
 Production build, app/spec TypeScript, translations and formatting pass locally;
-cloud acceptance is pending publication.
+Cloud acceptance passes on PR #16 head `22548f2`, CI `38243675816`: 146 unit
+tests, 43 browser tests and 802 SQL assertions; frontend/database jobs and Vercel
+preview pass. The PR is awaiting review/merge.
 
 Requirement: §14.1, entity names follow the language with fallback.
 `setup-page.html:235` renders `team.name_en`; game/round/staff selectors and owner
