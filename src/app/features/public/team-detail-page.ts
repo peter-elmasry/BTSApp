@@ -6,7 +6,7 @@ import { DirectionService } from '../../core/i18n/i18n.service';
 import { EventStore } from '../../core/player/event.store';
 import { DsAvatar } from '../../shared/ui/avatar';
 import { currencyLabel } from '../standings/rank-motion';
-import { CountUp } from '../standings/count-up';
+import { CountUp } from '../../shared/ui/count-up';
 import { PublicMatchCard } from './match-card';
 import { guideNames, localizedName, teamGuides } from './public-helpers';
 import { PublicState } from './public-state';

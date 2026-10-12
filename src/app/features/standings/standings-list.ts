@@ -17,7 +17,7 @@ import type { StandingRow } from '../../core/standings/standings-types';
 import { DsAvatar } from '../../shared/ui/avatar';
 import { localizedName } from '../public/public-helpers';
 import { currencyLabel, rankChanges } from './rank-motion';
-import { CountUp } from './count-up';
+import { CountUp } from '../../shared/ui/count-up';
 
 @Component({
   selector: 'app-standings-list',

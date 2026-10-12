@@ -685,5 +685,21 @@
     "lifeLostBody": "Shake it off — the next one is yours.",
     "lifeLostOk": "Got it"
   },
-  "errors.SCORING_LOCKED": "Scoring mode and starting lives cannot change after a round has started."
+  "errors.SCORING_LOCKED": "Scoring mode and starting lives cannot change after a round has started.",
+  "ui": {
+    "table": {
+      "details": "Show details",
+      "empty": "Nothing to show yet"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "live": "Live",
+      "pending": "Pending",
+      "late": "Late",
+      "done": "Done",
+      "void": "Void",
+      "queued": "Queued"
+    },
+    "call": "Call {{name}}"
+  }
 }

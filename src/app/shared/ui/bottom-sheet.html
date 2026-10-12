@@ -1,6 +1,7 @@
 <dialog
   #dialog
   class="ds-sheet rounded-t-card border-0 bg-ivory p-5 text-navy"
+  [class.ds-sheet-full]="size() === 'full'"
   [attr.aria-label]="title()"
   (cancel)="close.emit()"
   (click)="backdrop($event)"

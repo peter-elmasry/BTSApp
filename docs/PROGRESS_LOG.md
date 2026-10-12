@@ -2,6 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — UX enhancement U1 shared UI foundations — DONE
+
+- **Branch:** `codex/ux-u1-foundations` (stacked on `codex/ux-u0-decisions`).
+- **Added (`shared/ui`):** `ds-data-table` (+ `dsCell` templates, column priority with row expand, status accent, sort, skeleton/empty), `ds-tabs` (renders the D040 `.ds-tabs/.ds-tab` classes with a sliding RTL-safe indicator and arrow keys), `ds-status-pill`, `ds-outcome`, `ds-phone-link`, `ds-timer-ring`; moved `app-count-up` to `shared/ui/count-up.ts` (adds `duration`, `fromZero`). Bottom sheet gains `size="full"` and slide-up motion. Router uses `withViewTransitions()` with RTL-mirrored CSS; header/nav keep their own transition names. New `ui.*` EN/AR strings.
+- **Checks:** 171 unit tests, i18n (667 keys), production build (initial 382.46 kB), Prettier on changed files pass. Browser suite 58/59 on the first full run; the failing `lives.spec.ts` life-lost case passed 18/18 on re-run (flaky under parallel load, not caused by this change). DB suite not run (no local Docker).
+- **Next:** U2 landing, navigation, Import/Export placement and Now sheet.
+
 ## 2026-10-13 — UX enhancement U0 decisions — DONE
 
 - **Requested by:** Peter; start the agreed UX plan v3.1 (`Claude outputs/`), Schedule Cards switch kept.

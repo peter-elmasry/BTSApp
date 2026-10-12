@@ -205,11 +205,240 @@ select {
     transform: translateY(0);
   }
 }
+.ds-sheet[open] {
+  animation: ds-sheet-up 0.22s ease-out;
+}
+.ds-sheet[open]::backdrop {
+  animation: ds-fade-in 0.22s ease-out;
+}
+.ds-sheet.ds-sheet-full {
+  height: 92dvh;
+  max-height: 92dvh;
+}
+@keyframes ds-sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+@keyframes ds-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+/* Sliding indicator for ds-tabs (D040 classes stay the source of tab styling). */
+.ds-tabs-indicated {
+  position: relative;
+}
+.ds-tab-indicator {
+  position: absolute;
+  inset-block: 0.125rem 0.375rem;
+  left: 0;
+  z-index: 0;
+  border-radius: 9999px;
+  background: var(--color-navy);
+  transition:
+    transform 0.22s ease,
+    width 0.22s ease;
+}
+.ds-tabs-indicated.sub .ds-tab-indicator {
+  border-radius: 0.75rem;
+  background: var(--color-teal);
+}
+.ds-tabs-indicated .ds-tab {
+  position: relative;
+  z-index: 1;
+  transition: color 0.22s ease;
+}
+.ds-tabs-indicated .ds-tab[aria-selected='true'] {
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-white);
+}
+.ds-tab-badge {
+  margin-inline-start: 0.375rem;
+  border-radius: 9999px;
+  background: var(--color-gold);
+  padding-inline: 0.4rem;
+  color: var(--color-navy);
+  font-size: 0.75rem;
+}
+/* Status pills, outcomes and phone links share one vocabulary. */
+.ds-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--color-mist);
+  color: var(--color-navy);
+}
+.ds-pill[data-status='live'] {
+  background: var(--color-teal);
+  color: var(--color-white);
+}
+.ds-pill[data-status='pending'] {
+  background: var(--color-gold-soft);
+  color: var(--color-warning);
+}
+.ds-pill[data-status='late'] {
+  border: 1px dashed var(--color-warning);
+  background: var(--color-white);
+  color: var(--color-warning);
+}
+.ds-pill[data-status='done'] {
+  background: #e3f3eb;
+  color: var(--color-success);
+}
+.ds-pill[data-status='void'] {
+  color: var(--color-slate);
+  text-decoration: line-through;
+}
+.ds-pill[data-status='queued'] {
+  background: var(--color-gold-soft);
+  color: var(--color-navy);
+}
+.ds-pop {
+  animation: ds-pop 0.2s ease-out;
+}
+@keyframes ds-pop {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+.ds-outcome {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ds-outcome[data-outcome='WIN'] {
+  color: var(--color-success);
+}
+.ds-outcome[data-outcome='LOSS'],
+.ds-outcome[data-outcome='FORFEIT'] {
+  color: var(--color-error);
+}
+.ds-outcome[data-outcome='DRAW'],
+.ds-outcome[data-outcome='PENDING'] {
+  color: var(--color-slate);
+}
+.ds-phone {
+  display: inline-flex;
+  min-height: 44px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--color-teal);
+  font-weight: 700;
+}
+.ds-phone-number {
+  color: var(--color-slate);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+/* Round timer ring. */
+.ds-timer-ring {
+  position: relative;
+  display: inline-grid;
+  width: var(--ring-size, 64px);
+  height: var(--ring-size, 64px);
+  place-items: center;
+}
+.ds-timer-ring svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+.ds-timer-ring circle {
+  fill: none;
+  stroke-width: 3.2;
+}
+.ds-timer-ring .track {
+  stroke: var(--color-mist);
+}
+.ds-timer-ring .bar {
+  stroke: var(--color-teal);
+  stroke-dasharray: 100;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+.ds-timer-ring.overtime .bar {
+  stroke: var(--color-error);
+}
+.ds-timer-ring.overtime {
+  animation: ds-pulse 1.6s ease-in-out infinite;
+}
+.ds-timer-text {
+  font-size: calc(var(--ring-size, 64px) * 0.22);
+  font-weight: 800;
+}
+.ds-timer-ring.overtime .ds-timer-text {
+  color: var(--color-error);
+}
+@keyframes ds-pulse {
+  50% {
+    opacity: 0.6;
+  }
+}
+/* Route transitions (withViewTransitions); header and nav stay put. */
+header {
+  view-transition-name: app-header;
+}
+nav.safe-bottom {
+  view-transition-name: app-bottom-nav;
+}
+::view-transition-old(root) {
+  animation: ds-vt-out 0.18s ease both;
+}
+::view-transition-new(root) {
+  animation: ds-vt-in 0.18s ease both;
+}
+html[dir='rtl']::view-transition-old(root) {
+  animation-name: ds-vt-out-rtl;
+}
+html[dir='rtl']::view-transition-new(root) {
+  animation-name: ds-vt-in-rtl;
+}
+@keyframes ds-vt-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+}
+@keyframes ds-vt-out {
+  to {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+@keyframes ds-vt-in-rtl {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+@keyframes ds-vt-out-rtl {
+  to {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

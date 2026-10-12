@@ -11,7 +11,7 @@ import { isLivesMode, lifeEmoji, teamLives } from '../../core/player/scoring';
 import { LifeLostOverlay } from './life-lost-overlay';
 import { currencyLabel } from '../standings/rank-motion';
 import { StandingsList } from '../standings/standings-list';
-import { CountUp } from '../standings/count-up';
+import { CountUp } from '../../shared/ui/count-up';
 import { PublicMatchCard } from './match-card';
 import { guideNames, localizedName, teamGuides } from './public-helpers';
 import { PublicState } from './public-state';
