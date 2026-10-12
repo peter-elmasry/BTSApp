@@ -29,7 +29,7 @@
     @if (tab() === 'settings') {
       <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="ds-card space-y-4">
         <h2 class="text-lg font-bold">{{ t('manage.settings') }}</h2>
-        @if (setup()?.event?.status === 'LIVE') {
+        @if (setup()?.event?.status === 'LIVE' && scoringMode() !== 'LIVES') {
           <p class="rounded-xl bg-gold-soft p-3" role="status">{{ t('phase6.pointsWarning') }}</p>
         }
         <div class="grid gap-3 sm:grid-cols-2">
@@ -41,6 +41,95 @@
             ><span>{{ t('manage.nameAr') }}</span
             ><input class="ds-control w-full" formControlName="name_ar" dir="rtl"
           /></label>
+        </div>
+        <fieldset
+          class="space-y-3 rounded-xl border border-mist p-3"
+          data-testid="scoring-settings"
+        >
+          <legend class="px-1 font-bold">{{ t('scoring.title') }}</legend>
+          @if (scoringLocked()) {
+            <p class="rounded-xl bg-gold-soft p-3 text-sm" role="status">
+              {{ t('scoring.locked') }}
+            </p>
+          }
+          <div class="grid gap-2 sm:grid-cols-2">
+            <label class="flex min-h-11 items-start gap-3 rounded-xl bg-ivory p-3"
+              ><input
+                class="mt-1"
+                type="radio"
+                value="POINTS"
+                formControlName="scoring_mode"
+              /><span
+                ><span class="block font-bold">{{ t('scoring.points') }}</span
+                ><span class="block text-sm text-slate">{{ t('scoring.pointsHint') }}</span></span
+              ></label
+            >
+            <label class="flex min-h-11 items-start gap-3 rounded-xl bg-ivory p-3"
+              ><input class="mt-1" type="radio" value="LIVES" formControlName="scoring_mode" /><span
+                ><span class="block font-bold">{{ t('scoring.lives') }}</span
+                ><span class="block text-sm text-slate">{{ t('scoring.livesHint') }}</span></span
+              ></label
+            >
+          </div>
+          @if (scoringMode() === 'LIVES') {
+            <div class="grid gap-3 sm:grid-cols-2">
+              <label class="space-y-1"
+                ><span>{{ t('scoring.initialLives') }}</span
+                ><input
+                  class="ds-control w-full"
+                  type="number"
+                  min="1"
+                  max="99"
+                  formControlName="initial_lives"
+                  data-testid="initial-lives"
+              /></label>
+              <label class="space-y-1"
+                ><span>{{ t('scoring.lifeEmoji') }}</span
+                ><input
+                  class="ds-control w-full text-xl"
+                  maxlength="16"
+                  formControlName="life_emoji"
+                  data-testid="life-emoji"
+              /></label>
+            </div>
+            @if (
+              settingsForm.controls.initial_lives.invalid &&
+              settingsForm.controls.initial_lives.touched
+            ) {
+              <p role="alert" class="text-sm text-error">{{ t('scoring.initialLivesError') }}</p>
+            }
+            <div class="space-y-2">
+              <p class="text-sm font-semibold">{{ t('scoring.emojiSuggestions') }}</p>
+              <div class="flex flex-wrap gap-2">
+                @for (emoji of LIFE_EMOJI_SUGGESTIONS; track emoji) {
+                  <button
+                    type="button"
+                    class="min-h-11 min-w-11 rounded-xl border bg-white text-xl"
+                    [class.border-teal]="lifeEmojiValue() === emoji"
+                    [class.border-mist]="lifeEmojiValue() !== emoji"
+                    [attr.aria-pressed]="lifeEmojiValue() === emoji"
+                    [attr.aria-label]="t('scoring.useEmoji', { emoji: emoji })"
+                    (click)="chooseLifeEmoji(emoji)"
+                  >
+                    {{ emoji }}
+                  </button>
+                }
+              </div>
+            </div>
+            @if (initialLivesValue(); as lives) {
+              <div class="flex flex-wrap items-center gap-2 rounded-lg bg-ivory px-3 py-2">
+                <span class="text-sm font-semibold">{{ t('scoring.preview') }}</span>
+                <ds-lives-meter
+                  [lives]="lives"
+                  [initial]="lives"
+                  [emoji]="lifeEmojiValue().trim() || '❤️'"
+                />
+              </div>
+            }
+            <p class="text-sm text-slate">{{ t('scoring.livesRules') }}</p>
+          }
+        </fieldset>
+        <div class="grid gap-3 sm:grid-cols-2" [hidden]="scoringMode() === 'LIVES'">
           <label class="space-y-1"
             ><span>{{ t('manage.pointsWin') }}</span
             ><input class="ds-control w-full" type="number" min="0" formControlName="points_win"
@@ -54,7 +143,10 @@
             ><input class="ds-control w-full" type="number" min="0" formControlName="points_loss"
           /></label>
         </div>
-        <fieldset class="space-y-3 rounded-xl border border-mist p-3">
+        <fieldset
+          class="space-y-3 rounded-xl border border-mist p-3"
+          [hidden]="scoringMode() === 'LIVES'"
+        >
           <legend class="px-1 font-bold">{{ t('manage.currency') }}</legend>
           <div class="grid gap-3 sm:grid-cols-2">
             <label class="space-y-1"

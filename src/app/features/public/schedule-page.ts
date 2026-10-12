@@ -11,6 +11,7 @@ import { DirectionService } from '../../core/i18n/i18n.service';
 import { EventStore } from '../../core/player/event.store';
 import { TeamSelectionStore } from '../../core/player/team-selection.store';
 import { BreakCard } from './break-card';
+import { LifeLostOverlay } from './life-lost-overlay';
 import { PublicMatchCard } from './match-card';
 import { localizedName } from './public-helpers';
 import { PublicState } from './public-state';
@@ -26,7 +27,7 @@ import {
 type ScheduleTab = 'myTeam' | 'byRound' | 'byGame';
 @Component({
   selector: 'app-schedule-page',
-  imports: [TranslocoDirective, PublicMatchCard, BreakCard, PublicState],
+  imports: [TranslocoDirective, PublicMatchCard, BreakCard, PublicState, LifeLostOverlay],
   providers: [TeamViewState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './schedule-page.html',

@@ -1,0 +1,22 @@
+<span
+  *transloco="let t"
+  class="inline-flex flex-wrap items-center gap-1"
+  role="img"
+  [attr.aria-label]="t('scoring.livesLeft', { n: lives() })"
+  data-testid="lives-meter"
+>
+  @if (icons(); as slots) {
+    @for (alive of slots; track $index) {
+      <span
+        aria-hidden="true"
+        class="text-xl leading-none transition-opacity"
+        [class.opacity-25]="!alive"
+        [class.grayscale]="!alive"
+        >{{ emoji() }}</span
+      >
+    }
+  } @else {
+    <span aria-hidden="true" class="text-xl leading-none">{{ emoji() }}</span>
+    <span aria-hidden="true" class="font-extrabold tabular">× {{ lives() }}</span>
+  }
+</span>

@@ -28,6 +28,8 @@ import {
   TEAM_HEADERS,
   TEAM_PALETTE,
   TEMPLATE_VERSION,
+  ACCEPTED_TEMPLATE_VERSIONS,
+  SCORING_LABELS,
   YES,
   eventRow,
 } from './template-catalog';
@@ -67,9 +69,19 @@ const eventDefaults: Record<string, unknown> = {
   event_bonus_cap: null,
   event_penalty_cap: null,
   leaderboard_public: false,
+  scoring_mode: 'POINTS',
+  initial_lives: null,
+  life_emoji: '❤️',
 };
+const optionalEventKeys = new Set([
+  'name_ar',
+  'leaderboard_public',
+  'scoring_mode',
+  'initial_lives',
+  'life_emoji',
+]);
 const requiredEventKeys = Object.keys(eventDefaults).filter(
-  (key) => !key.endsWith('_cap') && key !== 'name_ar' && key !== 'leaderboard_public',
+  (key) => !key.endsWith('_cap') && !optionalEventKeys.has(key),
 );
 const normalizeHeader = (value: unknown) =>
   String(value ?? '')
@@ -91,6 +103,7 @@ const numericColumns = new Set([
   'match_penalty_cap',
   'event_bonus_cap',
   'event_penalty_cap',
+  'initial_lives',
 ]);
 
 // ------------------------------------------------------------------ styling helpers
@@ -414,6 +427,10 @@ function prefill(setup: ImportValidationContext): Prefill {
       event_bonus_cap: event['event_bonus_cap'] ?? null,
       event_penalty_cap: event['event_penalty_cap'] ?? null,
       leaderboard_public: event['leaderboard_public'] === true ? YES : NO,
+      scoring_mode:
+        event['scoring_mode'] === 'LIVES' ? SCORING_LABELS.LIVES : SCORING_LABELS.POINTS,
+      initial_lives: event['initial_lives'] ?? null,
+      life_emoji: event['life_emoji'] ?? '❤️',
       opening_game: openingMatch ? (gameName.get(text(openingMatch['game_id'])) ?? '') : '',
       opening_duration_min: opening?.['duration_min'] ?? null,
     },
@@ -643,6 +660,15 @@ export async function createImportTemplate(
   ])
     whole(ev, eventRow(key), eventRow(key), 2, 0, 999);
   whole(ev, eventRow('opening_duration_min'), eventRow('opening_duration_min'), 2, 1, 600);
+  whole(ev, eventRow('initial_lives'), eventRow('initial_lives'), 2, 1, 99);
+  list(
+    ev,
+    eventRow('scoring_mode'),
+    eventRow('scoring_mode'),
+    2,
+    `"${SCORING_LABELS.POINTS},${SCORING_LABELS.LIVES}"`,
+    'نقط / قلوب',
+  );
   list(
     ev,
     eventRow('leaderboard_public'),
@@ -1120,7 +1146,7 @@ export async function parseImportWorkbook(
     };
   }
   const meta = book.getWorksheet(SHEETS.meta);
-  if (!meta || text(meta.getCell(1, 2).value) !== TEMPLATE_VERSION)
+  if (!meta || !ACCEPTED_TEMPLATE_VERSIONS.includes(text(meta.getCell(1, 2).value)))
     return { payload, errors: [{ sheet: 'Workbook', row: 0, column: '', code: 'OLD_TEMPLATE' }] };
   const sheets = {
     event: book.getWorksheet(SHEETS.event),
@@ -1158,6 +1184,7 @@ export async function parseImportWorkbook(
       typeof value === 'string' &&
       /^\d+$/.test(value) &&
       key !== 'name' &&
+      key !== 'life_emoji' &&
       !key.startsWith('currency')
     )
       value = Number(value);
@@ -1168,6 +1195,16 @@ export async function parseImportWorkbook(
       continue;
     }
     if (key === 'leaderboard_public') value = value === YES ? true : value === NO ? false : value;
+    // Blank scoring cells keep the event's current scoring settings.
+    if (['scoring_mode', 'initial_lives', 'life_emoji'].includes(key) && value === null) continue;
+    if (key === 'scoring_mode')
+      value =
+        value === SCORING_LABELS.LIVES
+          ? 'LIVES'
+          : value === SCORING_LABELS.POINTS
+            ? 'POINTS'
+            : text(value).toUpperCase();
+    if (key === 'life_emoji') value = text(value);
     if (key === 'opening_game') {
       openingGame = text(value);
       continue;
@@ -1431,6 +1468,12 @@ export function validateImportPayload(
       add('Event', record, key, 'INVALID_TEXT');
     if (key === 'leaderboard_public' && !blank(value) && typeof value !== 'boolean')
       add('Event', record, key, 'INVALID_BOOLEAN');
+    if (key === 'scoring_mode' && value !== 'POINTS' && value !== 'LIVES')
+      add('Event', record, key, 'INVALID_TEXT');
+    if (key === 'initial_lives' && !integer(value, 1, 99))
+      add('Event', record, key, 'INVALID_NUMBER');
+    if (key === 'life_emoji' && (typeof value !== 'string' || !value || value.length > 16))
+      add('Event', record, key, 'INVALID_TEXT');
   }
   for (const name of Object.keys(columns) as (keyof typeof columns)[]) {
     const records =

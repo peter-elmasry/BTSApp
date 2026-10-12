@@ -6,6 +6,9 @@ import { EventStore } from '../../core/player/event.store';
 import { TeamSelectionStore } from '../../core/player/team-selection.store';
 import { StandingsReader } from '../../core/standings/standings-reader';
 import { DsAvatar } from '../../shared/ui/avatar';
+import { DsLivesMeter } from '../../shared/ui/lives-meter';
+import { isLivesMode, lifeEmoji, teamLives } from '../../core/player/scoring';
+import { LifeLostOverlay } from './life-lost-overlay';
 import { currencyLabel } from '../standings/rank-motion';
 import { StandingsList } from '../standings/standings-list';
 import { CountUp } from '../standings/count-up';
@@ -24,6 +27,8 @@ import { TeamViewState } from './team-view-state';
     PublicState,
     StandingsList,
     CountUp,
+    DsLivesMeter,
+    LifeLostOverlay,
   ],
   providers: [TeamViewState, StandingsReader],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +45,15 @@ export class HomePage {
     this.standings.rows().find((row) => row.team.code === this.selection.selectedCode()),
   );
   readonly preview = computed(() => this.standings.rows().slice(0, 5));
+  readonly livesMode = computed(() => isLivesMode(this.store.event()));
+  readonly emoji = computed(() => lifeEmoji(this.store.event()));
+  /** Own lives come from the team's own results, so they show even when standings are hidden. */
+  readonly lives = computed(() => {
+    const view = this.teamView.view();
+    const code = this.selection.selectedCode();
+    if (!view || !code) return null;
+    return teamLives(this.store.event(), view.matches, view.adjustments, code);
+  });
   readonly name = localizedName;
   readonly guideNames = guideNames;
   readonly teamGuides = teamGuides;

@@ -19,6 +19,10 @@ export interface PublicEvent extends LocalizedName {
   currency_ar_one: string;
   currency_ar_two: string;
   currency_ar_plural: string;
+  /** Scoring mode (D038); optional so snapshots cached before Phase 8 still load. */
+  scoring_mode?: 'POINTS' | 'LIVES';
+  initial_lives?: number | null;
+  life_emoji?: string;
 }
 export interface PublicGuide {
   name_en: string;
