@@ -5,7 +5,7 @@ import { DirectionService } from '../../core/i18n/i18n.service';
 import { EventStore } from '../../core/player/event.store';
 import type { PublicMatch } from '../../core/player/public-types';
 import { DsAvatar } from '../../shared/ui/avatar';
-import { gameImage, localizedLocation, localizedName } from './public-helpers';
+import { gameImage, localizedLocation, localizedName, refereeNames } from './public-helpers';
 
 @Component({
   selector: 'app-public-match-card',
@@ -33,4 +33,5 @@ export class PublicMatchCard {
   readonly name = localizedName;
   readonly location = localizedLocation;
   readonly image = gameImage;
+  readonly referees = refereeNames;
 }

@@ -36,6 +36,11 @@
       @if (location(item, direction.language())) {
         <p class="text-sm text-slate">{{ location(item, direction.language()) }}</p>
       }
+      @if (referees(item, direction.language()); as names) {
+        <p class="text-sm text-slate">
+          {{ t(item.referees!.length > 1 ? 'player.referees' : 'player.referee') }}: {{ names }}
+        </p>
+      }
     }
     <ul class="space-y-2">
       @for (participant of teams(); track participant.team_id) {

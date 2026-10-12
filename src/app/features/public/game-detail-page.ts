@@ -5,7 +5,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { EventStore } from '../../core/player/event.store';
 import { PublicMatchCard } from './match-card';
-import { gameImage, localizedLocation, localizedName } from './public-helpers';
+import { gameImage, localizedLocation, localizedName, refereeNames } from './public-helpers';
 import { PublicState } from './public-state';
 
 @Component({
@@ -38,6 +38,7 @@ export class GameDetailPage {
   readonly name = localizedName;
   readonly location = localizedLocation;
   readonly image = gameImage;
+  readonly referees = refereeNames;
   constructor() {
     void this.store.initialize();
   }

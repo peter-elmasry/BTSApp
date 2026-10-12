@@ -53,6 +53,9 @@ for (const lang of ['en', 'ar']) {
         exact: true,
       }),
     ).toBeVisible();
+    await expect(page.getByTestId('game-referees')).toContainText(
+      `${labels.player.referee}: ${lang === 'ar' ? 'مينا الحكم' : 'Mina Referee'}`,
+    );
     await page.goto('/home');
     await page.getByRole('button', { name: new RegExp('^' + labels['team.switch']) }).click();
     await expect(page.locator('dialog')).toBeVisible();

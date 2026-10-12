@@ -20,7 +20,18 @@
         <div class="space-y-2 p-5">
           <h2 class="text-2xl font-extrabold">{{ name(item, direction.language()) }}</h2>
           @if (location(item, direction.language())) {
-            <p class="text-slate">{{ location(item, direction.language()) }}</p>
+            <p class="text-slate">
+              <span class="font-semibold">{{ t('player.location') }}:</span>
+              {{ location(item, direction.language()) }}
+            </p>
+          }
+          @if (referees(item, direction.language()); as names) {
+            <p class="text-slate" data-testid="game-referees">
+              <span class="font-semibold"
+                >{{ t(item.referees!.length > 1 ? 'player.referees' : 'player.referee') }}:</span
+              >
+              {{ names }}
+            </p>
           }
         </div>
       </section>

@@ -40,6 +40,8 @@ export interface PublicGame extends LocalizedName {
   location_en: string | null;
   location_ar: string | null;
   image_path: string | null;
+  /** Names of the active referees assigned to this game (names only). */
+  referees?: LocalizedName[];
 }
 export interface PublicRound {
   id: string;

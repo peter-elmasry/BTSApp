@@ -56,6 +56,7 @@ export const bootstrap: PublicBootstrap = {
       location_en: 'Main court',
       location_ar: 'الملعب الرئيسي',
       image_path: null,
+      referees: [{ name_en: 'Mina Referee', name_ar: 'مينا الحكم' }],
     },
   ],
   rounds: [
