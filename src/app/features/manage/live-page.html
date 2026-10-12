@@ -1,26 +1,12 @@
 <div *transloco="let t" class="space-y-5">
-  <header class="space-y-2">
-    <div class="flex flex-wrap items-center justify-between gap-3">
+  <header class="space-y-3">
+    <div class="ds-page-header">
       <h1 class="text-2xl font-extrabold">{{ t('live.title') }}</h1>
       <button class="ds-button ghost" [disabled]="reader.loading()" (click)="reader.refresh()">
         {{ t('player.refresh') }}
       </button>
     </div>
-    <a
-      class="inline-flex min-h-11 items-center font-semibold text-teal"
-      [routerLink]="['/manage', eventId(), 'standings']"
-      >{{ t('phase6.title') }}</a
-    >
-    <a
-      class="inline-flex min-h-11 items-center font-semibold text-teal"
-      [routerLink]="['/manage', eventId(), 'setup']"
-      >{{ t('manage.setupTitle') }}</a
-    >
-    <a
-      class="inline-flex min-h-11 items-center font-semibold text-teal"
-      [routerLink]="['/manage', eventId(), 'audit']"
-      >{{ t('audit.title') }}</a
-    >
+    <app-manage-nav [eventId]="eventId()" />
   </header>
   @if (notice()) {
     <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
@@ -37,12 +23,10 @@
     </section>
   }
   @if (reader.data(); as data) {
-    <nav class="flex gap-2 overflow-x-auto pb-2" [attr.aria-label]="t('live.rounds')">
+    <nav class="ds-tabs sub" [attr.aria-label]="t('live.rounds')">
       @for (item of rounds(); track item.id) {
         <button
-          class="ds-button shrink-0"
-          [class.secondary]="selectedId() === item.id"
-          [class.ghost]="selectedId() !== item.id"
+          class="ds-tab"
           [attr.aria-pressed]="selectedId() === item.id"
           (click)="selectRound(item.id)"
         >
@@ -55,16 +39,24 @@
       }
     </nav>
     @if (round(); as item) {
-      <section class="space-y-4 rounded-card bg-white p-4 shadow-card">
-        <h2 class="text-xl font-bold">
-          {{
-            name(item, direction.language()) ||
-              (item.type === 'OPENING'
-                ? t('round.opening')
-                : t('player.roundNumber', { n: item.number }))
-          }}
-        </h2>
-        <p class="font-semibold">{{ t('live.roundStatus.' + item.status) }}</p>
+      <section class="ds-card space-y-4">
+        <div class="ds-page-header">
+          <h2 class="text-xl font-bold">
+            {{
+              name(item, direction.language()) ||
+                (item.type === 'OPENING'
+                  ? t('round.opening')
+                  : t('player.roundNumber', { n: item.number }))
+            }}
+          </h2>
+          <span
+            class="rounded-full px-3 py-1 text-sm font-bold"
+            [class.bg-teal]="item.status === 'ACTIVE'"
+            [class.text-white]="item.status === 'ACTIVE'"
+            [class.bg-ivory]="item.status !== 'ACTIVE'"
+            >{{ t('live.roundStatus.' + item.status) }}</span
+          >
+        </div>
         @if (canAdmin()) {
           @if (item.status === 'DRAFT') {
             <button
@@ -75,7 +67,7 @@
               {{ t('admin.round.start') }}
             </button>
           } @else if (item.status === 'ACTIVE') {
-            <div class="flex flex-wrap gap-2">
+            <div class="ds-actions">
               <button
                 class="ds-button ghost"
                 [disabled]="saving()"
@@ -146,9 +138,9 @@
       <section class="space-y-3">
         <h2 class="text-xl font-bold">{{ t('live.roundResults') }}</h2>
         @for (match of matches(); track match.id) {
-          <article class="space-y-4 rounded-card bg-white p-4 shadow-card">
-            <app-live-match-summary [snapshot]="data" [match]="match" />
-            <div class="flex flex-wrap gap-2">
+          <article class="ds-card space-y-4">
+            <app-live-match-summary class="block" [snapshot]="data" [match]="match" />
+            <div class="ds-actions">
               <a
                 class="ds-button primary inline-flex items-center"
                 [routerLink]="['/ref/match', match.id]"
@@ -199,10 +191,10 @@
         <p role="status" class="font-bold">
           {{ t('live.overtime', { time: elapsed, n: activePending() }) }}
         </p>
-        <button class="ds-button ghost bg-white" (click)="selectActive()">
-          {{ t('live.showActiveRound') }}
-        </button>
-        <div class="flex flex-wrap gap-2">
+        <div class="ds-actions">
+          <button class="ds-button ghost bg-white" (click)="selectActive()">
+            {{ t('live.showActiveRound') }}
+          </button>
           <button
             class="ds-button ghost bg-white"
             [disabled]="saving()"
@@ -250,18 +242,22 @@
                 ></textarea>
               </label>
             }
-            <button
-              class="ds-button primary"
-              data-testid="confirm-live-action"
-              [disabled]="saving() || (needsReason() && reason.invalid)"
-              (click)="confirmAction()"
-            >
-              {{ t(saving() ? 'live.saving' : 'live.confirm') }}
-            </button>
           }
-          <button class="ds-button ghost" [disabled]="saving()" (click)="action.set(null)">
-            {{ t('common.cancel') }}
-          </button>
+          <div class="ds-actions">
+            @if (!(item.name === 'close_round' && pending().length)) {
+              <button
+                class="ds-button primary"
+                data-testid="confirm-live-action"
+                [disabled]="saving() || (needsReason() && reason.invalid)"
+                (click)="confirmAction()"
+              >
+                {{ t(saving() ? 'live.saving' : 'live.confirm') }}
+              </button>
+            }
+            <button class="ds-button ghost" [disabled]="saving()" (click)="action.set(null)">
+              {{ t('common.cancel') }}
+            </button>
+          </div>
         </div></ds-bottom-sheet
       >
     }

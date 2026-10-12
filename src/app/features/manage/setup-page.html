@@ -1,29 +1,10 @@
-<main *transloco="let t" class="space-y-5">
-  <header class="space-y-1">
+<div *transloco="let t" class="space-y-5">
+  <header class="space-y-3">
     <h1 class="text-2xl font-extrabold">{{ t('manage.setupTitle') }}</h1>
-    <a
-      class="inline-flex min-h-11 items-center font-semibold text-teal underline"
-      [routerLink]="['/manage', eventId, 'standings']"
-      >{{ t('phase6.title') }}</a
-    >
-    <a
-      class="inline-flex min-h-11 items-center font-semibold text-teal underline"
-      [routerLink]="['/manage', eventId, 'live']"
-      >{{ t('live.title') }}</a
-    >
-    <a
-      class="inline-flex min-h-11 items-center font-semibold text-teal underline"
-      [routerLink]="['/manage', eventId, 'import']"
-      >{{ t('import.title') }}</a
-    >
-    @if (setup(); as data) {
-      <p class="text-sm text-slate">{{ label(data.event) }} · {{ data.event.code }}</p>
-    }
-    <a
-      class="inline-flex min-h-11 items-center font-semibold text-teal"
-      [routerLink]="['/manage', eventId, 'audit']"
-      >{{ t('audit.title') }}</a
-    >
+    <app-manage-nav
+      [eventId]="eventId"
+      [eventLabel]="setup() ? label(setup()!.event) + ' · ' + setup()!.event.code : ''"
+    />
   </header>
 
   @if (notice()) {
@@ -32,14 +13,12 @@
   @if (loading()) {
     <p role="status" class="rounded-card bg-white p-4">{{ t('manage.loading') }}</p>
   } @else {
-    <nav class="flex gap-2 overflow-x-auto pb-1" [attr.aria-label]="t('manage.setupNavigation')">
+    <nav class="ds-tabs sub" [attr.aria-label]="t('manage.setupNavigation')">
       @for (item of tabs; track item) {
         <button
           type="button"
-          class="min-h-11 shrink-0 rounded-xl px-3 font-semibold"
-          [class.bg-navy]="tab() === item"
-          [class.text-white]="tab() === item"
-          [class.bg-white]="tab() !== item"
+          class="ds-tab"
+          [attr.aria-pressed]="tab() === item"
           (click)="tab.set(item)"
         >
           {{ t('manage.tab.' + item) }}
@@ -48,11 +27,7 @@
     </nav>
 
     @if (tab() === 'settings') {
-      <form
-        [formGroup]="settingsForm"
-        (ngSubmit)="saveSettings()"
-        class="space-y-4 rounded-card bg-white p-4 shadow-card"
-      >
+      <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="ds-card space-y-4">
         <h2 class="text-lg font-bold">{{ t('manage.settings') }}</h2>
         @if (setup()?.event?.status === 'LIVE') {
           <p class="rounded-xl bg-gold-soft p-3" role="status">{{ t('phase6.pointsWarning') }}</p>
@@ -167,11 +142,7 @@
             }}</label
           >
         </div>
-        <button
-          class="min-h-11 rounded-xl bg-gold px-4 font-bold"
-          type="submit"
-          [disabled]="saving()"
-        >
+        <button class="ds-button primary" type="submit" [disabled]="saving()">
           {{ t('common.save') }}
         </button>
       </form>
@@ -182,7 +153,7 @@
         <form
           [formGroup]="teamForm"
           (ngSubmit)="saveTeam()"
-          class="grid gap-3 rounded-card bg-white p-4 shadow-card sm:grid-cols-2"
+          class="ds-card grid gap-3 sm:grid-cols-2"
         >
           <h2 class="text-lg font-bold sm:col-span-2">
             {{ editingTeam() ? t('manage.editTeam') : t('manage.addTeam') }}
@@ -197,11 +168,11 @@
             </p>
           }
           <label class="space-y-1"
-            ><span>{{ t('manage.nameEn') }}</span
+            ><span>{{ t('manage.entityNameEn') }}</span
             ><input class="ds-control w-full" maxlength="80" formControlName="name_en"
           /></label>
           <label class="space-y-1"
-            ><span>{{ t('manage.nameAr') }}</span
+            ><span>{{ t('manage.entityNameAr') }}</span
             ><input class="ds-control w-full" formControlName="name_ar" dir="rtl"
           /></label>
           <label class="space-y-1"
@@ -216,12 +187,12 @@
             ><span>{{ t('manage.color') }}</span
             ><input class="ds-control h-11 w-full" type="color" formControlName="color_hex"
           /></label>
-          <div class="flex gap-2 sm:col-span-2">
-            <button class="min-h-11 rounded-xl bg-gold px-4 font-bold" [disabled]="saving()">
+          <div class="ds-actions sm:col-span-2">
+            <button class="ds-button primary" [disabled]="saving()">
               {{ t('common.save') }}
             </button>
             @if (editingTeam()) {
-              <button type="button" class="min-h-11 rounded-xl px-4" (click)="editTeam()">
+              <button type="button" class="ds-button ghost" (click)="editTeam()">
                 {{ t('common.cancel') }}
               </button>
             }
@@ -229,31 +200,24 @@
         </form>
         <div class="grid gap-3 sm:grid-cols-2">
           @for (team of teams(); track team.id) {
-            <article class="flex items-center gap-3 rounded-card bg-white p-4 shadow-card">
+            <article class="ds-card flex flex-wrap items-center gap-3">
               <img
-                class="h-12 w-12 rounded-full"
+                class="h-12 w-12 shrink-0 rounded-full border-4"
+                [style.borderColor]="team.color_hex"
                 [src]="'/avatars/' + team.avatar_key + '.svg'"
                 [alt]="team.avatar_key"
               />
-              <div class="min-w-0 flex-1">
-                <h3 class="font-bold">
-                  {{ label(team) }} <span class="text-slate">({{ team.code }})</span>
-                </h3>
+              <h3 class="min-w-0 flex-1 break-words font-bold">
+                {{ label(team) }} <span class="text-slate" dir="ltr">({{ team.code }})</span>
+              </h3>
+              <div class="ds-actions ms-auto">
+                <button type="button" class="ds-button ghost sm" (click)="editTeam(team)">
+                  {{ t('common.edit') }}
+                </button>
+                <button type="button" class="ds-button ghost-danger sm" (click)="deleteTeam(team)">
+                  {{ t('common.delete') }}
+                </button>
               </div>
-              <span
-                class="h-7 w-7 rounded-full border"
-                [style.backgroundColor]="team.color_hex"
-              ></span>
-              <button type="button" class="min-h-11 rounded-lg px-2" (click)="editTeam(team)">
-                {{ t('common.edit') }}
-              </button>
-              <button
-                type="button"
-                class="min-h-11 rounded-lg px-2 text-error"
-                (click)="deleteTeam(team)"
-              >
-                {{ t('common.delete') }}
-              </button>
             </article>
           } @empty {
             <p class="rounded-card bg-white p-4">{{ t('manage.noTeams') }}</p>
@@ -267,7 +231,7 @@
         <form
           [formGroup]="gameForm"
           (ngSubmit)="saveGame()"
-          class="grid gap-3 rounded-card bg-white p-4 shadow-card sm:grid-cols-2"
+          class="ds-card grid gap-3 sm:grid-cols-2"
         >
           <h2 class="text-lg font-bold sm:col-span-2">
             {{ editingGame() ? t('manage.editGame') : t('manage.addGame') }}
@@ -282,11 +246,11 @@
             </p>
           }
           <label class="space-y-1"
-            ><span>{{ t('manage.nameEn') }}</span
+            ><span>{{ t('manage.entityNameEn') }}</span
             ><input class="ds-control w-full" maxlength="100" formControlName="name_en"
           /></label>
           <label class="space-y-1"
-            ><span>{{ t('manage.nameAr') }}</span
+            ><span>{{ t('manage.entityNameAr') }}</span
             ><input class="ds-control w-full" formControlName="name_ar" dir="rtl"
           /></label>
           <label class="space-y-1"
@@ -327,15 +291,12 @@
               }
             }
           </div>
-          <div class="flex gap-2 sm:col-span-2">
-            <button
-              class="min-h-11 rounded-xl bg-gold px-4 font-bold"
-              [disabled]="saving() || imageProcessing()"
-            >
+          <div class="ds-actions sm:col-span-2">
+            <button class="ds-button primary" [disabled]="saving() || imageProcessing()">
               {{ t('common.save') }}
             </button>
             @if (editingGame()) {
-              <button type="button" class="min-h-11 rounded-xl px-4" (click)="editGame()">
+              <button type="button" class="ds-button ghost" (click)="editGame()">
                 {{ t('common.cancel') }}
               </button>
             }
@@ -343,30 +304,27 @@
         </form>
         <div class="grid gap-3 sm:grid-cols-2">
           @for (game of games(); track game.id) {
-            <article
-              class="flex items-center justify-between gap-3 rounded-card bg-white p-4 shadow-card"
-            >
+            <article class="ds-card flex flex-wrap items-center gap-3">
               @if (game.image_path) {
                 <img
-                  class="h-16 w-20 rounded-xl object-cover"
+                  class="h-16 w-20 shrink-0 rounded-xl object-cover"
                   [src]="gameImageUrl(game.image_path)"
                   [alt]="t('manage.gameImage')"
                 />
               }
-              <div class="flex-1">
-                <h3 class="font-bold">
-                  {{ label(game) }} <span class="text-slate">({{ game.code }})</span>
+              <div class="min-w-0 flex-1">
+                <h3 class="break-words font-bold">
+                  {{ label(game) }} <span class="text-slate" dir="ltr">({{ game.code }})</span>
                 </h3>
-                <p class="text-sm text-slate">{{ label(game, 'location') }}</p>
+                @if (label(game, 'location')) {
+                  <p class="text-sm text-slate">{{ label(game, 'location') }}</p>
+                }
               </div>
-              <div class="flex gap-1">
-                <button type="button" class="min-h-11 rounded-lg px-2" (click)="editGame(game)">
-                  {{ t('common.edit') }}</button
-                ><button
-                  type="button"
-                  class="min-h-11 rounded-lg px-2 text-error"
-                  (click)="deleteGame(game)"
-                >
+              <div class="ds-actions ms-auto">
+                <button type="button" class="ds-button ghost sm" (click)="editGame(game)">
+                  {{ t('common.edit') }}
+                </button>
+                <button type="button" class="ds-button ghost-danger sm" (click)="deleteGame(game)">
                   {{ t('common.delete') }}
                 </button>
               </div>
@@ -383,7 +341,7 @@
         <form
           [formGroup]="roundForm"
           (ngSubmit)="saveRound()"
-          class="grid gap-3 rounded-card bg-white p-4 shadow-card sm:grid-cols-2"
+          class="ds-card grid gap-3 sm:grid-cols-2"
         >
           <h2 class="text-lg font-bold sm:col-span-2">
             {{ editingRound() ? t('manage.editRound') : t('manage.addRound') }}
@@ -404,11 +362,11 @@
             </select></label
           >
           <label class="space-y-1"
-            ><span>{{ t('manage.nameEn') }}</span
+            ><span>{{ t('manage.entityNameEn') }}</span
             ><input class="ds-control w-full" maxlength="100" formControlName="name_en"
           /></label>
           <label class="space-y-1"
-            ><span>{{ t('manage.nameAr') }}</span
+            ><span>{{ t('manage.entityNameAr') }}</span
             ><input class="ds-control w-full" formControlName="name_ar" dir="rtl"
           /></label>
           <label class="space-y-1"
@@ -420,22 +378,18 @@
               max="600"
               formControlName="duration_min"
           /></label>
-          <div class="flex gap-2 sm:col-span-2">
-            <button class="min-h-11 rounded-xl bg-gold px-4 font-bold" [disabled]="saving()">
+          <div class="ds-actions sm:col-span-2">
+            <button class="ds-button primary" [disabled]="saving()">
               {{ t('common.save') }}
             </button>
             @if (editingRound()) {
-              <button type="button" class="min-h-11 rounded-xl px-4" (click)="editRound()">
+              <button type="button" class="ds-button ghost" (click)="editRound()">
                 {{ t('common.cancel') }}
               </button>
             }
           </div>
         </form>
-        <form
-          [formGroup]="matchForm"
-          (ngSubmit)="saveMatch()"
-          class="space-y-3 rounded-card bg-white p-4 shadow-card"
-        >
+        <form [formGroup]="matchForm" (ngSubmit)="saveMatch()" class="ds-card space-y-3">
           <h2 class="text-lg font-bold">{{ t('manage.matchBuilder') }}</h2>
           <div class="grid gap-3 sm:grid-cols-2">
             <label class="space-y-1"
@@ -484,28 +438,31 @@
             }
           </div>
           @if (!isOpeningSelected()) {
-            <button class="min-h-11 rounded-xl bg-gold px-4 font-bold" [disabled]="saving()">
+            <button class="ds-button primary" [disabled]="saving()">
               {{ t('manage.addMatch') }}
             </button>
           }
         </form>
         @for (round of rounds(); track round.id) {
-          <article class="space-y-3 rounded-card bg-white p-4 shadow-card">
+          <article class="ds-card space-y-3">
             <div class="flex flex-wrap items-center justify-between gap-2">
-              <div>
+              <div class="min-w-0 flex-1">
                 <h3 class="font-bold">
                   {{ t('manage.round') }} {{ round.number }} · {{ t(roundLabel(round.type)) }}
                 </h3>
                 <p class="text-sm text-slate">
-                  {{ round.duration_min }} {{ t('manage.minutes') }} · {{ label(round) }}
+                  {{ round.duration_min }} {{ t('manage.minutes') }}
+                  @if (label(round)) {
+                    · {{ label(round) }}
+                  }
                 </p>
               </div>
-              <div class="flex gap-1">
-                <button type="button" class="min-h-11 rounded-lg px-2" (click)="editRound(round)">
+              <div class="ds-actions">
+                <button type="button" class="ds-button ghost sm" (click)="editRound(round)">
                   {{ t('common.edit') }}</button
                 ><button
                   type="button"
-                  class="min-h-11 rounded-lg px-2 text-error"
+                  class="ds-button ghost-danger sm"
                   (click)="deleteRound(round)"
                 >
                   {{ t('common.delete') }}
@@ -529,13 +486,13 @@
               </div>
             }
             @for (match of round.matches ?? []; track match.id) {
-              <div
-                class="flex items-center justify-between gap-2 rounded-xl border border-mist p-3"
-              >
-                <span>{{ roundGameName(match) }} · {{ matchTeams(match).join(' / ') }}</span
+              <div class="flex flex-wrap items-center gap-2 rounded-xl border border-mist p-3">
+                <span class="min-w-0 flex-1 break-words"
+                  >{{ roundGameName(match) }} ·
+                  <span dir="ltr">{{ matchTeams(match).join(' / ') }}</span></span
                 ><button
                   type="button"
-                  class="min-h-11 px-2 text-error"
+                  class="ds-button ghost-danger sm"
                   (click)="deleteMatch(match)"
                 >
                   {{ t('common.delete') }}
@@ -554,7 +511,7 @@
         <form
           [formGroup]="staffForm"
           (ngSubmit)="assignStaff()"
-          class="grid gap-3 rounded-card bg-white p-4 shadow-card sm:grid-cols-3"
+          class="ds-card grid gap-3 sm:grid-cols-3"
         >
           <h2 class="text-lg font-bold sm:col-span-3">{{ t('manage.assignStaff') }}</h2>
           <label class="space-y-1"
@@ -598,31 +555,32 @@
               <p role="alert" class="text-sm text-error">{{ t('manage.guideTeamRequired') }}</p>
             }
           }
-          <button
-            class="min-h-11 rounded-xl bg-gold px-4 font-bold sm:col-span-3"
-            [disabled]="saving()"
-          >
+          <button class="ds-button primary sm:col-span-3" [disabled]="saving()">
             {{ t('manage.assign') }}
           </button>
         </form>
         @for (person of staff(); track person.member_id + person.role) {
-          <article class="space-y-3 rounded-card bg-white p-4 shadow-card">
-            <div class="flex items-center justify-between gap-2">
-              <div>
-                <h3 class="font-bold">{{ label(person, 'full_name') || person.username }}</h3>
+          <article class="ds-card space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="min-w-0 flex-1">
+                <h3 class="break-words font-bold">
+                  {{ label(person, 'full_name') || person.username }}
+                </h3>
                 <p class="text-sm text-slate">
                   {{
                     person.role === 'EVENT_ADMIN'
                       ? t('manage.eventAdmin')
                       : t(person.role === 'REFEREE' ? 'manage.referee' : 'manage.guide')
                   }}
-                  · {{ label(person, 'team_name') }}
+                  @if (label(person, 'team_name')) {
+                    · {{ label(person, 'team_name') }}
+                  }
                 </p>
               </div>
               @if (person.role !== 'EVENT_ADMIN' || isOwner()) {
                 <button
                   type="button"
-                  class="min-h-11 rounded-lg px-2 text-error"
+                  class="ds-button ghost-danger sm"
                   (click)="removeStaff(person)"
                 >
                   {{ t('common.remove') }}
@@ -656,7 +614,7 @@
                 </div>
                 <button
                   type="button"
-                  class="min-h-11 rounded-xl border border-mist px-3"
+                  class="ds-button ghost sm"
                   (click)="saveRefereeGames(person.member_id)"
                 >
                   {{ t('common.save') }}
@@ -670,4 +628,4 @@
       </section>
     }
   }
-</main>
+</div>

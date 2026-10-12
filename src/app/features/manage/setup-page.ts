@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthStore } from '../../core/auth/auth.store';
 import { supabase } from '../../core/supabase/client';
@@ -19,6 +19,7 @@ import { currencyLabel } from '../standings/rank-motion';
 import { prepareGameImage } from './game-image';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { entityLabel } from '../../core/i18n/entity-label';
+import { ManageNav } from './manage-nav';
 
 type Row = any;
 type SetupData = {
@@ -36,7 +37,7 @@ type SetupTab = 'settings' | 'teams' | 'games' | 'rounds' | 'staff';
 
 @Component({
   selector: 'app-event-setup-page',
-  imports: [CommonModule, ReactiveFormsModule, TranslocoDirective, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, TranslocoDirective, ManageNav],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './setup-page.html',
 })

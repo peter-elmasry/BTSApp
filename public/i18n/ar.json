@@ -147,7 +147,17 @@
     "team": "الفريق",
     "assign": "تعيين",
     "assignedGames": "الألعاب المعيّنة",
-    "noStaff": "مفيش أعضاء في الفريق المنظم لسه."
+    "noStaff": "مفيش أعضاء في الفريق المنظم لسه.",
+    "nav": {
+      "label": "أقسام إدارة الإيفنت",
+      "live": "المباشر",
+      "setup": "الإعداد",
+      "standings": "الترتيب",
+      "import": "الاستيراد",
+      "audit": "سجل التغييرات"
+    },
+    "entityNameEn": "الاسم (إنجليزي)",
+    "entityNameAr": "الاسم (عربي)"
   },
   "import": {
     "intro": "ارفع ملف Excel، وراجع الصفوف، ثم أكّد الاستيراد.",
@@ -303,7 +313,10 @@
     "chooseMemberError": "اختار عضو الأول.",
     "assign": "عيّن",
     "removeAdmin": "إلغاء مسؤول الإيفنت",
-    "openSetup": "افتح إعداد الإيفنت"
+    "openSetup": "افتح إعداد الإيفنت",
+    "passwordFor": "باسورد جديد لـ {{name}}",
+    "passwordMismatch": "الباسوردين مش زي بعض.",
+    "passwordTooShort": "استخدم 12 حرف على الأقل."
   },
   "errors.REQUIRED": "اكتب الاسم الأول",
   "foundation": {

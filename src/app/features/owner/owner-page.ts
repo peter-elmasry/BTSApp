@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { supabase } from '../../core/supabase/client';
 import { DsButton } from '../../shared/ui/button';
+import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
 import { OpQueueService } from '../../core/offline/op-queue.service';
 import { ReadCacheService } from '../../core/offline/read-cache.service';
 import { DirectionService } from '../../core/i18n/i18n.service';
@@ -32,7 +33,14 @@ type EventRow = {
 
 @Component({
   selector: 'app-owner-page',
-  imports: [ReactiveFormsModule, RouterLink, RouterLinkActive, TranslocoDirective, DsButton],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    RouterLinkActive,
+    TranslocoDirective,
+    DsButton,
+    DsBottomSheet,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './owner-page.html',
 })
@@ -141,10 +149,44 @@ export class OwnerPage implements OnInit {
       password: '',
     });
   }
-  async setPassword(member: Member) {
+  readonly passwordMember = signal<Member | null>(null);
+  readonly passwordError = signal('');
+  readonly passwordForm = new FormGroup({
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(12)],
+    }),
+    confirm: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+  });
+  openPassword(member: Member) {
+    this.passwordForm.reset({ password: '', confirm: '' });
+    this.passwordError.set('');
+    this.passwordMember.set(member);
+  }
+  closePassword() {
     if (this.busy()) return;
-    const password = window.prompt(`Set password for ${member.username} (minimum 12 characters)`);
-    if (password === null) return;
+    // Never keep a typed password around after the sheet closes.
+    this.passwordForm.reset({ password: '', confirm: '' });
+    this.passwordMember.set(null);
+  }
+  async savePassword() {
+    const member = this.passwordMember();
+    if (!member || this.busy()) return;
+    const { password, confirm } = this.passwordForm.getRawValue();
+    if (this.passwordForm.invalid) {
+      this.passwordError.set('owner.passwordTooShort');
+      return;
+    }
+    if (password !== confirm) {
+      this.passwordError.set('owner.passwordMismatch');
+      return;
+    }
+    await this.setPassword(member, password);
+    this.passwordForm.reset({ password: '', confirm: '' });
+    this.passwordMember.set(null);
+  }
+  async setPassword(member: Member, password: string) {
+    if (this.busy()) return;
     this.busy.set(true);
     const { error, data } = await supabase.functions.invoke('members', {
       body: { action: 'set_password', member_id: member.id, password },

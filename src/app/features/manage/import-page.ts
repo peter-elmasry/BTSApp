@@ -12,6 +12,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ManageNav } from './manage-nav';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
 import { EventImportService } from './import-api';
@@ -21,7 +22,7 @@ import { ImportWorkbookService } from './import-workbook-service';
 
 @Component({
   selector: 'app-event-import-page',
-  imports: [ReactiveFormsModule, RouterLink, TranslocoDirective, DsBottomSheet],
+  imports: [ReactiveFormsModule, RouterLink, TranslocoDirective, DsBottomSheet, ManageNav],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './import-page.html',
 })

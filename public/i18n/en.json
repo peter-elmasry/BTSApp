@@ -147,7 +147,17 @@
     "team": "Team",
     "assign": "Assign",
     "assignedGames": "Assigned games",
-    "noStaff": "No event staff assigned yet."
+    "noStaff": "No event staff assigned yet.",
+    "nav": {
+      "label": "Event administration sections",
+      "live": "Live",
+      "setup": "Setup",
+      "standings": "Standings",
+      "import": "Import",
+      "audit": "Audit log"
+    },
+    "entityNameEn": "Name (English)",
+    "entityNameAr": "Name (Arabic)"
   },
   "import": {
     "intro": "Upload an Excel workbook, review its rows, then confirm the import.",
@@ -303,7 +313,10 @@
     "chooseMemberError": "Choose a member first.",
     "assign": "Assign",
     "removeAdmin": "Remove Event Admin",
-    "openSetup": "Open event setup"
+    "openSetup": "Open event setup",
+    "passwordFor": "New password for {{name}}",
+    "passwordMismatch": "The passwords do not match.",
+    "passwordTooShort": "Use at least 12 characters."
   },
   "errors.REQUIRED": "Please enter a name",
   "foundation": {

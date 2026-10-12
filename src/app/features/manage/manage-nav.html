@@ -1,0 +1,18 @@
+<div *transloco="let t" class="space-y-2">
+  @if (eventLabel()) {
+    <p class="text-sm font-semibold text-slate" data-testid="manage-event-label">
+      {{ eventLabel() }}
+    </p>
+  }
+  <nav class="ds-tabs" [attr.aria-label]="t('manage.nav.label')">
+    @for (item of sections; track item.path) {
+      <a
+        class="ds-tab"
+        [routerLink]="['/manage', eventId(), item.path]"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+        >{{ t(item.key) }}</a
+      >
+    }
+  </nav>
+</div>

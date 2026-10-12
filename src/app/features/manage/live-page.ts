@@ -21,6 +21,7 @@ import { isLiveAdmin, liveErrorKey } from '../live/live-helpers';
 import { LiveReader } from '../live/live-reader';
 import { LiveMatchSummary } from '../live/match-summary';
 import { localizedName } from '../public/public-helpers';
+import { ManageNav } from './manage-nav';
 
 type Action = {
   name: Exclude<LiveMutation, 'submit_match_result' | 'add_adjustment' | 'revoke_adjustment'>;
@@ -32,6 +33,7 @@ type Action = {
   selector: 'app-live-control-page',
   imports: [
     RouterLink,
+    ManageNav,
     ReactiveFormsModule,
     TranslocoDirective,
     DsBottomSheet,

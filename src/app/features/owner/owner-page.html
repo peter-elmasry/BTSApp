@@ -1,17 +1,19 @@
 <div *transloco="let t" class="space-y-5">
-  <header class="flex flex-wrap items-center justify-between gap-3">
+  <header class="space-y-3">
     <h1 class="text-2xl font-extrabold">{{ t('owner.title') }}</h1>
-    <nav class="flex gap-2" [attr.aria-label]="t('owner.navigation')">
+    <nav class="ds-tabs" [attr.aria-label]="t('owner.navigation')">
       <a
         routerLink="/owner/members"
-        routerLinkActive="nav-active"
-        class="min-h-11 rounded-xl px-3 py-2 font-semibold"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+        class="ds-tab"
         >{{ t('owner.members') }}</a
       >
       <a
         routerLink="/owner/events"
-        routerLinkActive="nav-active"
-        class="min-h-11 rounded-xl px-3 py-2 font-semibold"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+        class="ds-tab"
         >{{ t('owner.events') }}</a
       >
     </nav>
@@ -32,7 +34,7 @@
       <form
         [formGroup]="memberForm"
         (ngSubmit)="saveMember()"
-        class="grid gap-3 rounded-card bg-white p-4 shadow-card sm:grid-cols-2"
+        class="ds-card grid gap-3 sm:grid-cols-2"
       >
         <h2 class="text-lg font-bold sm:col-span-2">
           {{ editing() ? t('owner.editMember') : t('owner.createMember') }}
@@ -64,7 +66,7 @@
             /><small>{{ t('owner.passwordHint') }}</small></label
           >
         }
-        <div class="flex gap-2 sm:col-span-2">
+        <div class="ds-actions sm:col-span-2">
           <ds-button type="submit" [loading]="busy()">{{
             editing() ? t('common.save') : t('owner.createMember')
           }}</ds-button>
@@ -83,10 +85,10 @@
       /></label>
       <div class="space-y-3">
         @for (member of filteredMembers(); track member.id) {
-          <article class="rounded-card bg-white p-4 shadow-card">
+          <article class="ds-card">
             <div class="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h3 class="font-bold">
+              <div class="min-w-0 flex-1">
+                <h3 class="break-words font-bold">
                   {{ label(member, 'full_name') || member.username }}
                   <span class="text-slate">(@{{ member.username }})</span>
                 </h3>
@@ -96,20 +98,17 @@
                   {{ member.is_active ? t('owner.active') : t('owner.inactive') }}
                 </p>
               </div>
-              <div class="flex flex-wrap gap-2">
+              <div class="ds-actions">
+                <button class="ds-button ghost sm" (click)="edit(member)">
+                  {{ t('common.edit') }}
+                </button>
+                <button class="ds-button ghost sm" (click)="openPassword(member)">
+                  {{ t('owner.setPassword') }}
+                </button>
                 <button
-                  class="min-h-11 rounded-xl border border-mist px-3 font-semibold"
-                  (click)="edit(member)"
-                >
-                  {{ t('common.edit') }}</button
-                ><button
-                  class="min-h-11 rounded-xl border border-mist px-3 font-semibold"
-                  (click)="setPassword(member)"
-                >
-                  {{ t('owner.setPassword') }}</button
-                ><button
-                  class="min-h-11 rounded-xl px-3 font-semibold"
-                  [class.text-error]="member.is_active"
+                  class="ds-button sm"
+                  [class.ghost-danger]="member.is_active"
+                  [class.ghost]="!member.is_active"
                   (click)="toggleActive(member)"
                 >
                   {{ member.is_active ? t('owner.deactivate') : t('owner.reactivate') }}
@@ -127,7 +126,7 @@
       <form
         [formGroup]="eventForm"
         (ngSubmit)="createEvent()"
-        class="grid gap-3 rounded-card bg-white p-4 shadow-card sm:grid-cols-2"
+        class="ds-card grid gap-3 sm:grid-cols-2"
       >
         <h2 class="text-lg font-bold sm:col-span-2">{{ t('owner.createEvent') }}</h2>
         <label class="space-y-1"
@@ -151,10 +150,10 @@
         </div>
       </form>
       @for (event of events(); track event.id) {
-        <article class="space-y-3 rounded-card bg-white p-4 shadow-card">
+        <article class="ds-card space-y-4">
           <div class="flex flex-wrap items-start justify-between gap-2">
-            <div>
-              <h2 class="font-bold">
+            <div class="min-w-0 flex-1">
+              <h2 class="break-words font-bold">
                 {{ label(event) }} <span class="text-slate">({{ event.code }})</span>
               </h2>
               <p class="text-sm text-slate">
@@ -165,24 +164,23 @@
               </p>
             </div>
             @if (!event.is_current) {
-              <button
-                class="min-h-11 rounded-xl bg-navy px-3 font-semibold text-white"
-                (click)="setCurrent(event)"
-              >
+              <button class="ds-button secondary sm" (click)="setCurrent(event)">
                 {{ t('owner.setCurrent') }}
               </button>
             }
           </div>
-          <a
-            [routerLink]="['/manage', event.id, 'live']"
-            class="inline-flex min-h-11 items-center rounded-xl border border-mist px-3 py-2 font-semibold"
-            >{{ t('live.title') }}</a
-          >
-          <a
-            [routerLink]="['/manage', event.id, 'setup']"
-            class="inline-flex min-h-11 items-center rounded-xl bg-navy px-3 py-2 font-semibold text-white"
-            >{{ t('owner.openSetup') }}</a
-          >
+          <div class="ds-actions">
+            <a
+              [routerLink]="['/manage', event.id, 'live']"
+              class="ds-button ghost sm inline-flex items-center"
+              >{{ t('live.title') }}</a
+            >
+            <a
+              [routerLink]="['/manage', event.id, 'setup']"
+              class="ds-button secondary sm inline-flex items-center"
+              >{{ t('owner.openSetup') }}</a
+            >
+          </div>
           <div class="flex flex-wrap items-end gap-2">
             <label class="min-w-52 flex-1"
               ><span class="mb-1 block text-sm font-semibold">{{ t('owner.assignAdmin') }}</span
@@ -200,21 +198,20 @@
                   }
                 }
               </select></label
-            ><button
-              class="min-h-11 rounded-xl bg-gold px-3 font-bold"
-              (click)="assignAdmin(event)"
-            >
+            ><button class="ds-button primary" (click)="assignAdmin(event)">
               {{ t('owner.assign') }}
             </button>
           </div>
           @if (event.admin_ids.length) {
             <ul class="flex flex-wrap gap-2">
               @for (id of event.admin_ids; track id) {
-                <li class="flex items-center gap-2 rounded-full bg-ivory px-3 py-1">
-                  {{ memberLabel(id) }}
+                <li class="flex items-center gap-1 rounded-full bg-ivory py-0 ps-3">
+                  <span class="break-words">{{ memberLabel(id) }}</span>
                   <button
-                    class="font-bold text-error"
-                    [attr.aria-label]="t('owner.removeAdmin')"
+                    class="flex min-h-11 min-w-11 items-center justify-center rounded-full text-xl font-bold text-error"
+                    [attr.aria-label]="t('owner.removeAdmin') + ': ' + memberLabel(id)"
+                    [title]="t('owner.removeAdmin')"
+                    data-testid="remove-admin"
                     (click)="removeAdmin(event, id)"
                   >
                     ×
@@ -228,5 +225,40 @@
         <p class="rounded-card bg-white p-4">{{ t('owner.noEvents') }}</p>
       }
     </section>
+  }
+  @if (passwordMember(); as member) {
+    <ds-bottom-sheet
+      [title]="t('owner.passwordFor', { name: label(member, 'full_name') || member.username })"
+      (close)="closePassword()"
+    >
+      <form class="space-y-4" [formGroup]="passwordForm" (ngSubmit)="savePassword()">
+        <label class="block space-y-1"
+          ><span>{{ t('account.newPassword') }}</span
+          ><input
+            class="ds-control w-full"
+            type="password"
+            autocomplete="new-password"
+            formControlName="password"
+            data-testid="owner-new-password"
+          /><small class="block text-slate">{{ t('owner.passwordHint') }}</small></label
+        >
+        <label class="block space-y-1"
+          ><span>{{ t('account.confirmPassword') }}</span
+          ><input
+            class="ds-control w-full"
+            type="password"
+            autocomplete="new-password"
+            formControlName="confirm"
+            data-testid="owner-confirm-password"
+        /></label>
+        @if (passwordError()) {
+          <p role="alert" class="text-sm text-error">{{ t(passwordError()) }}</p>
+        }
+        <div class="ds-actions">
+          <ds-button type="submit" [loading]="busy()">{{ t('owner.setPassword') }}</ds-button>
+          <ds-button variant="ghost" (click)="closePassword()">{{ t('common.cancel') }}</ds-button>
+        </div>
+      </form>
+    </ds-bottom-sheet>
   }
 </div>
