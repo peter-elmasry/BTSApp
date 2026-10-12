@@ -64,6 +64,9 @@ for (const lang of ['en', 'ar'] as const) {
       width: 240,
       height: 120,
     });
+    // Wait for mutation/reload/reset, not merely the earlier storage request.
+    await expect(page.locator('[formControlName=code]')).toHaveValue('');
+    await expect(input).toBeEnabled();
     await input.setInputFiles({
       name: 'broken.png',
       mimeType: 'image/png',

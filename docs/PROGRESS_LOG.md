@@ -7,6 +7,7 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Requested by:** Gendy; publish the finished fix and verify cloud CI.
 - **Preflight:** Clean `codex/game-photo-processing` at `921bc1d`; fetched origin, inspected branch commits and change summary, whitespace check passes.
 - **Scope:** Push the branch, open a PR against master and verify/fix frontend/database CI. Merge is a subsequent step.
+- **Milestone:** PR #15 opened at `edd7e4c`; Vercel passes. First CI `38241086227` passes unit/build/format/translation/edge checks but one of 42 browser cases races the Save completion against the next invalid-image selection. Test now waits for form reset and enabled input after upload; product conversion assertions already passed.
 
 ## 2026-10-12 — Merge A04 and implement A05 game photos — HANDOFF
 
