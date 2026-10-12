@@ -308,9 +308,13 @@
               ><input
                 class="ds-control w-full"
                 type="file"
-                accept="image/webp,.webp"
+                accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                [disabled]="saving()"
                 (change)="selectGameImage($event)"
             /></label>
+            @if (imageProcessing()) {
+              <p role="status">{{ t('manage.imageProcessing') }}</p>
+            }
             @if (gameImagePreview()) {
               <img
                 class="h-28 w-full rounded-xl object-cover"
@@ -325,7 +329,10 @@
             }
           </div>
           <div class="flex gap-2 sm:col-span-2">
-            <button class="min-h-11 rounded-xl bg-gold px-4 font-bold" [disabled]="saving()">
+            <button
+              class="min-h-11 rounded-xl bg-gold px-4 font-bold"
+              [disabled]="saving() || imageProcessing()"
+            >
               {{ t('common.save') }}
             </button>
             @if (editingGame()) {

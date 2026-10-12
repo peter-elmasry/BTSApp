@@ -2,6 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-12 — Merge A04 and implement A05 game photos — HANDOFF
+
+- **Requested by:** Gendy; proceed with merge, master verification and next audit remediation.
+- **Preflight:** Clean audit branch with one local evidence commit. PR #14 had four passing checks, clean merge status and no submitted reviews; merged via signed-in browser at `67a7cd8` after connector permission failure. Fetched master, created `codex/game-photo-processing`, carried evidence via cherry-pick.
+- **Milestone:** Supabase deployment `38239432392` and master CI `38239432229` both pass on merged `67a7cd8`.
+- **Scope:** Decode PNG/JPEG/WebP game photos, preserve proportions, resize longest edge to at most 1024 px, encode WebP before preview/upload; cover browser conversion and async selection races. No publication of A05 branch requested.
+- **Implemented:** Browser conversion helper with decode/encoder validation, 20 MiB/40 MP source bounds and existing 5 MiB output limit; bilingual picker/progress/errors; conversion blocks Save; game switch/destroy invalidate pending selection and previews are released. D034 and A05 audit entry updated.
+- **Checks:** Five focused unit tests pass (three conversion failures/resource cleanup, two pending selection/save/destruction cases). Both EN/AR browser journeys report passing real PNG/JPEG/WebP dimensions, upload-byte decoding and corrupt-image rejection; runner stalled after test completion during server teardown and was interrupted, with port 4300 confirmed closed. Initial async unit mock used unsupported Angular relative-module mocking; replaced with browser API mocks and rerun passed. App/spec TypeScript, 599-key translations, production build (373.91 kB initial), formatting and whitespace checks pass. Full frontend suite not run locally; no SQL changed.
+- **Handoff:** Finished A05 implementation committed locally on `codex/game-photo-processing`; not pushed. Next: publish A05 PR and verify cloud CI before merge.
+
 ## 2026-10-12 — Publish A04 audit viewer and verify CI — DONE
 
 - **Requested by:** Gendy; proceed with publication and cloud verification.

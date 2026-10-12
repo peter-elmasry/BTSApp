@@ -180,6 +180,13 @@ passes, including unit/browser suites and Lighthouse. A04 runtime acceptance is 
 
 ### A05 — P2: game-photo conversion and 1024 px resize are missing
 
+**Implementation update (2026-10-12):** Game setup now decodes JPEG/PNG/WebP,
+resizes the longest edge to at most 1024 px without upscaling and encodes WebP
+before preview/upload. Invalid files and encoder fallback fail visibly; pending
+conversion blocks Save and is discarded on game switch or destruction. EN/AR
+browser tests verify real landscape PNG, portrait JPEG, small WebP, uploaded
+WebP bytes and corrupt-image rejection. D034 records source/output bounds.
+
 Requirement: §7.4. `setup-page.html:306` accepts only WebP, and
 `setup-page.ts:489` rejects other formats and retains the original file unchanged.
 There is no decode/resize/WebP conversion. A real PNG file-input browser probe
