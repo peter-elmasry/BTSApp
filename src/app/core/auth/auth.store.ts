@@ -93,6 +93,29 @@ export class AuthStore {
     return null;
   }
 
+  /** Saves the signed-in member's own username, names and mobile (D052); error code or null. */
+  async updateOwnProfile(values: {
+    username: string;
+    full_name_en: string;
+    full_name_ar: string;
+    phone: string;
+  }): Promise<string | null> {
+    const supabase = await this.client();
+    const { error } = await supabase.rpc('update_own_profile', {
+      p_op_id: crypto.randomUUID(),
+      p_username: values.username,
+      p_full_name_en: values.full_name_en,
+      p_full_name_ar: values.full_name_ar,
+      p_phone: values.phone,
+    });
+    if (error) {
+      if (isNetworkFailure(error)) return 'OFFLINE';
+      return /^[A-Z_]+$/.test(error.message ?? '') ? error.message : 'SAVE_FAILED';
+    }
+    await this.loadProfile();
+    return null;
+  }
+
   async logout() {
     const supabase = await this.client();
     const userId = this.session()?.user.id;

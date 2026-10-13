@@ -1,5 +1,16 @@
 # Implementation decisions
 
+## D052 — Members edit their own details
+
+Product owner, 2026-10-13. Every signed-in, active member opens "My details" from the
+account menu (`/account/profile`) and changes their own username, English and Arabic
+names and mobile number. `update_own_profile` (migration `0020`) acts only on the
+caller, validates the username format, normalises Egyptian mobiles to `+20…`, refuses
+another member's username or mobile, is idempotent per operation id and audits
+`MEMBER_PROFILE_UPDATED` with the member as actor. Sign-in keeps working because auth
+e-mails are synthetic per member id; the new username or mobile is used from the next
+sign-in. Roles, active status and other members stay owner-only.
+
 ## D051 — Result entry in a sheet; staff navigation on phones
 
 Product owner, 2026-10-13. Result entry opens in a bottom sheet over the referee station
