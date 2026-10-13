@@ -14,7 +14,65 @@
     "after": "بعد",
     "more": "تحميل تغييرات أقدم",
     "empty": "لا توجد تغييرات مطابقة للتصفية.",
-    "failed": "تعذّر تحميل سجل التغييرات. تأكد من الاتصال وحاول مرة أخرى."
+    "failed": "تعذّر تحميل سجل التغييرات. تأكد من الاتصال وحاول مرة أخرى.",
+    "actions": {
+      "ADJUSTMENT_ADDED": "اتضاف بونص أو خصم",
+      "ADJUSTMENT_REVOKED": "اتلغى بونص أو خصم",
+      "CURRENT_EVENT_SET": "اتعمل الإيفنت الحالي",
+      "EVENT_ADMIN_ASSIGNED": "اتعيّن أدمن للإيفنت",
+      "EVENT_ADMIN_REMOVED": "اتشال أدمن من الإيفنت",
+      "EVENT_CREATED": "الإيفنت اتعمل",
+      "EVENT_ROLE_ASSIGNED": "اتعيّن حد في الفريق المنظم",
+      "EVENT_ROLE_REMOVED": "اتشال حد من الفريق المنظم",
+      "EVENT_ROLE_UPDATED": "اتعدّل حد في الفريق المنظم",
+      "EVENT_SETTINGS_UPDATED": "الإعدادات اتغيرت",
+      "EVENT_SETUP_IMPORTED": "اتستورد من إكسل",
+      "IMPORT_ROLLBACK": "الاستيراد اترجع",
+      "GAME_CREATED": "لعبة اتضافت",
+      "GAME_DELETED": "لعبة اتمسحت",
+      "GAME_UPDATED": "لعبة اتعدّلت",
+      "LEADERBOARD_VISIBILITY_SET": "ظهور الترتيب اتغير",
+      "MATCH_CREATED": "ماتش اتضاف",
+      "MATCH_DELETED": "ماتش اتمسح",
+      "MATCH_UPDATED": "ماتش اتعدّل",
+      "MATCH_RESULT_SUBMITTED": "نتيجة اتسجلت",
+      "MATCH_RESULT_CORRECTED": "نتيجة اتصححت",
+      "MATCH_RESULT_RESET": "نتيجة اتمسحت",
+      "MATCH_VOIDED": "ماتش اتلغى",
+      "MEMBER_CREATED": "عضو اتضاف",
+      "MEMBER_UPDATED": "عضو اتعدّل",
+      "MEMBER_DEACTIVATED": "عضو اتوقف",
+      "MEMBER_REACTIVATED": "عضو رجع",
+      "MEMBER_PASSWORD_SET": "كلمة سر اتحطت",
+      "MEMBER_PASSWORD_CHANGED": "كلمة السر اتغيرت",
+      "MEMBER_LOGIN_LINKED": "الدخول اتربط",
+      "OPENING_MATCH_GENERATED": "ماتش الافتتاح اتعمل",
+      "OPENING_MATCH_REGENERATED": "ماتش الافتتاح اتعمل من جديد",
+      "REFEREE_GAMES_SET": "ألعاب الحكم اتحددت",
+      "ROUND_CREATED": "جولة اتضافت",
+      "ROUND_UPDATED": "جولة اتعدّلت",
+      "ROUND_DELETED": "جولة اتمسحت",
+      "ROUND_STARTED": "الجولة بدأت",
+      "ROUND_EXTENDED": "الجولة اتمدّت",
+      "ROUND_CLOSED": "الجولة خلصت",
+      "ROUND_REOPENED": "الجولة اتفتحت تاني",
+      "TEAM_CREATED": "فريق اتضاف",
+      "TEAM_UPDATED": "فريق اتعدّل",
+      "TEAM_DELETED": "فريق اتمسح",
+      "TIEBREAK_SET": "التعادل اتحسم"
+    },
+    "entities": {
+      "event": "الإيفنت",
+      "event_role": "الفريق المنظم",
+      "game": "لعبة",
+      "match": "ماتش",
+      "referee_games": "ألعاب الحكم",
+      "round": "جولة",
+      "team": "فريق",
+      "member": "عضو",
+      "adjustment": "بونص/خصم",
+      "tiebreak": "تعادل"
+    }
   },
   "nav.home": "الرئيسية",
   "nav.schedule": "المواعيد",
@@ -276,6 +334,7 @@
   "common": {
     "choose": "اختار",
     "delete": "احذف",
+    "confirmDelete": "دوس تاني للحذف",
     "remove": "شيل",
     "switchLanguage": "غيّر للإنجليزي",
     "navigation": "القائمة الرئيسية",
@@ -332,7 +391,13 @@
     "passwordMismatch": "الباسوردين مش زي بعض.",
     "passwordTooShort": "استخدم 12 حرف على الأقل.",
     "codeAuto": "سيبه فاضي علشان نستخدم الكود المقترح.",
-    "memberColumn": "العضو"
+    "memberColumn": "العضو",
+    "eventStatus": {
+      "DRAFT": "مسودة",
+      "LIVE": "شغال",
+      "FINISHED": "خلص",
+      "ARCHIVED": "متأرشف"
+    }
   },
   "errors.REQUIRED": "اكتب الاسم الأول",
   "foundation": {
@@ -519,7 +584,9 @@
       "bWins": "الفريق ب يفوز",
       "aForfeits": "الفريق أ ينسحب",
       "bForfeits": "الفريق ب ينسحب",
-      "bothForfeit": "الفريقان ينسحبان"
+      "bothForfeit": "الفريقان ينسحبان",
+      "teamWins": "{{team}} كسب",
+      "teamForfeits": "{{team}} انسحب"
     },
     "action": {
       "start_round": "بدء الجولة",
@@ -827,7 +894,7 @@
     "reason": "السبب",
     "by": "اداها",
     "time": "الوقت",
-    "matches": "ماتش ماتش",
+    "matches": "ماتش بماتش",
     "livesStart": "الأرواح في الأول",
     "livesLost": "راحت",
     "adjustments": "بونص وخصم",
@@ -880,7 +947,9 @@
     "admins": "مسؤولين الحدث",
     "noActive": "مفيش جولة شغالة. ماتشاتك الجاية في الجدول تحت.",
     "savedNext": "النتيجة اتسجلت · اللي بعده: {{game}}",
-    "savedAll": "النتيجة اتسجلت · كل نتايجك خلصت"
+    "savedAll": "النتيجة اتسجلت · كل نتايجك خلصت",
+    "history": "ماتشاتي اللي خلصت",
+    "result": "النتيجة"
   },
   "setup": {
     "importPrompt": "الإيفنت عندك على إكسل؟",

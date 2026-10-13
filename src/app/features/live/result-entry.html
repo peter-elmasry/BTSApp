@@ -70,12 +70,21 @@
             [class.primary]="this.choice() === choice"
             [class.ghost]="this.choice() !== choice"
             [attr.aria-pressed]="this.choice() === choice"
+            [attr.data-testid]="'choice-' + choice"
             [disabled]="saving() || queued()"
             (click)="select(choice)"
           >
-            {{ t('live.choice.' + choice) }}
-            @if (choice !== 'draw') {
-              : {{ name(teams()[choice === 'aWins' ? 0 : 1]?.team) }}
+            @if (choice === 'draw') {
+              {{ t('live.choice.draw') }}
+            } @else {
+              @if (teams()[choice === 'aWins' ? 0 : 1]?.team; as team) {
+                <span class="inline-flex items-center gap-2">
+                  <ds-avatar [avatarKey]="team.avatar_key" [color]="team.color_hex" [size]="32" />
+                  {{ t('live.choice.teamWins', { team: name(team) }) }}
+                </span>
+              } @else {
+                {{ t('live.choice.' + choice) }}
+              }
             }
           </button>
         }
@@ -93,7 +102,15 @@
               [disabled]="saving() || queued()"
               (click)="select(choice)"
             >
-              {{ t('live.choice.' + choice) }}
+              @if (choice === 'bothForfeit' || !teams()[choice === 'aForfeits' ? 0 : 1]?.team) {
+                {{ t('live.choice.' + choice) }}
+              } @else {
+                {{
+                  t('live.choice.teamForfeits', {
+                    team: name(teams()[choice === 'aForfeits' ? 0 : 1]?.team),
+                  })
+                }}
+              }
             </button>
           }
         </div>

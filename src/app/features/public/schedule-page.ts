@@ -64,9 +64,20 @@ export class SchedulePage {
   readonly teamView = inject(TeamViewState);
   readonly tab = signal<ScheduleTab>('myTeam');
   readonly scope = inject(ViewerScope);
-  /** Visitors without a login see only their own team's schedule (D046). */
+  /**
+   * Visitors without a login see only their own team's schedule (D046); signed-in staff
+   * see every view and need no team of their own.
+   */
   readonly tabs = computed<ScheduleTab[]>(() =>
-    this.scope.member() ? ['myTeam', 'byRound', 'byGame'] : ['myTeam'],
+    !this.scope.member()
+      ? ['myTeam']
+      : this.selection.selectedCode()
+        ? ['myTeam', 'byRound', 'byGame']
+        : ['byRound', 'byGame'],
+  );
+  /** The chosen tab, or the first one this viewer may use. */
+  readonly activeTab = computed(() =>
+    this.tabs().includes(this.tab()) ? this.tab() : this.tabs()[0],
   );
   /** Table is the default (D039); the choice is remembered on this device. */
   readonly view = signal<ScheduleView>(this.restoreView());
@@ -80,7 +91,7 @@ export class SchedulePage {
     row.round.status === 'ACTIVE' ? 'live' : null;
   /** My team's matches stand out in the by-round and by-game views. */
   readonly ownRow = (row: ScheduleRow) =>
-    this.tab() !== 'myTeam' &&
+    this.activeTab() !== 'myTeam' &&
     !!row.match?.participants.some(
       (participant) => participant.team_code === this.selection.selectedCode(),
     );
@@ -97,7 +108,7 @@ export class SchedulePage {
     const rounds = this.store.rounds();
     const games = this.store.games();
     const matches = this.matches();
-    const tab = this.scope.member() ? this.tab() : 'myTeam';
+    const tab = this.activeTab();
     if (tab === 'byGame') return groupByGame(rounds, games, matches);
     if (tab === 'byRound') return groupByRound(rounds, games, matches);
     const rows = teamRows(rounds, games, matches, this.selection.selectedCode());

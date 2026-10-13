@@ -26,6 +26,8 @@ export class DsBottomSheet implements OnDestroy {
   private readonly document = inject(DOCUMENT);
   private previousFocus?: HTMLElement;
   private previousOverflow = '';
+  private destroyed = false;
+  private cancelEmitted = false;
   constructor() {
     afterNextRender(() => {
       this.previousFocus = this.document.activeElement as HTMLElement;
@@ -41,7 +43,20 @@ export class DsBottomSheet implements OnDestroy {
         this.close.emit();
     }
   }
+  /**
+   * The browser can close the dialog itself (Escape without a recent user gesture skips
+   * `cancel`), so the owner must still hear about it or the sheet can never reopen.
+   */
+  closed() {
+    if (!this.destroyed && !this.cancelEmitted) this.close.emit();
+    this.cancelEmitted = false;
+  }
+  cancelled() {
+    this.cancelEmitted = true;
+    this.close.emit();
+  }
   ngOnDestroy() {
+    this.destroyed = true;
     this.dialog().nativeElement.close();
     this.document.body.style.overflow = this.previousOverflow;
     this.previousFocus?.focus();

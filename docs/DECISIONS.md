@@ -1,5 +1,9 @@
 # Implementation decisions
 
+## D050 — Referees keep their match history
+
+"My station" lists the referee's finished matches of ended rounds as read-only history (round, game, each team's outcome; cancelled matches marked). `get_referee_board` returns them with `bucket = 'done'` and `editable = false` for referees (migration `0019`). Only the referee's own games are included, so a hidden leaderboard still hides other games' outcomes; guide phones stay limited to current, upcoming and late matches. Corrections after a round ends remain admin-only.
+
 ## D049 — Search on long lists
 
 Product owner requirement 2026-10-13: any list with more than ten values is searchable.

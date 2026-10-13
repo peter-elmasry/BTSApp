@@ -1,7 +1,8 @@
-import { computed, inject, Injectable } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { computed, inject, Injectable, Injector, runInInjectionContext } from '@angular/core';
+import { CanActivateFn, GuardResult, Router } from '@angular/router';
 import { AuthStore } from '../auth/auth.store';
 import { EventStore } from './event.store';
+import { teamChosenGuard } from './player.guards';
 import { TeamSelectionStore } from './team-selection.store';
 
 /**
@@ -34,6 +35,18 @@ export const teamPageGuard: CanActivateFn = async (route) => {
   await events.initialize();
   const code = route.paramMap.get('code')?.trim().toUpperCase();
   return code && code === selection.selectedCode() ? true : router.parseUrl('/home');
+};
+
+/** `/schedule`: staff see the whole schedule without a team; visitors pick one first. */
+export const scheduleGuard: CanActivateFn = async (route, state) => {
+  const injector = inject(Injector);
+  const auth = inject(AuthStore);
+  await auth.initialize();
+  if (auth.session() && route.queryParamMap.get('team') === null) return true;
+  // The team guard injects its services, so run it back inside the route's injection context.
+  return (await runInInjectionContext(injector, () =>
+    teamChosenGuard(route, state),
+  )) as GuardResult;
 };
 
 /** `/games/:code`: DST members only (D046). */

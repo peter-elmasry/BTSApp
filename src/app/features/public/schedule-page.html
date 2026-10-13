@@ -11,10 +11,10 @@
         @for (item of tabs(); track item) {
           <button
             class="min-h-11 rounded-xl px-2 py-2 text-sm font-semibold"
-            [class.bg-navy]="tab() === item"
-            [class.text-white]="tab() === item"
-            [class.bg-white]="tab() !== item"
-            [attr.aria-pressed]="tab() === item"
+            [class.bg-navy]="activeTab() === item"
+            [class.text-white]="activeTab() === item"
+            [class.bg-white]="activeTab() !== item"
+            [attr.aria-pressed]="activeTab() === item"
             (click)="tab.set(item)"
           >
             {{ t('player.' + item) }}
@@ -50,7 +50,7 @@
           [rows]="tableRows()"
           [columns]="columns(t)"
           [trackBy]="track"
-          [caption]="t('player.' + tab())"
+          [caption]="t('player.' + activeTab())"
           [emptyText]="t('player.noMatches')"
           [rowStatus]="rowStatus"
           [highlight]="ownRow"
@@ -95,7 +95,7 @@
               }
             } @else {
               <span class="font-semibold" data-testid="table-break"
-                >☕ {{ t(tab() === 'myTeam' ? 'now.resting' : 'player.break') }}</span
+                >☕ {{ t(activeTab() === 'myTeam' ? 'now.resting' : 'player.break') }}</span
               >
             }
           </ng-template>

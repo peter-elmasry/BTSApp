@@ -7,7 +7,7 @@ import {
   scoringGuard,
 } from './core/auth/guards';
 import { landingGuard } from './core/auth/landing';
-import { memberOnlyGuard, teamPageGuard } from './core/player/viewer-scope';
+import { memberOnlyGuard, scheduleGuard, teamPageGuard } from './core/player/viewer-scope';
 import { leaderboardVisibleGuard, teamChosenGuard } from './core/player/player.guards';
 
 export const routes: Routes = [
@@ -28,7 +28,7 @@ export const routes: Routes = [
   },
   {
     path: 'schedule',
-    canActivate: [teamChosenGuard],
+    canActivate: [scheduleGuard],
     loadComponent: () => import('./features/public/schedule-page').then((m) => m.SchedulePage),
   },
   {

@@ -25,18 +25,20 @@
     </nav>
 
     @if (tab() === 'settings') {
-      <section
-        class="ds-card flex flex-wrap items-center gap-3 bg-gold-soft"
-        data-testid="import-card"
-      >
-        <p class="min-w-0 flex-1 font-semibold">{{ t('setup.importPrompt') }}</p>
-        <a class="ds-button secondary sm" [routerLink]="['/manage', eventId, 'import']"
-          >⬆ {{ t('setup.importExcel') }}</a
+      @if (!scoringLocked()) {
+        <section
+          class="ds-card flex flex-wrap items-center gap-3 bg-gold-soft"
+          data-testid="import-card"
         >
-        <a class="ds-button ghost sm bg-white" [routerLink]="['/manage', eventId, 'import']">{{
-          t('setup.downloadTemplate')
-        }}</a>
-      </section>
+          <p class="min-w-0 flex-1 font-semibold">{{ t('setup.importPrompt') }}</p>
+          <a class="ds-button secondary sm" [routerLink]="['/manage', eventId, 'import']"
+            >⬆ {{ t('setup.importExcel') }}</a
+          >
+          <a class="ds-button ghost sm bg-white" [routerLink]="['/manage', eventId, 'import']">{{
+            t('setup.downloadTemplate')
+          }}</a>
+        </section>
+      }
       <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="ds-card space-y-4">
         <h2 class="text-lg font-bold">{{ t('manage.settings') }}</h2>
         @if (setup()?.event?.status === 'LIVE' && scoringMode() !== 'LIVES') {
@@ -644,13 +646,22 @@
                         <button type="button" class="ds-button ghost sm" (click)="editRound(round)">
                           {{ t('common.edit') }}
                         </button>
-                        <button
-                          type="button"
-                          class="ds-button ghost-danger sm"
-                          (click)="deleteRound(round)"
-                        >
-                          {{ t('common.delete') }}
-                        </button>
+                        @if (!round.started_at) {
+                          <button
+                            type="button"
+                            class="ds-button ghost-danger sm"
+                            data-testid="delete-round"
+                            (click)="deleteRound(round)"
+                          >
+                            {{
+                              t(
+                                confirmRound() === round.id
+                                  ? 'common.confirmDelete'
+                                  : 'common.delete'
+                              )
+                            }}
+                          </button>
+                        }
                       </span>
                     </th>
                     @for (game of games(); track game.id) {

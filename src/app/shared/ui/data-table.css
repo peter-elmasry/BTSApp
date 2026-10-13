@@ -131,10 +131,11 @@
 .ds-row-enter {
   animation: ds-row-in 0.2s ease-out;
 }
+/* Slide only: rows never start transparent, so data stays readable even when
+   the browser throttles animations (background tabs, battery saver). */
 @keyframes ds-row-in {
   from {
-    opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px);
   }
 }
 @media (prefers-reduced-motion: reduce) {

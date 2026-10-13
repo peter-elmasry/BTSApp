@@ -360,6 +360,17 @@ select {
   font-size: 0.875rem;
   font-weight: 600;
 }
+.ds-phone-none {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  font-weight: 600;
+}
+/* On navy surfaces (home hero). */
+.ds-on-dark .ds-phone,
+.ds-on-dark .ds-phone-number {
+  color: var(--color-white);
+}
 /* Round timer ring. */
 .ds-timer-ring {
   position: relative;

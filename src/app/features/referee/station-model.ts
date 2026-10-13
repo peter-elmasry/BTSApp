@@ -5,6 +5,8 @@ export interface StationGroups {
   current: LiveMatch[];
   /** Matches of ended rounds still without a result (D041). */
   late: LiveMatch[];
+  /** Finished matches of ended rounds, latest round first: read-only history (D050). */
+  done: LiveMatch[];
 }
 
 type Snapshot = Pick<LiveSnapshot, 'matches' | 'rounds' | 'games'>;
@@ -25,7 +27,11 @@ export function stationGroups(snapshot: Snapshot): StationGroups {
     .filter((match) => match.bucket === 'current')
     .sort((a, b) => Number(open(b)) - Number(open(a)) || order(a, b));
   const late = snapshot.matches.filter((match) => match.bucket === 'late').sort(order);
-  return { current, late };
+  const done = snapshot.matches
+    .filter((match) => match.bucket === 'done')
+    .sort(order)
+    .reverse();
+  return { current, late, done };
 }
 
 /** The next match that still needs this referee's result, skipping `savedId`. */

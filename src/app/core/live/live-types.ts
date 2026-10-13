@@ -22,7 +22,7 @@ export interface LiveMatch extends PublicMatch {
   result_entered_by: string | null;
   result_entered_at: string | null;
   /** Referee board only: current (active round), upcoming (draft) or late (ended, no result). */
-  bucket?: 'current' | 'upcoming' | 'late';
+  bucket?: 'current' | 'upcoming' | 'late' | 'done';
   /** Referee board only: whether this member may enter a result now. */
   editable?: boolean;
 }

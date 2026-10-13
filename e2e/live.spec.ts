@@ -13,7 +13,7 @@ for (const lang of ['en', 'ar'] as const) {
     const t = labels(lang);
     await page.goto('/ref');
     await page.getByRole('link', { name: t.live.enterResult, exact: true }).click();
-    await page.getByRole('button').filter({ hasText: t.live.choice.aWins }).click();
+    await page.getByTestId('choice-aWins').click();
     await page.getByTestId('review-result').click();
     await expect(page.getByTestId('confirm-result')).toBeVisible();
     expect(fixture.calls.filter((c) => c.name === 'submit_match_result')).toHaveLength(0);
