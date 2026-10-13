@@ -99,6 +99,25 @@ export class HomePage {
         (a, b) => (rounds.get(a.round_id)?.number ?? 0) - (rounds.get(b.round_id)?.number ?? 0),
       );
   });
+  /** Latest finished match of my team in an ended round, so between rounds home is not empty. */
+  readonly lastResult = computed(() => {
+    const rounds = new Map(this.store.rounds().map((round) => [round.id, round]));
+    return (
+      this.matches()
+        .filter((match) => {
+          const outcome = this.ownOutcomeOf(match);
+          return (
+            rounds.get(match.round_id)?.status === 'CLOSED' &&
+            match.status === 'COMPLETED' &&
+            !!outcome &&
+            outcome !== 'PENDING'
+          );
+        })
+        .sort(
+          (a, b) => (rounds.get(b.round_id)?.number ?? 0) - (rounds.get(a.round_id)?.number ?? 0),
+        )[0] ?? null
+    );
+  });
   private touch: { x: number; y: number } | null = null;
 
   constructor() {

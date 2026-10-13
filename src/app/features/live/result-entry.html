@@ -63,32 +63,37 @@
         }
       </ul>
     } @else {
-      <div class="grid gap-3">
-        @for (choice of primaryChoices; track choice) {
-          <button
-            class="ds-button min-h-14"
-            [class.primary]="this.choice() === choice"
-            [class.ghost]="this.choice() !== choice"
-            [attr.aria-pressed]="this.choice() === choice"
-            [attr.data-testid]="'choice-' + choice"
-            [disabled]="saving() || queued()"
-            (click)="select(choice)"
-          >
-            @if (choice === 'draw') {
-              {{ t('live.choice.draw') }}
-            } @else {
-              @if (teams()[choice === 'aWins' ? 0 : 1]?.team; as team) {
-                <span class="inline-flex items-center gap-2">
-                  <ds-avatar [avatarKey]="team.avatar_key" [color]="team.color_hex" [size]="32" />
-                  {{ t('live.choice.teamWins', { team: name(team) }) }}
-                </span>
+      <fieldset class="space-y-2" [disabled]="saving() || queued()">
+        <legend class="mb-2 text-lg font-bold">{{ t('live.whoWon') }}</legend>
+        <div class="grid grid-cols-3 gap-2">
+          @for (choice of primaryChoices; track choice) {
+            <label
+              class="ds-choice"
+              [class.selected]="this.choice() === choice"
+              [attr.data-testid]="'choice-' + choice"
+            >
+              <input
+                type="radio"
+                class="sr-only"
+                [name]="'result-' + match().id"
+                [checked]="this.choice() === choice"
+                (change)="select(choice)"
+              />
+              @if (choice === 'draw') {
+                <span class="ds-choice-mark" aria-hidden="true">=</span>
+                <span>{{ t('live.choice.draw') }}</span>
               } @else {
-                {{ t('live.choice.' + choice) }}
+                @if (teams()[choice === 'aWins' ? 0 : 1]?.team; as team) {
+                  <ds-avatar [avatarKey]="team.avatar_key" [color]="team.color_hex" [size]="40" />
+                  <span>{{ name(team) }}</span>
+                } @else {
+                  <span>{{ t('live.choice.' + choice) }}</span>
+                }
               }
-            }
-          </button>
-        }
-      </div>
+            </label>
+          }
+        </div>
+      </fieldset>
       <details>
         <summary class="min-h-11 cursor-pointer py-3 font-semibold">
           {{ t('live.forfeitOptions') }}

@@ -1,5 +1,16 @@
 # Implementation decisions
 
+## D051 — Result entry in a sheet; staff navigation on phones
+
+Product owner, 2026-10-13. Result entry opens in a bottom sheet over the referee station
+(and the admin Control sheet) and asks "Who won?" with three equal tiles — team A, draw,
+team B — built as a native radio group with team avatars; forfeits stay under "More
+options" and Review → Confirm is unchanged. `/ref/match/:id` remains for match details
+and bonuses. On phones (below 768 px) the manage section bar and the Import/Export
+toolbar are hidden because the bottom bar and More carry the same links; tablets and
+desktops keep them (refines D045). Page refresh buttons are a round teal icon button
+with an accessible "Refresh" label.
+
 ## D050 — Referees keep their match history
 
 "My station" lists the referee's finished matches of ended rounds as read-only history (round, game, each team's outcome; cancelled matches marked). `get_referee_board` returns them with `bucket = 'done'` and `editable = false` for referees (migration `0019`). Only the referee's own games are included, so a hidden leaderboard still hides other games' outcomes; guide phones stay limited to current, upcoming and late matches. Corrections after a round ends remain admin-only.

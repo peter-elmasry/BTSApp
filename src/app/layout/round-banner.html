@@ -47,7 +47,7 @@
     </button>
   }
   @if (open()) {
-    @defer {
+    @defer (on immediate) {
       <app-now-sheet (close)="open.set(false)" />
     }
   }

@@ -18,6 +18,8 @@ for (const lang of ['ar', 'en'] as const) {
   test(`staff screens share one section bar and fit 360 px in ${lang}`, async ({ page }) => {
     const t = labels(lang);
     await mockOwner(page, lang);
+    // The section bar is for tablets and desktops; phones use the bottom bar and More.
+    await page.setViewportSize({ width: 1024, height: 800 });
     await page.goto(`/manage/${eventId}/live`);
     const nav = page.getByRole('navigation', { name: t.manage.nav.label });
     await expect(nav.getByRole('link', { name: t.manage.nav.control })).toHaveAttribute(
@@ -31,6 +33,9 @@ for (const lang of ['ar', 'en'] as const) {
       'aria-current',
       'page',
     );
+    await noHorizontalOverflow(page);
+    await page.setViewportSize({ width: 360, height: 740 });
+    await expect(nav).toBeHidden();
     await noHorizontalOverflow(page);
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations).toEqual([]);
@@ -55,7 +60,11 @@ for (const lang of ['ar', 'en'] as const) {
       prompted = true;
       void dialog.dismiss();
     });
-    await page.getByRole('button', { name: t.owner.setPassword }).first().click();
+    await page.getByTestId('member-actions').first().click();
+    await page
+      .getByTestId('member-action-sheet')
+      .getByRole('button', { name: t.owner.setPassword })
+      .click();
     const sheet = page.getByRole('dialog');
     await expect(sheet).toBeVisible();
     await expect(sheet.getByTestId('owner-new-password')).toHaveAttribute('type', 'password');

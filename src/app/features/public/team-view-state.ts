@@ -47,7 +47,10 @@ export class TeamViewState {
       this.cache.updates();
       this.realtime.revision();
       const request = ++this.request;
-      this.result.set(null);
+      // Same team, event and viewer: keep the current view while refreshing (no flicker).
+      const key = `${event?.id ?? ''}:${code}:${context}`;
+      if (key !== this.shownKey) this.result.set(null);
+      this.shownKey = key;
       this.error.set(false);
       this.loading.set(false);
       if (!event || !code) return;
@@ -69,6 +72,7 @@ export class TeamViewState {
     });
   }
 
+  private shownKey = '';
   refresh() {
     this.refreshVersion.update((version) => version + 1);
   }
