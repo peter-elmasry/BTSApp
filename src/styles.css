@@ -360,6 +360,80 @@ select {
   font-size: 0.875rem;
   font-weight: 600;
 }
+.ds-choice {
+  display: flex;
+  min-height: 6.5rem;
+  min-width: 0;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 2px solid var(--color-mist);
+  border-radius: var(--radius-card);
+  background: var(--color-white);
+  padding: 0.5rem 0.25rem;
+  text-align: center;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    transform 0.1s;
+}
+.ds-choice:active {
+  transform: scale(0.97);
+}
+.ds-choice.selected {
+  border-color: var(--color-navy);
+  background: var(--color-gold-soft);
+  box-shadow: 0 0 0 2px var(--color-navy) inset;
+}
+.ds-choice:has(input:focus-visible) {
+  outline: 3px solid var(--color-teal);
+  outline-offset: 2px;
+}
+fieldset:disabled .ds-choice {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.ds-choice-mark {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-mist);
+  font-size: 1.25rem;
+}
+.ds-refresh {
+  display: inline-grid;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-teal);
+  color: var(--color-white);
+  box-shadow: var(--shadow-card);
+}
+.ds-refresh:disabled {
+  cursor: progress;
+}
+.ds-refresh.spinning svg {
+  animation: ds-spin 0.8s linear infinite;
+}
+@keyframes ds-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ds-refresh.spinning svg {
+    animation: none;
+  }
+}
 .ds-phone-none {
   display: inline-flex;
   min-height: 44px;

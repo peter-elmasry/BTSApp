@@ -31,53 +31,32 @@
   }
   @if (section === 'members') {
     <section class="space-y-4">
-      <form
-        [formGroup]="memberForm"
-        (ngSubmit)="saveMember()"
-        class="ds-card grid gap-3 sm:grid-cols-2"
-      >
-        <h2 class="text-lg font-bold sm:col-span-2">
-          {{ editing() ? t('owner.editMember') : t('owner.createMember') }}
-        </h2>
-        <label class="space-y-1"
-          ><span>{{ t('owner.username') }}</span
-          ><input class="ds-control w-full" formControlName="username" autocomplete="off"
-        /></label>
-        <label class="space-y-1"
-          ><span>{{ t('owner.phone') }}</span
-          ><input class="ds-control w-full" formControlName="phone" inputmode="tel"
-        /></label>
-        <label class="space-y-1"
-          ><span>{{ t('owner.nameEn') }}</span
-          ><input class="ds-control w-full" formControlName="full_name_en"
-        /></label>
-        <label class="space-y-1"
-          ><span>{{ t('owner.nameAr') }}</span
-          ><input class="ds-control w-full" formControlName="full_name_ar"
-        /></label>
-        @if (!editing()) {
-          <label class="space-y-1 sm:col-span-2"
-            ><span>{{ t('owner.initialPassword') }}</span
-            ><input
-              class="ds-control w-full"
-              formControlName="password"
-              type="password"
-              autocomplete="new-password"
-            /><small class="block text-slate">{{ t('owner.passwordHint') }}</small></label
-          >
-        }
-        <div class="ds-actions sm:col-span-2">
-          <ds-button type="submit" [loading]="busy()">{{
-            editing() ? t('common.save') : t('owner.createMember')
-          }}</ds-button>
-          @if (editing()) {
-            <ds-button variant="ghost" (click)="cancelEdit()">{{ t('common.cancel') }}</ds-button>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="ds-tabs sub" role="group" [attr.aria-label]="t('owner.memberFilter')">
+          @for (item of memberFilters; track item) {
+            <button
+              type="button"
+              class="ds-tab"
+              [attr.aria-pressed]="memberFilter() === item"
+              [attr.data-testid]="'member-filter-' + item"
+              (click)="memberFilter.set(item)"
+            >
+              {{ t('owner.filter.' + item) }} ({{ memberCount(item) }})
+            </button>
           }
         </div>
-      </form>
+        <button
+          type="button"
+          class="ds-button primary"
+          data-testid="add-member"
+          (click)="openCreate()"
+        >
+          + {{ t('owner.createMember') }}
+        </button>
+      </div>
       <!-- Members table (U8); search appears automatically above ten members (D049). -->
       <ds-data-table
-        [rows]="members()"
+        [rows]="visibleMembers()"
         [columns]="memberColumns(t)"
         [trackBy]="trackMember"
         [caption]="t('owner.members')"
@@ -107,22 +86,17 @@
           }}</span>
         </ng-template>
         <ng-template dsCell="actions" let-member>
-          <span class="inline-flex flex-wrap justify-end gap-1">
-            <button class="ds-button ghost sm" (click)="edit(member)">
-              {{ t('common.edit') }}
-            </button>
-            <button class="ds-button ghost sm" (click)="openPassword(member)">
-              {{ t('owner.setPassword') }}
-            </button>
-            <button
-              class="ds-button sm"
-              [class.ghost-danger]="member.is_active"
-              [class.ghost]="!member.is_active"
-              (click)="toggleActive(member)"
-            >
-              {{ member.is_active ? t('owner.deactivate') : t('owner.reactivate') }}
-            </button>
-          </span>
+          <button
+            type="button"
+            class="ds-button ghost sm"
+            data-testid="member-actions"
+            [attr.aria-label]="
+              t('owner.actionsFor', { name: label(member, 'full_name') || member.username })
+            "
+            (click)="actionMember.set(member)"
+          >
+            ⋯
+          </button>
         </ng-template>
       </ds-data-table>
     </section>
@@ -260,6 +234,72 @@
           <ds-button variant="ghost" (click)="closePassword()">{{ t('common.cancel') }}</ds-button>
         </div>
       </form>
+    </ds-bottom-sheet>
+  }
+  @if (memberSheet()) {
+    <ds-bottom-sheet
+      [title]="editing() ? t('owner.editMember') : t('owner.createMember')"
+      (close)="cancelEdit()"
+    >
+      <form [formGroup]="memberForm" (ngSubmit)="saveMember()" class="grid gap-3 sm:grid-cols-2">
+        <label class="space-y-1"
+          ><span>{{ t('owner.username') }}</span
+          ><input class="ds-control w-full" formControlName="username" autocomplete="off"
+        /></label>
+        <label class="space-y-1"
+          ><span>{{ t('owner.phone') }}</span
+          ><input class="ds-control w-full" formControlName="phone" inputmode="tel"
+        /></label>
+        <label class="space-y-1"
+          ><span>{{ t('owner.nameEn') }}</span
+          ><input class="ds-control w-full" formControlName="full_name_en"
+        /></label>
+        <label class="space-y-1"
+          ><span>{{ t('owner.nameAr') }}</span
+          ><input class="ds-control w-full" formControlName="full_name_ar"
+        /></label>
+        @if (!editing()) {
+          <label class="space-y-1 sm:col-span-2"
+            ><span>{{ t('owner.initialPassword') }}</span
+            ><input
+              class="ds-control w-full"
+              formControlName="password"
+              type="password"
+              autocomplete="new-password"
+            /><small class="block text-slate">{{ t('owner.passwordHint') }}</small></label
+          >
+        }
+        <div class="ds-actions sm:col-span-2">
+          <ds-button type="submit" [loading]="busy()">{{
+            editing() ? t('common.save') : t('owner.createMember')
+          }}</ds-button>
+          <ds-button variant="ghost" (click)="cancelEdit()">{{ t('common.cancel') }}</ds-button>
+        </div>
+      </form>
+    </ds-bottom-sheet>
+  }
+  @if (actionMember(); as member) {
+    <ds-bottom-sheet
+      [title]="label(member, 'full_name') || member.username"
+      (close)="actionMember.set(null)"
+    >
+      <div class="grid gap-2" data-testid="member-action-sheet">
+        <button type="button" class="ds-button secondary" (click)="edit(member)">
+          {{ t('common.edit') }}
+        </button>
+        <button type="button" class="ds-button secondary" (click)="openPassword(member)">
+          {{ t('owner.setPassword') }}
+        </button>
+        <button
+          type="button"
+          class="ds-button"
+          [class.ghost-danger]="member.is_active"
+          [class.secondary]="!member.is_active"
+          (click)="actionMember.set(null); toggleActive(member)"
+        >
+          {{ member.is_active ? t('owner.deactivate') : t('owner.reactivate') }}
+        </button>
+      </div>
     </ds-bottom-sheet>
   }
 </div>

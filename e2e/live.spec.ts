@@ -12,7 +12,7 @@ for (const lang of ['en', 'ar'] as const) {
     const fixture = await mockLiveEvent(page, { lang });
     const t = labels(lang);
     await page.goto('/ref');
-    await page.getByRole('link', { name: t.live.enterResult, exact: true }).click();
+    await page.getByTestId('station-enter').first().click();
     await page.getByTestId('choice-aWins').click();
     await page.getByTestId('review-result').click();
     await expect(page.getByTestId('confirm-result')).toBeVisible();
@@ -61,7 +61,7 @@ test('lost acknowledgement persists across reload and replays the same operation
   const fixture = await mockLiveEvent(page);
   const t = labels('en');
   await page.goto('/ref/match/match-1');
-  await page.getByRole('button', { name: t.live.choice.draw, exact: true }).click();
+  await page.getByTestId('choice-draw').click();
   await page.getByTestId('review-result').click();
   fixture.loseNextResponse();
   await page.getByTestId('confirm-result').click();
@@ -89,7 +89,7 @@ test('airplane-mode submission waits for reconnection', async ({ page, context }
   const fixture = await mockLiveEvent(page);
   const t = labels('en');
   await page.goto('/ref/match/match-1');
-  await page.getByRole('button', { name: t.live.choice.draw, exact: true }).click();
+  await page.getByTestId('choice-draw').click();
   await page.getByTestId('review-result').click();
   fixture.networkFailure(true);
   await context.setOffline(true);
@@ -174,8 +174,10 @@ for (const lang of ['en', 'ar'] as const) {
     await page.reload();
     const late = page.getByTestId('station-late');
     await expect(late).toBeVisible();
-    await late.getByRole('link', { name: t.live.enterResult, exact: true }).first().click();
-    await expect(page).toHaveURL(/\/ref\/match\//);
+    await late.getByTestId('late-enter').first().click();
+    await expect(page.getByTestId('entry-sheet')).toBeVisible();
+    await page.getByTestId('choice-aWins').click();
+    await page.screenshot({ path: `artifacts/ref-entry-sheet-${lang}.png` });
     await expect(page.getByTestId('review-result')).toBeVisible();
   });
 }

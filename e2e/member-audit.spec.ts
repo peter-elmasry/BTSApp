@@ -29,7 +29,8 @@ for (const lang of ['en', 'ar'] as const) {
       });
     });
     await page.goto('/owner/members');
-    const form = page.locator('app-owner-page form').first();
+    await page.getByTestId('add-member').click();
+    const form = page.locator('app-owner-page dialog form').first();
     await form.locator('[formControlName=username]').fill('new_guide');
     await form.locator('[formControlName=full_name_en]').fill('Test Guide');
     await form.locator('[formControlName=password]').fill('synthetic-test-password');
@@ -38,7 +39,8 @@ for (const lang of ['en', 'ar'] as const) {
     await expect(warning).toContainText(labels.memberOperationPending);
     await expect(warning).toContainText('29000000-0000-0000-0000-000000000099');
     await expect(page.locator('app-owner-page [role=status]')).toHaveCount(0);
-    await expect(form.locator('[formControlName=password]')).toHaveValue('');
+    // The sheet closes and the typed password is discarded.
+    await expect(page.locator('app-owner-page dialog form')).toHaveCount(0);
     expect(submissions).toBe(1);
   });
 }

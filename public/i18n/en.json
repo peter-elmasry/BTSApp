@@ -397,6 +397,13 @@
       "LIVE": "Live",
       "FINISHED": "Finished",
       "ARCHIVED": "Archived"
+    },
+    "memberFilter": "Show members",
+    "actionsFor": "Actions for {{name}}",
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
     }
   },
   "errors.REQUIRED": "Please enter a name",
@@ -423,7 +430,7 @@
     "noEvent": "No event is available yet. Check back soon!",
     "refresh": "Refresh",
     "refreshing": "Refreshing…",
-    "chooseHint": "Find your team, then confirm your choice. You can switch teams any time.",
+    "chooseHint": "Pick your team and confirm. You can switch until the first round starts.",
     "searchTeams": "Search teams",
     "noTeams": "The teams are being prepared. Check back soon!",
     "noSearchResults": "No teams match your search.",
@@ -494,7 +501,8 @@
     "teamsColumn": "Teams",
     "resultColumn": "Result",
     "nextStation": "Next station",
-    "opponent": "Opponent"
+    "opponent": "Opponent",
+    "lastResult": "Last result"
   },
   "live": {
     "title": "Live control",
@@ -589,7 +597,8 @@
     "breakCell": "Break",
     "roundColumn": "Round",
     "activeRound": "Now",
-    "endLateHint": "{{n}} matches still have no result. They stay open as late results: the referee or an admin can still enter them. Nothing is cancelled."
+    "endLateHint": "{{n}} matches still have no result. They stay open as late results: the referee or an admin can still enter them. Nothing is cancelled.",
+    "whoWon": "Who won?"
   },
   "errors.ROUND_NOT_DRAFT": "Only a draft round can be started.",
   "errors.ROUND_NOT_ACTIVE": "This round is no longer active. Refresh to see its current state.",
@@ -928,7 +937,8 @@
     "savedNext": "Result saved · Next: {{game}}",
     "savedAll": "Result saved · All your results are in",
     "history": "My finished matches",
-    "result": "Result"
+    "result": "Result",
+    "matchDetails": "Match details and bonuses"
   },
   "setup": {
     "importPrompt": "Have the event in Excel already?",

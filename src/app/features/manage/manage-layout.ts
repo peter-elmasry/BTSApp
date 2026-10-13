@@ -27,24 +27,27 @@ import { ManageNav } from './manage-nav';
       <p class="min-w-0 truncate text-sm font-semibold text-slate" data-testid="manage-event-label">
         {{ eventLabel() }}
       </p>
-      <div class="ds-actions" role="group" [attr.aria-label]="t('manage.toolbar.label')">
-        <a
-          class="ds-button ghost sm inline-flex items-center gap-1"
-          data-testid="toolbar-import"
-          [routerLink]="['/manage', eventId(), 'import']"
-          ><span aria-hidden="true">⬆</span>{{ t('manage.toolbar.import') }}</a
-        >
-        <button
-          type="button"
-          class="ds-button ghost sm inline-flex items-center gap-1"
-          data-testid="toolbar-export"
-          (click)="exporting.set(true)"
-        >
-          <span aria-hidden="true">⬇</span>{{ t('manage.toolbar.export') }}
-        </button>
+      <!-- Phones reach these from the bottom bar and More (product owner, 2026-10-13). -->
+      <div class="hidden md:block">
+        <div class="ds-actions" role="group" [attr.aria-label]="t('manage.toolbar.label')">
+          <a
+            class="ds-button ghost sm inline-flex items-center gap-1"
+            data-testid="toolbar-import"
+            [routerLink]="['/manage', eventId(), 'import']"
+            ><span aria-hidden="true">⬆</span>{{ t('manage.toolbar.import') }}</a
+          >
+          <button
+            type="button"
+            class="ds-button ghost sm inline-flex items-center gap-1"
+            data-testid="toolbar-export"
+            (click)="exporting.set(true)"
+          >
+            <span aria-hidden="true">⬇</span>{{ t('manage.toolbar.export') }}
+          </button>
+        </div>
       </div>
     </div>
-    <app-manage-nav [eventId]="eventId()" />
+    <div class="hidden md:block"><app-manage-nav [eventId]="eventId()" /></div>
     <router-outlet />
     @if (exporting()) {
       @defer {

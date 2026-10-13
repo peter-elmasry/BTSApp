@@ -50,6 +50,10 @@ for (const lang of ['ar', 'en'] as const) {
     await mockLiveEvent(page, { role: 'EVENT_ADMIN', lang });
     await page.goto('/');
     await expect(page).toHaveURL(new RegExp(`/manage/${eventId}/live$`));
+    // Phones use the bottom bar and More; the section bar and toolbar are for wider screens.
+    await page.goto(`/manage/${eventId}/live`);
+    await expect(page.getByTestId('toolbar-import')).toBeHidden();
+    await page.setViewportSize({ width: 1024, height: 800 });
     for (const section of ['live', 'setup', 'audit']) {
       await page.goto(`/manage/${eventId}/${section}`);
       await expect(page.getByTestId('toolbar-import')).toContainText(t.manage.toolbar.import);
@@ -58,6 +62,7 @@ for (const lang of ['ar', 'en'] as const) {
         page.getByRole('navigation', { name: t.manage.nav.label }).getByRole('link'),
       ).toHaveCount(6);
     }
+    await page.setViewportSize({ width: 360, height: 740 });
     const nav = mainNav(page, t);
     await expect(nav.getByRole('link', { name: t['nav.control'] })).toBeVisible();
     await nav.getByRole('button', { name: t['nav.more'] }).click();

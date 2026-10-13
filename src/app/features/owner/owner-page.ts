@@ -177,7 +177,30 @@ export class OwnerPage implements OnInit {
     this.cancelEdit();
     await this.reload();
   }
+  /** Add/edit happens in a sheet so the member list comes first (product owner, 2026-10-13). */
+  readonly memberSheet = signal(false);
+  /** Member whose ⋯ actions sheet is open. */
+  readonly actionMember = signal<Member | null>(null);
+  readonly memberFilters = ['all', 'active', 'inactive'] as const;
+  readonly memberFilter = signal<'all' | 'active' | 'inactive'>('all');
+  readonly visibleMembers = computed(() => {
+    const filter = this.memberFilter();
+    return this.members().filter((member) =>
+      filter === 'all' ? true : filter === 'active' ? member.is_active : !member.is_active,
+    );
+  });
+  memberCount(filter: 'all' | 'active' | 'inactive') {
+    const members = this.members();
+    if (filter === 'all') return members.length;
+    return members.filter((member) => member.is_active === (filter === 'active')).length;
+  }
+  openCreate() {
+    this.cancelEdit();
+    this.memberSheet.set(true);
+  }
   edit(member: Member) {
+    this.actionMember.set(null);
+    this.memberSheet.set(true);
     this.editing.set(member.id);
     this.memberForm.patchValue({
       username: member.username,
@@ -185,9 +208,9 @@ export class OwnerPage implements OnInit {
       full_name_en: member.full_name_en,
       full_name_ar: member.full_name_ar ?? '',
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   cancelEdit() {
+    this.memberSheet.set(false);
     this.editing.set(null);
     this.memberForm.reset({
       username: '',
@@ -207,6 +230,7 @@ export class OwnerPage implements OnInit {
     confirm: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
   openPassword(member: Member) {
+    this.actionMember.set(null);
     this.passwordForm.reset({ password: '', confirm: '' });
     this.passwordError.set('');
     this.passwordMember.set(member);

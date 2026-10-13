@@ -17,7 +17,7 @@ for (const lang of ['en', 'ar'] as const) {
     // Enter the waiting result inline from the chase list.
     await page.getByTestId('control-enter').first().click();
     const sheet = page.locator('dialog');
-    await sheet.getByRole('button', { name: t.live.choice.draw, exact: true }).click();
+    await sheet.getByTestId('choice-draw').click();
     await sheet.getByTestId('review-result').click();
     await sheet.getByTestId('confirm-result').click();
     await expect.poll(() => fixture.snapshot.matches[0].status).toBe('COMPLETED');
@@ -50,6 +50,7 @@ for (const lang of ['en', 'ar'] as const) {
     await page.getByTestId('results-team').first().click();
     await expect(page.getByTestId('team-breakdown')).toBeVisible();
     await page.keyboard.press('Escape');
+    await page.setViewportSize({ width: 1024, height: 800 });
     await page.getByTestId('toolbar-export').click();
     await expect(page.getByTestId('export-sheet')).toBeVisible();
     await expect(page.getByTestId('export-download')).toContainText(t.export.download);

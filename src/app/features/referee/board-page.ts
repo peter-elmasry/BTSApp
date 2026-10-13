@@ -1,3 +1,5 @@
+import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
+import { ResultEntry } from '../live/result-entry';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -50,6 +52,8 @@ import { guidesFor, nextActionable, stationGroups } from './station-model';
     DsStatusPill,
     DsTimerRing,
     RefereeSchedule,
+    DsBottomSheet,
+    ResultEntry,
   ],
   providers: [LiveReader],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -151,8 +155,24 @@ export class RefereeBoardPage {
     const data = this.data();
     return data ? guidesFor(data, match) : [];
   }
+  /** Result entry opens over the station (product owner, 2026-10-13); the page stays for details. */
+  readonly entryId = signal<string | null>(null);
+  readonly entryMatch = computed(
+    () => this.reader.data()?.matches.find((match) => match.id === this.entryId()) ?? null,
+  );
   open(match: LiveMatch) {
-    void this.router.navigate(['/ref/match', match.id]);
+    if (match.editable === false) return;
+    this.entryId.set(match.id);
+  }
+  saved(match: LiveMatch, status: 'sent' | 'queued') {
+    // A queued result keeps the sheet open: it shows its own "waiting for signal" notice.
+    if (status === 'queued') return;
+    this.entryId.set(null);
+    const data = this.reader.data();
+    const next = data ? nextActionable(data, match.id) : null;
+    if (next) this.toast.show('station.savedNext', { game: this.gameName(next) });
+    else this.toast.show('station.savedAll');
+    this.reader.refresh();
   }
   historyColumns(
     t: (key: string, params?: Record<string, unknown>) => string,
