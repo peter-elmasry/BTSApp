@@ -59,7 +59,8 @@
       "TEAM_CREATED": "Team added",
       "TEAM_UPDATED": "Team edited",
       "TEAM_DELETED": "Team deleted",
-      "TIEBREAK_SET": "Tie resolved"
+      "TIEBREAK_SET": "Tie resolved",
+      "MEMBER_PROFILE_UPDATED": "Member updated their details"
     },
     "entities": {
       "event": "Event",
@@ -986,5 +987,23 @@
     "incompleteMatch": "Round {{n}} has a match without two teams.",
     "teamTwice": "A team plays twice in round {{n}}.",
     "noReferee": "{{n}} games in the schedule have no referee."
-  }
+  },
+  "profile": {
+    "title": "My details",
+    "hint": "Your name, username and mobile as the team sees them. You sign in with the username or the mobile number.",
+    "nameAr": "Name in Arabic",
+    "nameEn": "Name in English",
+    "username": "Username",
+    "usernameHint": "3–30 characters: English letters, numbers, dot or underscore.",
+    "phone": "Mobile number",
+    "phoneHint": "Example: 01012345678. Leave empty to hide it.",
+    "save": "Save my details",
+    "saved": "Your details were saved."
+  },
+  "errors.INVALID_USERNAME": "Username must be 3–30 characters: English letters, numbers, dot or underscore.",
+  "errors.INVALID_NAME": "Write your name in English (up to 80 characters).",
+  "errors.INVALID_PHONE": "That mobile number is not valid.",
+  "errors.DUPLICATE_USERNAME": "Another member already uses this username.",
+  "errors.DUPLICATE_PHONE": "Another member already uses this mobile number.",
+  "errors.OFFLINE": "You are offline. Try again when you are connected."
 }

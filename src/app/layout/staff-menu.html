@@ -66,6 +66,9 @@
       <button type="button" class="menu-row" (click)="direction.toggle()">
         <span aria-hidden="true">🌐</span>{{ t('common.switchLanguage') }}
       </button>
+      <a class="menu-row" routerLink="/account/profile" (click)="close.emit()"
+        ><span aria-hidden="true">👤</span>{{ t('profile.title') }}</a
+      >
       <a class="menu-row" routerLink="/account/password" (click)="close.emit()"
         ><span aria-hidden="true">🔑</span>{{ t('account.changePassword') }}</a
       >

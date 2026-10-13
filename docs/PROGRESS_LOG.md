@@ -2,6 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — Self-service member details (D052) — DONE
+
+- **Branch:** `codex/ux-round2`.
+- **Database:** migration `0020_own_profile.sql` (`update_own_profile`, `normalize_member_phone`); pgTAP `0013_own_profile.test.sql` (14 assertions). Full local suite run on Postgres 16 + pgTAP: all suites pass except three storage-policy checks in `0003` that need Supabase's real storage schema (CI covers them).
+- **App:** "My details" page and account-menu entry; readable audit label for the new action; Arabic and English errors for invalid or duplicate username/mobile and offline saves.
+- **Checks:** i18n, unit tests, build, browser suite including `profile.spec.ts`.
+
 ## 2026-10-13 — UX round 2: result sheet, phone navigation, members, last result — DONE
 
 - **Branch:** `codex/ux-round2` (stacked on `codex/ux-walkthrough-fixes`).
