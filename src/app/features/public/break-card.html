@@ -14,13 +14,7 @@
     </p>
     @if (row().game; as game) {
       <h3 class="font-bold">
-        @if (scope.canOpenGames()) {
-          <a class="inline-flex min-h-11 items-center" [routerLink]="['/games', game.code]">{{
-            name(game, direction.language())
-          }}</a>
-        } @else {
-          {{ name(game, direction.language()) }}
-        }
+        <app-game-link [gameId]="game.id" />
       </h3>
       <p class="text-sm text-slate">{{ t('player.breakHint') }}</p>
     } @else {

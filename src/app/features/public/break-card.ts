@@ -7,9 +7,10 @@ import type { ScheduleRow } from './schedule-model';
 import { localizedLocation, localizedName } from './public-helpers';
 
 /** A schedule slot without a match: the game (or the team) is on a break that round. */
+import { GameLink, TeamLink } from '../quick-look/quick-links';
 @Component({
   selector: 'app-break-card',
-  imports: [RouterLink, TranslocoDirective],
+  imports: [RouterLink, TranslocoDirective, GameLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './break-card.html',
 })

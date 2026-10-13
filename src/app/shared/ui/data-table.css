@@ -160,3 +160,105 @@
 .ds-row-highlight th.ds-row-header {
   background: var(--color-gold-soft);
 }
+
+/* Phones (D056): compact two-line rows instead of a cramped table. Nothing is hidden,
+   there is no sideways scroll, and the ARIA table roles keep the semantics. */
+@media (max-width: 639.98px) {
+  .ds-table,
+  .ds-table tbody {
+    display: block;
+  }
+  .ds-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .ds-table tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 0.5rem;
+    row-gap: 0.125rem;
+    padding: 0.625rem 0.75rem;
+    border-block-end: 1px solid var(--color-mist);
+    border-inline-start: 4px solid transparent;
+  }
+  .ds-table tbody tr:last-child {
+    border-block-end: 0;
+  }
+  .ds-table tbody tr::before {
+    content: '';
+    order: 1;
+    flex-basis: 100%;
+    height: 0;
+  }
+  .ds-table tbody td,
+  .ds-table tbody th.ds-row-header,
+  .ds-table tbody td.hidden,
+  .ds-table tbody th.hidden {
+    display: block;
+    padding: 0;
+    border: 0 !important;
+    background: transparent !important;
+    white-space: normal;
+    text-align: start;
+  }
+  .ds-table tbody .ds-c-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 700;
+  }
+  .ds-table tbody .ds-c-end {
+    margin-inline-start: auto;
+    text-align: end;
+  }
+  .ds-table tbody .ds-c-meta {
+    order: 2;
+    font-size: 0.875rem;
+  }
+  .ds-table tbody .ds-labeled::before {
+    content: attr(data-label) ' ';
+    color: var(--color-slate);
+    font-size: 0.75rem;
+  }
+  .ds-table tbody .ds-disclosure-cell,
+  .ds-table tbody .ds-expand-row {
+    display: none !important;
+  }
+  .ds-table tbody td.ds-empty {
+    flex: 1 1 100%;
+    padding: 0.625rem;
+    text-align: center;
+  }
+  .ds-table tbody .ds-skeleton-row td {
+    flex: 1 1 100%;
+  }
+  .ds-table tr[data-status='live'] {
+    border-inline-start-color: var(--color-teal);
+  }
+  .ds-table tr[data-status='pending'],
+  .ds-table tr[data-status='late'] {
+    border-inline-start-color: var(--color-warning);
+  }
+  .ds-table tr[data-status='late'] {
+    border-inline-start-style: dashed;
+  }
+  .ds-table tr[data-status='done'] {
+    border-inline-start-color: var(--color-success);
+  }
+  .ds-table tr[data-status='void'] {
+    border-inline-start-color: var(--color-slate);
+  }
+  .ds-table tr[data-status='queued'] {
+    border-inline-start-color: var(--color-gold);
+  }
+  .ds-table tr.ds-row-highlight {
+    background: var(--color-gold-soft);
+  }
+  .ds-table tr.ds-row-clickable:hover {
+    background: var(--color-ivory);
+  }
+}

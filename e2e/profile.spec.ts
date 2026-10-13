@@ -43,7 +43,7 @@ for (const lang of ['ar', 'en'] as const) {
     await expect(page.getByTestId('toast')).toContainText(t.profile.saved);
     expect(sent.at(-1)).toMatchObject({
       p_username: 'referee',
-      p_full_name_en: 'Mina Referee',
+      p_full_name_en: 'مينا الحكم',
       p_phone: '01012345678',
     });
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);

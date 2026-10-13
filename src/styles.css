@@ -434,6 +434,22 @@ fieldset:disabled .ds-choice {
     animation: none;
   }
 }
+.ds-quick-link {
+  display: inline;
+  cursor: pointer;
+  color: inherit;
+  font-weight: inherit;
+  text-align: start;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--color-teal);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+.ds-quick-link:focus-visible {
+  outline: 3px solid var(--color-teal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 .ds-phone-none {
   display: inline-flex;
   min-height: 44px;

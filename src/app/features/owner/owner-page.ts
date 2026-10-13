@@ -160,6 +160,8 @@ export class OwnerPage implements OnInit {
         action: id ? 'update' : 'create',
         ...(id ? { member_id: id } : {}),
         ...value,
+        // One name per member (D054): both columns hold the same text.
+        full_name_ar: value.full_name_en,
         password: id ? undefined : value.password || undefined,
       },
     });
@@ -205,7 +207,7 @@ export class OwnerPage implements OnInit {
     this.memberForm.patchValue({
       username: member.username,
       phone: member.phone ?? '',
-      full_name_en: member.full_name_en,
+      full_name_en: member.full_name_ar || member.full_name_en,
       full_name_ar: member.full_name_ar ?? '',
     });
   }
@@ -296,7 +298,7 @@ export class OwnerPage implements OnInit {
     const accepted = await this.mutate('create_event', {
       p_code: (v.code.trim() || this.defaultCode()).toUpperCase(),
       p_name_en: v.name_en,
-      p_name_ar: v.name_ar || null,
+      p_name_ar: v.name_en,
       p_starts_on: v.starts_on || null,
     });
     if (accepted) {

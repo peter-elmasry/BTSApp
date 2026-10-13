@@ -29,12 +29,15 @@ import { InstallService } from '../core/pwa/install.service';
 import { navigationFor } from './navigation';
 import { StaffMenu } from './staff-menu';
 
+import { QuickLook } from '../features/quick-look/quick-look.service';
+import { QuickLookSheet } from '../features/quick-look/quick-look-sheet';
 @Component({
   selector: 'app-shell',
   imports: [
     RouterLink,
     RouterLinkActive,
     SessionOutlet,
+    QuickLookSheet,
     TranslocoDirective,
     DsToast,
     DsAvatar,
@@ -56,6 +59,7 @@ export class AppShell {
   private readonly channel = inject(EventChannelService);
   readonly switchSheet = signal(false);
   readonly menuOpen = signal(false);
+  readonly quickLook = inject(QuickLook);
   private readonly clock = inject(ServerClockService);
   private readonly i18n = inject(TranslocoService);
   private readonly router = inject(Router);

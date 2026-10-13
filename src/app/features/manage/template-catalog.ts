@@ -1,9 +1,9 @@
 import { TEAM_AVATARS } from './setup-helpers';
 
 /** Arabic-first event setup workbook (template v3) — fixed layout shared by the generator and parser. */
-export const TEMPLATE_VERSION = '4';
+export const TEMPLATE_VERSION = '5';
 /** v3 workbooks lack the scoring rows only; they still import and keep current scoring. */
-export const ACCEPTED_TEMPLATE_VERSIONS = ['3', TEMPLATE_VERSION];
+export const ACCEPTED_TEMPLATE_VERSIONS = ['3', '4', TEMPLATE_VERSION];
 export const MAX_TEAMS = 20;
 export const MAX_GAMES = 12;
 export const MAX_ROUNDS = 20;
@@ -128,22 +128,18 @@ export const EVENT_FIELDS: readonly {
   },
   {
     key: 'points_win',
-    label: 'نقاط الفوز',
+    label: 'الفوز (نقط أو قلوب)',
     required: true,
-    hint: 'تغييرها بعدين بيعيد حساب المجموع.',
+    hint: 'في نظام القلوب: اللي بيتزاد أو بيتشال، مثال 0',
   },
-  { key: 'points_draw', label: 'نقاط التعادل', required: true, hint: '' },
-  { key: 'points_loss', label: 'نقاط الخسارة', required: true, hint: '' },
-  { key: 'currency_ar_one', label: 'العملة — مفرد', required: true, hint: '١ عملة' },
-  { key: 'currency_ar_two', label: 'العملة — مثنى', required: true, hint: '٢ عملتين' },
-  { key: 'currency_ar_plural', label: 'العملة — جمع', required: true, hint: '٥ عملات' },
+  { key: 'points_draw', label: 'التعادل (نقط أو قلوب)', required: true, hint: 'مثال قلوب: -5' },
+  { key: 'points_loss', label: 'الخسارة (نقط أو قلوب)', required: true, hint: 'مثال قلوب: -10' },
   {
-    key: 'currency_en_one',
-    label: 'Currency — singular (EN)',
+    key: 'points_name',
+    label: 'اسم النقط',
     required: true,
-    hint: 'للنسخة الإنجليزية',
+    hint: 'اسم واحد بيظهر للكل، مثال: نقط أو Coins',
   },
-  { key: 'currency_en_other', label: 'Currency — plural (EN)', required: true, hint: '' },
   {
     key: 'match_bonus_cap',
     label: 'أقصى مكافأة في المباراة',
@@ -184,7 +180,7 @@ export const EVENT_FIELDS: readonly {
     key: 'initial_lives',
     label: 'عدد القلوب في البداية',
     required: false,
-    hint: 'لنظام القلوب بس: ١ – ٩٩',
+    hint: 'لنظام القلوب بس: ١ – ٩٩٩٩',
   },
   { key: 'life_emoji', label: 'رمز القلب', required: false, hint: 'أي إيموجي: ❤️ 💛 💙 🔥 ⭐' },
   {

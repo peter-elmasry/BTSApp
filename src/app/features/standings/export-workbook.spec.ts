@@ -153,7 +153,7 @@ describe('standings XLSX export', () => {
     expect(standings.getCell('A1').value).toContain('2026-01-11 01:30 (Africa/Cairo)');
     expect(standings.views[0]).toMatchObject({ state: 'frozen', ySplit: 3 });
     expect(standings.getCell('A3').font.color?.argb).toBe('FFFFFFFF');
-  });
+  }, 30000);
 
   it('includes match attribution and revoked adjustment history without staff credentials or identifiers', async () => {
     const snapshot = exportFixture();

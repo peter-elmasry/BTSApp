@@ -13,8 +13,8 @@ select ('2a000000-0000-0000-0000-'||lpad(n::text,12,'0'))::uuid,('1a000000-0000-
 from generate_series(1,6) n;
 insert into public.events(id,code,name_en,points_win,points_draw,points_loss) values
 ('3a000000-0000-0000-0000-000000000001','UX-POINTS','UX Points',3,1,0);
-insert into public.events(id,code,name_en,scoring_mode,initial_lives) values
-('3a000000-0000-0000-0000-000000000002','UX-LIVES','UX Lives','LIVES',2);
+insert into public.events(id,code,name_en,scoring_mode,initial_lives,points_win,points_draw,points_loss) values
+('3a000000-0000-0000-0000-000000000002','UX-LIVES','UX Lives','LIVES',2,0,0,-1);
 insert into public.teams(id,event_id,code,name_en,avatar_key,color_hex)
 select ('4a000000-0000-0000-0000-'||lpad((e*10+n)::text,12,'0'))::uuid,('3a000000-0000-0000-0000-00000000000'||e)::uuid,'T0'||n,'Team '||n,'falcon','#123456'
 from generate_series(1,2) e cross join generate_series(1,4) n;
@@ -163,8 +163,8 @@ reset role;
 insert into public.adjustments(event_id,scope,team_id,points,reason,given_by) values
 ('3a000000-0000-0000-0000-000000000002','EVENT','4a000000-0000-0000-0000-000000000021',-5,'Penalty','2a000000-0000-0000-0000-000000000002');
 select is((select (x->>'lives_delta')::int from jsonb_array_elements(public.get_team_view('3a000000-0000-0000-0000-000000000002','T01')->'matches') x where x->>'id'='7a000000-0000-0000-0000-000000000211'),-1,'a loss costs one life');
-select is((public.get_team_view('3a000000-0000-0000-0000-000000000002','T01')->'breakdown'->>'lives_lost')::int,1,'lives lost are counted');
-select is((public.get_team_view('3a000000-0000-0000-0000-000000000002','T01')->'breakdown'->>'total')::int,0,'lives never drop below zero');
+select is((public.get_team_view('3a000000-0000-0000-0000-000000000002','T01')->'breakdown'->>'lives_change')::int,-1,'the hearts change from matches is reported');
+select is((public.get_team_view('3a000000-0000-0000-0000-000000000002','T01')->'breakdown'->>'total')::int,-4,'hearts may go below zero (D053)');
 select is((public.get_team_view('3a000000-0000-0000-0000-000000000002','T01')->'breakdown'->>'total')::bigint,
   (select (x->>'total')::bigint from jsonb_array_elements(public.phase6_standings('3a000000-0000-0000-0000-000000000002')) x where x->'team'->>'code'='T01'),'lives breakdown equals the standings total');
 select is((public.get_team_view('3a000000-0000-0000-0000-000000000002','T03')->'breakdown'->>'total')::int,2,'a late match costs no life until entered');

@@ -8,9 +8,10 @@ import type { PublicMatch } from '../../core/player/public-types';
 import { DsAvatar } from '../../shared/ui/avatar';
 import { gameImage, localizedLocation, localizedName, refereeNames } from './public-helpers';
 
+import { GameLink, TeamLink } from '../quick-look/quick-links';
 @Component({
   selector: 'app-public-match-card',
-  imports: [RouterLink, TranslocoDirective, DsAvatar],
+  imports: [RouterLink, TranslocoDirective, DsAvatar, GameLink, TeamLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './match-card.html',
 })

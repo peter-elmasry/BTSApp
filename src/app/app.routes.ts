@@ -8,7 +8,11 @@ import {
 } from './core/auth/guards';
 import { landingGuard } from './core/auth/landing';
 import { memberOnlyGuard, scheduleGuard, teamPageGuard } from './core/player/viewer-scope';
-import { leaderboardVisibleGuard, teamChosenGuard } from './core/player/player.guards';
+import {
+  chooseTeamGuard,
+  leaderboardVisibleGuard,
+  teamChosenGuard,
+} from './core/player/player.guards';
 
 export const routes: Routes = [
   {
@@ -24,6 +28,7 @@ export const routes: Routes = [
   },
   {
     path: 'choose-team',
+    canActivate: [chooseTeamGuard],
     loadComponent: () => import('./features/public/choose-team-page').then((m) => m.ChooseTeamPage),
   },
   {

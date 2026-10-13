@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   contentChildren,
+  DestroyRef,
   Directive,
   inject,
   input,
@@ -64,6 +65,18 @@ export function disclosureClass(
 /** Expanded-row items hide again once their column is visible in the table. */
 export function expandItemClass(priority: DsPriority | undefined): string {
   return priority === 2 ? 'sm:hidden' : priority === 3 ? 'lg:hidden' : '';
+}
+
+/** True below 640 px, where tables render as compact two-line rows (D056). */
+export function phoneSignal() {
+  const query = typeof matchMedia === 'function' ? matchMedia('(max-width: 639.98px)') : null;
+  const phone = signal(query?.matches ?? false);
+  if (query) {
+    const update = (event: MediaQueryListEvent) => phone.set(event.matches);
+    query.addEventListener('change', update);
+    inject(DestroyRef).onDestroy(() => query.removeEventListener('change', update));
+  }
+  return phone.asReadonly();
 }
 
 /** Lists longer than this get a search box (UX requirement, 2026-10-13). */
@@ -174,6 +187,18 @@ export class DsDataTable<T> {
           ? 'text-center'
           : 'text-start';
     return `${priorityClass(column.priority)} ${align}${column.numeric ? ' tabular' : ''}`.trim();
+  }
+  /**
+   * Phone layout (below 640 px, D056): every row becomes two short lines. Line 1 is the
+   * first column plus an end-aligned last column; line 2 holds the rest, with a small
+   * label on numeric or normally-hidden values so nothing is lost or ambiguous.
+   */
+  phoneClass(column: DsColumn<T>, index: number): string {
+    if (index === 0) return 'ds-c-title';
+    const columns = this.columns();
+    const end = column.align === 'end' || column.numeric;
+    if (end && index === columns.length - 1) return 'ds-c-end';
+    return (column.priority ?? 1) > 1 || column.numeric ? 'ds-c-meta ds-labeled' : 'ds-c-meta';
   }
   itemClass(column: DsColumn<T>): string {
     return expandItemClass(column.priority);

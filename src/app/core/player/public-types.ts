@@ -79,7 +79,7 @@ export interface PublicMatch {
   result_entered_at?: string | null;
   /** Team view only: points this match earned the team (POINTS events). */
   points?: number;
-  /** Team view only: lives this match cost the team, 0 or -1 (LIVES events). */
+  /** Team view only: hearts this match added or removed for the team (LIVES events, D053). */
   lives_delta?: number;
 }
 export interface PublicBootstrap {
@@ -103,7 +103,8 @@ export interface TeamBreakdown {
   match_points: number;
   adjustment_points: number;
   total: number;
-  lives_lost: number | null;
+  /** Hearts gained or lost from match results (LIVES events, D053). */
+  lives_change: number | null;
 }
 export interface PublicTeamView {
   team: PublicTeam;

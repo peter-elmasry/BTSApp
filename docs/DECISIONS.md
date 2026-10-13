@@ -1,5 +1,21 @@
 # Implementation decisions
 
+## D056 — English terms, staff never pick a team, compact phone rows
+
+The Arabic UI keeps these terms in English: Guide, Round, Game, Match, Team, Event, Referee, Admin, Owner, Break, Station; "ضد" is written "vs" everywhere. Signed-in staff who guide no team never see team selection: `/choose-team`, the header team chip and "Player screen" are hidden and redirect to their own start page. Below 640 px every `ds-data-table` row renders as two short lines (first column plus an end-aligned last column, then the rest with small labels on numeric or normally hidden values); no column is hidden and the schedule's Table/Cards switch appears only from 640 px. ARIA table roles are explicit so the semantics survive the layout change.
+
+## D055 — Quick look for any team or game name
+
+Tapping a team or game name opens a sheet with what matters now: guides (team) or referees (game) with call links, the current match, location and timer, the next match, the last result, and points when the viewer may see outcomes. Visitors only see matches of their own team; members see all. Staff directories come from `get_staff_directory(event)` (migration `0023`), which requires a signed-in member and returns the same guide and referee JSON the public views use. This replaces adding referee/guide columns to every list.
+
+## D054 — One name per item
+
+Events, points names, teams, games, game locations, rounds and member full names have a single field. The app writes it to both language columns (`name_en`/`name_ar`, `location_*`, all five currency forms, `full_name_*`) so older clients and exports keep working; what is typed is what every language shows. Migration `0022` merges existing pairs, preferring the Arabic value and falling back to English, without clearing manual tie orders. The setup workbook v5 has one "points name" row; v3/v4 workbooks are still accepted.
+
+## D053 — Hearts mode: any starting hearts, signed gains
+
+Hearts events start each team with 1–9999 hearts, and win/draw/loss add signed gains (for example 0 / −5 / −10) set in the app and the workbook. Points mode also accepts signed values (−999999…999999). Totals are not floored: hearts may go negative. Existing hearts events become 0 / 0 / −1, which matches the old one-heart-per-loss rule. The team breakdown reports `lives_change` instead of `lives_lost` (migration `0021`).
+
 ## D052 — Members edit their own details
 
 Product owner, 2026-10-13. Every signed-in, active member opens "My details" from the

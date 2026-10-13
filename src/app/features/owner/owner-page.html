@@ -117,12 +117,8 @@
           /><small class="block text-slate">{{ t('owner.codeAuto') }}</small></label
         >
         <label class="space-y-1"
-          ><span>{{ t('owner.nameEn') }}</span
-          ><input class="ds-control w-full" formControlName="name_en"
-        /></label>
-        <label class="space-y-1"
-          ><span>{{ t('owner.nameAr') }}</span
-          ><input class="ds-control w-full" formControlName="name_ar"
+          ><span>{{ t('owner.eventName') }}</span
+          ><input class="ds-control w-full" formControlName="name_en" dir="auto"
         /></label>
         <label class="space-y-1"
           ><span>{{ t('owner.startsOn') }}</span
@@ -251,12 +247,8 @@
           ><input class="ds-control w-full" formControlName="phone" inputmode="tel"
         /></label>
         <label class="space-y-1"
-          ><span>{{ t('owner.nameEn') }}</span
-          ><input class="ds-control w-full" formControlName="full_name_en"
-        /></label>
-        <label class="space-y-1"
-          ><span>{{ t('owner.nameAr') }}</span
-          ><input class="ds-control w-full" formControlName="full_name_ar"
+          ><span>{{ t('owner.fullName') }}</span
+          ><input class="ds-control w-full" formControlName="full_name_en" dir="auto"
         /></label>
         @if (!editing()) {
           <label class="space-y-1 sm:col-span-2"

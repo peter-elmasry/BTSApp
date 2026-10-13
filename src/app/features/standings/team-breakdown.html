@@ -75,8 +75,10 @@
       <section class="ds-card bg-navy text-white" data-testid="breakdown-total">
         @if (lives()) {
           <p class="tabular text-lg font-bold">
-            {{ t('breakdown.livesStart') }} {{ b.initial_lives }} − {{ t('breakdown.livesLost') }}
-            {{ b.lives_lost }} {{ b.adjustment_points >= 0 ? '+' : '−' }}
+            {{ t('breakdown.livesStart') }} {{ b.initial_lives }}
+            {{ (b.lives_change ?? 0) >= 0 ? '+' : '−' }} {{ t('breakdown.livesMatches') }}
+            {{ (b.lives_change ?? 0) < 0 ? -(b.lives_change ?? 0) : (b.lives_change ?? 0) }}
+            {{ b.adjustment_points >= 0 ? '+' : '−' }}
             {{ t('breakdown.adjustments') }}
             {{ b.adjustment_points < 0 ? -b.adjustment_points : b.adjustment_points }} =
             <span class="text-gold"><app-count-up [value]="b.total" [fromZero]="true" /></span>

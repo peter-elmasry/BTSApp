@@ -18,6 +18,7 @@ import {
   DsDataTable,
   type DsColumn,
   type DsRowStatus,
+  phoneSignal,
 } from '../../shared/ui/data-table';
 import { DsOutcome } from '../../shared/ui/outcome';
 import { DsStatusPill, type DsStatus } from '../../shared/ui/status-pill';
@@ -38,10 +39,14 @@ import {
 
 type ScheduleTab = 'myTeam' | 'byRound' | 'byGame';
 export type ScheduleView = 'table' | 'cards';
+import { GameLink, TeamLink } from '../quick-look/quick-links';
+
 const VIEW_KEY = 'bts.schedule.view';
 @Component({
   selector: 'app-schedule-page',
   imports: [
+    GameLink,
+    TeamLink,
     RouterLink,
     TranslocoDirective,
     PublicMatchCard,
@@ -82,6 +87,9 @@ export class SchedulePage {
   /** Table is the default (D039); the choice is remembered on this device. */
   readonly view = signal<ScheduleView>(this.restoreView());
   readonly views: ScheduleView[] = ['table', 'cards'];
+  /** Phones always get the compact table rows; the switch shows from 640 px (D056). */
+  readonly phone = phoneSignal();
+  readonly shownView = computed<ScheduleView>(() => (this.phone() ? 'table' : this.view()));
   /** Flat rows for the table view, in the same order as the grouped cards. */
   readonly tableRows = computed(() => this.groups().flatMap((group) => group.rows));
   readonly name = localizedName;

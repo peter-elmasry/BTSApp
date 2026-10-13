@@ -53,6 +53,29 @@ type SetupData = {
 };
 type SetupTab = 'settings' | 'teams' | 'games' | 'rounds' | 'staff' | 'review';
 
+/**
+ * One name per item (D054): the screens show a single Name / Location / Points name and
+ * the database keeps both language columns filled with the same text.
+ */
+export function singleNames(args: Record<string, unknown>): Record<string, unknown> {
+  const fill = (value: unknown): unknown => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+    const record = { ...(value as Record<string, unknown>) };
+    if ('name_en' in record) record['name_ar'] = record['name_en'];
+    if ('location_en' in record) record['location_ar'] = record['location_en'];
+    if ('currency_ar_plural' in record)
+      for (const key of [
+        'currency_en_one',
+        'currency_en_other',
+        'currency_ar_one',
+        'currency_ar_two',
+      ])
+        record[key] = record['currency_ar_plural'];
+    return record;
+  };
+  return Object.fromEntries(Object.entries(args).map(([key, value]) => [key, fill(value)]));
+}
+
 @Component({
   selector: 'app-event-setup-page',
   imports: [
@@ -154,15 +177,15 @@ export class EventSetupPage {
     name_ar: new FormControl('', { nonNullable: true }),
     points_win: new FormControl(2, {
       nonNullable: true,
-      validators: [Validators.required, Validators.min(0)],
+      validators: [Validators.required, Validators.min(-999999), Validators.max(999999)],
     }),
     points_draw: new FormControl(1, {
       nonNullable: true,
-      validators: [Validators.required, Validators.min(0)],
+      validators: [Validators.required, Validators.min(-999999), Validators.max(999999)],
     }),
     points_loss: new FormControl(0, {
       nonNullable: true,
-      validators: [Validators.required, Validators.min(0)],
+      validators: [Validators.required, Validators.min(-999999), Validators.max(999999)],
     }),
     currency_en_one: new FormControl('Point', {
       nonNullable: true,
@@ -191,7 +214,7 @@ export class EventSetupPage {
     leaderboard_public: new FormControl(false, { nonNullable: true }),
     show_guide_phone: new FormControl(false, { nonNullable: true }),
     scoring_mode: new FormControl<'POINTS' | 'LIVES'>('POINTS', { nonNullable: true }),
-    initial_lives: new FormControl<number | null>(null, [Validators.min(1), Validators.max(99)]),
+    initial_lives: new FormControl<number | null>(null, [Validators.min(1), Validators.max(9999)]),
     life_emoji: new FormControl('❤️', {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(16)],
@@ -286,6 +309,17 @@ export class EventSetupPage {
 
   constructor() {
     const context = inject(ManageContext);
+    // Switching to hearts by hand starts from Win 0 · Draw 0 · Loss -1 (D053).
+    const modeChanges = this.settingsForm.controls.scoring_mode.valueChanges.subscribe((mode) => {
+      const value = this.settingsForm.getRawValue();
+      if (
+        mode === 'LIVES' &&
+        value.points_loss >= 0 &&
+        this.settingsForm.controls.scoring_mode.dirty
+      )
+        this.setHeartsPreset(0, 0, -1);
+    });
+    inject(DestroyRef).onDestroy(() => modeChanges.unsubscribe());
     // The layout shows the name of the event this screen loaded (it may not be the current one).
     effect(() => {
       const event = this.setup()?.event;
@@ -364,6 +398,7 @@ export class EventSetupPage {
 
   private async mutate(fn: string, args: Record<string, unknown>) {
     if (this.saving()) return false;
+    args = singleNames(args);
     this.saving.set(true);
     try {
       const receipt = await this.queue.execute(fn, args);
@@ -383,6 +418,11 @@ export class EventSetupPage {
     }
   }
 
+  /** Hearts presets: what Win / Draw / Loss add or remove (D053). */
+  setHeartsPreset(win: number, draw: number, loss: number) {
+    this.settingsForm.patchValue({ points_win: win, points_draw: draw, points_loss: loss });
+    this.settingsForm.markAsDirty();
+  }
   chooseLifeEmoji(emoji: string) {
     this.settingsForm.controls.life_emoji.setValue(emoji);
     this.settingsForm.controls.life_emoji.markAsDirty();

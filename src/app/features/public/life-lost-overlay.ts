@@ -34,7 +34,7 @@ export class LifeLostOverlay {
   private readonly store = inject(EventStore);
   private readonly selection = inject(TeamSelectionStore);
   private readonly teamView = inject(TeamViewState);
-  readonly shown = signal<{ emoji: string; left: number | null } | null>(null);
+  readonly shown = signal<{ emoji: string; left: number | null; change: number } | null>(null);
   private timer?: ReturnType<typeof setTimeout>;
 
   constructor() {
@@ -44,15 +44,17 @@ export class LifeLostOverlay {
       const view = this.teamView.view();
       const code = this.selection.selectedCode();
       if (!event || !view || !code || view.team.code !== code || !isLivesMode(event)) return;
-      const lost = view.matches
-        .filter(
-          (match) =>
-            match.status === 'COMPLETED' &&
-            match.participants.some(
+      // A match that removed hearts (custom gains, D053; older servers: a loss or forfeit).
+      const removed = (match: (typeof view.matches)[number]) =>
+        match.lives_delta !== undefined && match.lives_delta !== null
+          ? match.lives_delta < 0
+          : match.participants.some(
               (participant) => participant.team_code === code && costsLife(participant.outcome),
-            ),
-        )
-        .map((match) => match.id);
+            );
+      const lostMatches = view.matches.filter(
+        (match) => match.status === 'COMPLETED' && removed(match),
+      );
+      const lost = lostMatches.map((match) => match.id);
       untracked(() => {
         const key = seenLossesKey(event.id, code);
         const seen = this.read(key);
@@ -62,12 +64,15 @@ export class LifeLostOverlay {
           this.show({
             emoji: lifeEmoji(event),
             left: livesLeft(view),
+            change: lostMatches
+              .filter((match) => fresh.includes(match.id))
+              .reduce((sum, match) => sum + (match.lives_delta ?? -1), 0),
           });
       });
     });
   }
 
-  private show(value: { emoji: string; left: number | null }) {
+  private show(value: { emoji: string; left: number | null; change: number }) {
     clearTimeout(this.timer);
     this.shown.set(value);
     navigator.vibrate?.([60, 40, 60]);

@@ -20,7 +20,7 @@ describe('lives scoring (D038)', () => {
       match_points: 1,
       adjustment_points: 0,
       total: 1,
-      lives_lost: 2,
+      lives_change: -2,
     };
     expect(livesLeft({ breakdown: { ...breakdown, scoring_mode: 'LIVES' } })).toBe(1);
     expect(livesLeft({ breakdown: { ...breakdown, scoring_mode: 'POINTS' } })).toBeNull();
