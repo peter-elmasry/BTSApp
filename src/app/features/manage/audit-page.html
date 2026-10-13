@@ -17,7 +17,7 @@
         >
           <option value="">{{ t('audit.allActions') }}</option>
           @for (action of actions(); track action) {
-            <option [value]="action">{{ action }}</option>
+            <option [value]="action">{{ label(t, 'actions', action) }}</option>
           }
         </select>
       </label>
@@ -29,7 +29,7 @@
         >
           <option value="">{{ t('audit.allEntities') }}</option>
           @for (entity of entities(); track entity) {
-            <option [value]="entity">{{ entity }}</option>
+            <option [value]="entity">{{ label(t, 'entities', entity) }}</option>
           }
         </select>
       </label>
@@ -51,13 +51,18 @@
         class="min-w-0 space-y-2 rounded-card bg-white p-4 shadow-card"
         data-testid="audit-entry"
       >
-        <h2 class="break-words font-extrabold" dir="ltr">{{ row.action }}</h2>
+        <h2 class="break-words font-extrabold">{{ label(t, 'actions', row.action) }}</h2>
         <p class="break-words">
           {{ t('audit.actor') }}:
           {{ row.actor ? name(row.actor, direction.language()) : t('audit.system') }}
         </p>
         <time class="block text-sm text-slate" [attr.datetime]="row.at">{{ time(row.at) }}</time>
-        <p class="break-words text-sm" dir="ltr">{{ row.entity }} · {{ row.entity_id || '—' }}</p>
+        <p class="break-words text-sm">
+          {{ label(t, 'entities', row.entity) }}
+          @if (subject(row); as about) {
+            · <bdi class="font-semibold">{{ about }}</bdi>
+          }
+        </p>
         <details class="rounded-xl border border-mist p-3">
           <summary class="flex min-h-11 cursor-pointer items-center font-semibold">
             {{ t('audit.details') }}

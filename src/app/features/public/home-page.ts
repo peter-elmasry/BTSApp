@@ -18,6 +18,7 @@ import { DsStatusPill } from '../../shared/ui/status-pill';
 import { DsTimerRing } from '../../shared/ui/timer-ring';
 import { ViewerScope } from '../../core/player/viewer-scope';
 import type { PublicMatch } from '../../core/player/public-types';
+import { DsPhoneLink } from '../../shared/ui/phone-link';
 import { guideNames, localizedLocation, localizedName, teamGuides } from './public-helpers';
 import { PublicState } from './public-state';
 import { TeamViewState } from './team-view-state';
@@ -38,6 +39,7 @@ import { TeamViewState } from './team-view-state';
     CountUp,
     DsLivesMeter,
     LifeLostOverlay,
+    DsPhoneLink,
   ],
   providers: [TeamViewState, StandingsReader],
   changeDetection: ChangeDetectionStrategy.OnPush,

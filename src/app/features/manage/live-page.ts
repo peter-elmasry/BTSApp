@@ -90,7 +90,12 @@ export class LiveControlPage {
   readonly completed = computed(
     () => this.counted().filter((match) => match.status === 'COMPLETED').length,
   );
-  readonly open = computed(() => this.matches().filter((match) => match.status === 'SCHEDULED'));
+  /** Unplayed matches of a started round; a draft round has nothing waiting yet. */
+  readonly open = computed(() =>
+    this.round()?.status === 'DRAFT'
+      ? []
+      : this.matches().filter((match) => match.status === 'SCHEDULED'),
+  );
   readonly late = computed(() =>
     (this.reader.data()?.matches ?? []).filter((match) => this.status(match) === 'late'),
   );
@@ -101,7 +106,12 @@ export class LiveControlPage {
   readonly adjustmentCount = computed(
     () => (this.reader.data()?.adjustments ?? []).filter((item) => !item.revoked_at).length,
   );
-  readonly ties = computed(() => this.standings.rows().filter((row) => row.is_tied).length);
+  /** Ties only need resolving once every round is closed (final ranking). */
+  readonly ties = computed(() =>
+    this.rounds().length && this.rounds().every((round) => round.status === 'CLOSED')
+      ? this.standings.rows().filter((row) => row.is_tied).length
+      : 0,
+  );
   readonly canAdmin = computed(
     () => !!this.reader.data() && isLiveAdmin(this.auth.profile(), this.eventId()),
   );

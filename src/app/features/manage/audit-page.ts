@@ -97,15 +97,42 @@ export class AuditPage {
   more() {
     if (this.next() && !this.loading()) void this.load(true);
   }
+  /** Readable label for a stored code; unknown codes fall back to plain words. */
+  label(t: (key: string) => string, group: 'actions' | 'entities', code: string) {
+    const key = `audit.${group}.${code}`;
+    const value = t(key);
+    return value && value !== key ? value : code.replace(/_/g, ' ').toLowerCase();
+  }
+  /** What the entry is about (team/game name, round number), never a raw id. */
+  subject(row: AuditEntry) {
+    const pick = (value: AuditJson) =>
+      value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+    const data = pick(row.after) ?? pick(row.before);
+    if (!data) return '';
+    const ar = this.direction.language() === 'ar';
+    const text = (key: string) => (typeof data[key] === 'string' ? (data[key] as string) : '');
+    const name =
+      (ar ? text('name_ar') || text('full_name_ar') : text('name_en') || text('full_name_en')) ||
+      text('name_en') ||
+      text('name_ar') ||
+      text('full_name_en') ||
+      text('username');
+    if (name) return text('code') ? `${name} · ${text('code')}` : name;
+    if (typeof data['number'] === 'number') return `#${data['number']}`;
+    return text('code');
+  }
   format(value: AuditJson) {
     return JSON.stringify(value, null, 2);
   }
   time(value: string) {
-    return new Intl.DateTimeFormat(this.direction.language() === 'ar' ? 'ar-EG' : 'en-GB', {
-      dateStyle: 'medium',
-      timeStyle: 'medium',
-      timeZone: 'Africa/Cairo',
-    }).format(new Date(value));
+    return new Intl.DateTimeFormat(
+      this.direction.language() === 'ar' ? 'ar-EG-u-nu-latn' : 'en-GB',
+      {
+        dateStyle: 'medium',
+        timeStyle: 'medium',
+        timeZone: 'Africa/Cairo',
+      },
+    ).format(new Date(value));
   }
   private async load(append: boolean) {
     if (!this.allowed()) return;

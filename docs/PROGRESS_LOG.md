@@ -2,6 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — Production walkthrough fixes (visitor, admin, referee) — HANDOFF
+
+- **Branch:** `codex/ux-walkthrough-fixes` (from master after PR #19).
+- **Visitor:** table rows slide in without starting transparent (rows stayed invisible when the browser paused animations); team page uses the schedule's scheduled/live/waiting wording; home shows each guide as a call link when phones are shown; CI timer test scoped to the round banner.
+- **Admin:** a draft round adds nothing to "waiting for results"; late rows name their round; the tie banner waits until every round is closed; the duplicate round-status line is gone; started rounds cannot be deleted and other deletes need a second tap; the Excel import card hides once a round started; the audit log shows readable actions, record types and names with Latin digits; owner event status is translated.
+- **Shared:** bottom sheets report every close, so a menu closed by the browser can reopen; `ds-phone-link` shows the name when there is no number.
+- **Referee:** signed-in staff open `/schedule` without choosing a team (By round/By game); result buttons show team avatars and "X won"; finished matches of ended rounds stay as read-only history (D050, migration `0019`).
+- **Checks:** i18n, 207 unit tests, build, 83 browser tests. pgTAP updated for D050; runs in CI.
+- **Open:** guide walkthrough; result-entry layout (three tiles vs modal) awaiting the product owner.
+
 ## 2026-10-13 — UX enhancement U7 setup steps and U8 owner members — DONE
 
 - **Branch:** `codex/ux-u7-setup` (stacked on U6).

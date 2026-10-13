@@ -54,6 +54,8 @@
       <ng-template dsCell="outcome" let-match>
         @if (match.status === 'VOID') {
           <span class="text-slate line-through">{{ t('ui.status.void') }}</span>
+        } @else if (outcome(match) === 'PENDING') {
+          <ds-status-pill [status]="status(match)" />
         } @else {
           <ds-outcome [outcome]="outcome(match)" />
         }

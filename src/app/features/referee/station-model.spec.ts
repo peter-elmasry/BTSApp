@@ -32,10 +32,16 @@ describe('station model', () => {
         match('M9', 'late'),
         match('M5', 'upcoming'),
         match('M1', 'late'),
+        match('M7', 'done', 'COMPLETED', false),
       ]),
     );
     expect(groups.current.map((item) => item.id)).toEqual(['M2', 'M3']);
     expect(groups.late.map((item) => item.id)).toEqual(['M1', 'M9']);
+    expect(groups.done.map((item) => item.id)).toEqual(['M7']);
+  });
+
+  it('never offers a finished match of an ended round as the next action (D050)', () => {
+    expect(nextActionable(snap([match('M7', 'done', 'COMPLETED', false)]), null)).toBeNull();
   });
 
   it('finds the next match needing a result, current before late', () => {

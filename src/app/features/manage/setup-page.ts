@@ -540,7 +540,14 @@ export class EventSetupPage {
     });
     if (saved) this.editRound();
   }
+  /** Deleting a round removes its whole schedule, so it takes a second tap. */
+  readonly confirmRound = signal<string | null>(null);
   async deleteRound(row: Row) {
+    if (this.confirmRound() !== row.id) {
+      this.confirmRound.set(String(row.id));
+      return;
+    }
+    this.confirmRound.set(null);
     await this.mutate('delete_round', { p_round: row.id });
   }
   matchOptions(roundId: string) {

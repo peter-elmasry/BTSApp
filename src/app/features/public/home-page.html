@@ -29,8 +29,17 @@
               name(team, direction.language())
             }}</a>
           </h2>
-          @if (team.guide) {
-            <p>{{ t('team.guide') }}: {{ guideNames(team, direction.language()) }}</p>
+          @for (guide of teamGuides(team); track $index) {
+            @if (guide.phone) {
+              <div class="ds-on-dark">
+                <ds-phone-link
+                  [name]="t('team.guide') + ': ' + name(guide, direction.language())"
+                  [phone]="guide.phone"
+                />
+              </div>
+            } @else {
+              <p>{{ t('team.guide') }}: {{ name(guide, direction.language()) }}</p>
+            }
           }
           @if (livesMode() && lives() !== null) {
             <div class="mt-2 flex flex-wrap items-center gap-2" data-testid="home-lives">

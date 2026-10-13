@@ -12,7 +12,9 @@ for (const lang of ['en', 'ar'] as const) {
     const t = labels(lang);
     const fixture = await mockStandingsEvent(page, { role: 'EVENT_ADMIN', lang });
     await page.goto(`/manage/${eventId}/setup`);
-    await expect(page.getByTestId('import-card')).toBeVisible();
+    // A round already started in this fixture, so the Excel import card is hidden.
+    await expect(page.getByTestId('setup-step-review')).toBeVisible();
+    await expect(page.getByTestId('import-card')).toHaveCount(0);
 
     // Review lists what is missing and jumps to the step that fixes it.
     await page.getByTestId('setup-step-review').click();

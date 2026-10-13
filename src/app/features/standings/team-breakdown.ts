@@ -19,6 +19,7 @@ import { DsCellDef, DsDataTable, type DsColumn } from '../../shared/ui/data-tabl
 import { DsLivesMeter } from '../../shared/ui/lives-meter';
 import { DsOutcome } from '../../shared/ui/outcome';
 import { DsPhoneLink } from '../../shared/ui/phone-link';
+import { DsStatusPill, type DsStatus } from '../../shared/ui/status-pill';
 import { lifeEmoji } from '../../core/player/scoring';
 import { localizedLocation, localizedName, teamGuides } from '../public/public-helpers';
 import { TeamViewState } from '../public/team-view-state';
@@ -38,6 +39,7 @@ export function ownOutcome(match: Pick<PublicMatch, 'participants'>, code: strin
     RouterLink,
     TranslocoDirective,
     DsAvatar,
+    DsStatusPill,
     CountUp,
     DsDataTable,
     DsCellDef,
@@ -107,6 +109,13 @@ export class TeamBreakdown {
   }
   outcome(match: PublicMatch) {
     return ownOutcome(match, this.code());
+  }
+  /** Same wording as the schedule: not played yet vs. played and waiting for its result. */
+  status(match: PublicMatch): DsStatus {
+    const round = this.events.rounds().find((item) => item.id === match.round_id);
+    if (round?.status === 'ACTIVE') return 'live';
+    if (round?.status === 'CLOSED') return 'pending';
+    return 'scheduled';
   }
   value(match: PublicMatch) {
     const raw = this.lives() ? match.lives_delta : match.points;

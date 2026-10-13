@@ -14,7 +14,65 @@
     "after": "After",
     "more": "Load older entries",
     "empty": "No audit entries match these filters.",
-    "failed": "Could not load audit history. Check your connection and try again."
+    "failed": "Could not load audit history. Check your connection and try again.",
+    "actions": {
+      "ADJUSTMENT_ADDED": "Bonus/penalty added",
+      "ADJUSTMENT_REVOKED": "Bonus/penalty cancelled",
+      "CURRENT_EVENT_SET": "Set as current event",
+      "EVENT_ADMIN_ASSIGNED": "Event admin assigned",
+      "EVENT_ADMIN_REMOVED": "Event admin removed",
+      "EVENT_CREATED": "Event created",
+      "EVENT_ROLE_ASSIGNED": "Staff assigned",
+      "EVENT_ROLE_REMOVED": "Staff removed",
+      "EVENT_ROLE_UPDATED": "Staff updated",
+      "EVENT_SETTINGS_UPDATED": "Settings changed",
+      "EVENT_SETUP_IMPORTED": "Imported from Excel",
+      "IMPORT_ROLLBACK": "Import rolled back",
+      "GAME_CREATED": "Game added",
+      "GAME_DELETED": "Game deleted",
+      "GAME_UPDATED": "Game edited",
+      "LEADERBOARD_VISIBILITY_SET": "Standings visibility changed",
+      "MATCH_CREATED": "Match added",
+      "MATCH_DELETED": "Match deleted",
+      "MATCH_UPDATED": "Match edited",
+      "MATCH_RESULT_SUBMITTED": "Result entered",
+      "MATCH_RESULT_CORRECTED": "Result corrected",
+      "MATCH_RESULT_RESET": "Result cleared",
+      "MATCH_VOIDED": "Match cancelled",
+      "MEMBER_CREATED": "Member added",
+      "MEMBER_UPDATED": "Member edited",
+      "MEMBER_DEACTIVATED": "Member deactivated",
+      "MEMBER_REACTIVATED": "Member reactivated",
+      "MEMBER_PASSWORD_SET": "Password set",
+      "MEMBER_PASSWORD_CHANGED": "Password changed",
+      "MEMBER_LOGIN_LINKED": "Login linked",
+      "OPENING_MATCH_GENERATED": "Opening match created",
+      "OPENING_MATCH_REGENERATED": "Opening match rebuilt",
+      "REFEREE_GAMES_SET": "Referee games set",
+      "ROUND_CREATED": "Round added",
+      "ROUND_UPDATED": "Round edited",
+      "ROUND_DELETED": "Round deleted",
+      "ROUND_STARTED": "Round started",
+      "ROUND_EXTENDED": "Round extended",
+      "ROUND_CLOSED": "Round ended",
+      "ROUND_REOPENED": "Round reopened",
+      "TEAM_CREATED": "Team added",
+      "TEAM_UPDATED": "Team edited",
+      "TEAM_DELETED": "Team deleted",
+      "TIEBREAK_SET": "Tie resolved"
+    },
+    "entities": {
+      "event": "Event",
+      "event_role": "Staff",
+      "game": "Game",
+      "match": "Match",
+      "referee_games": "Referee games",
+      "round": "Round",
+      "team": "Team",
+      "member": "Member",
+      "adjustment": "Bonus/penalty",
+      "tiebreak": "Tie"
+    }
   },
   "nav.home": "Home",
   "nav.schedule": "Schedule",
@@ -284,6 +342,7 @@
     "cancel": "Cancel",
     "choose": "Choose",
     "delete": "Delete",
+    "confirmDelete": "Tap again to delete",
     "remove": "Remove",
     "edit": "Edit"
   },
@@ -332,7 +391,13 @@
     "passwordMismatch": "The passwords do not match.",
     "passwordTooShort": "Use at least 12 characters.",
     "codeAuto": "Leave empty to use the suggested code.",
-    "memberColumn": "Member"
+    "memberColumn": "Member",
+    "eventStatus": {
+      "DRAFT": "Draft",
+      "LIVE": "Live",
+      "FINISHED": "Finished",
+      "ARCHIVED": "Archived"
+    }
   },
   "errors.REQUIRED": "Please enter a name",
   "foundation": {
@@ -498,7 +563,9 @@
       "bWins": "Team B wins",
       "aForfeits": "Team A forfeits",
       "bForfeits": "Team B forfeits",
-      "bothForfeit": "Both teams forfeit"
+      "bothForfeit": "Both teams forfeit",
+      "teamWins": "{{team}} won",
+      "teamForfeits": "{{team}} forfeited"
     },
     "action": {
       "start_round": "Start round",
@@ -859,7 +926,9 @@
     "admins": "Event admins",
     "noActive": "No round is running. Your next matches are in the schedule below.",
     "savedNext": "Result saved · Next: {{game}}",
-    "savedAll": "Result saved · All your results are in"
+    "savedAll": "Result saved · All your results are in",
+    "history": "My finished matches",
+    "result": "Result"
   },
   "setup": {
     "importPrompt": "Have the event in Excel already?",

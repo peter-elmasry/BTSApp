@@ -69,7 +69,7 @@ export class RefereeBoardPage {
   });
   readonly groups = computed(() => {
     const data = this.reader.data();
-    return data ? stationGroups(data) : { current: [], late: [] };
+    return data ? stationGroups(data) : { current: [], late: [], done: [] };
   });
   readonly activeRound = computed(
     () => this.reader.data()?.rounds.find((round) => round.status === 'ACTIVE') ?? null,
@@ -153,6 +153,20 @@ export class RefereeBoardPage {
   }
   open(match: LiveMatch) {
     void this.router.navigate(['/ref/match', match.id]);
+  }
+  historyColumns(
+    t: (key: string, params?: Record<string, unknown>) => string,
+  ): DsColumn<LiveMatch>[] {
+    return [
+      {
+        key: 'round',
+        header: t('live.roundColumn'),
+        value: (match) => this.round(match)?.number ?? '',
+        numeric: true,
+      },
+      { key: 'game', header: t('now.game'), value: (match) => this.gameName(match) },
+      { key: 'teams', header: t('station.result') },
+    ];
   }
   lateColumns(t: (key: string, params?: Record<string, unknown>) => string): DsColumn<LiveMatch>[] {
     return [

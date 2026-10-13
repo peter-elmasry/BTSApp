@@ -90,7 +90,7 @@ set local role authenticated;
 
 -- Late first result by the assigned referee only (D041).
 select set_config('request.jwt.claim.sub','1a000000-0000-0000-0000-000000000003',true);
-select is((select x->>'bucket' from jsonb_array_elements(public.get_referee_board('3a000000-0000-0000-0000-000000000001')->'matches') x where x->>'id'='7a000000-0000-0000-0000-000000000111'),null,'completed matches of an ended round leave the board');
+select is((select x->>'bucket' from jsonb_array_elements(public.get_referee_board('3a000000-0000-0000-0000-000000000001')->'matches') x where x->>'id'='7a000000-0000-0000-0000-000000000111'),'done','completed matches of an ended round stay as history (D050)');
 select throws_ok($$select public.submit_match_result(gen_random_uuid(),'7a000000-0000-0000-0000-000000000112','[]')$$,'P0001','FORBIDDEN','referee of another game cannot enter a late result');
 select throws_ok($$select public.submit_match_result(gen_random_uuid(),'7a000000-0000-0000-0000-000000000111',(select g1_loss from ux_payload))$$,'P0001','ROUND_NOT_ACTIVE','referee cannot correct a result after the round ended');
 select throws_ok($$select public.add_adjustment(gen_random_uuid(),'3a000000-0000-0000-0000-000000000001','MATCH','7a000000-0000-0000-0000-000000000111','4a000000-0000-0000-0000-000000000011',1,'Late bonus')$$,'P0001','ROUND_NOT_ACTIVE','referee adjustments stay limited to active rounds');

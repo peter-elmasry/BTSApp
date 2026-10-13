@@ -107,7 +107,7 @@ test('overtime counts up without closing the round and invalid team links stay u
   }, `bts.team.${eventId}`);
   await mockPublicEvent(page, { overtime: true });
   await page.goto('/home');
-  await expect(page.getByRole('timer')).toContainText('+01:');
+  await expect(page.getByTestId('round-banner').getByRole('timer')).toContainText('+01:');
   await expect(
     page.getByText("Time's up — waiting for the admin to close the round"),
   ).toBeVisible();

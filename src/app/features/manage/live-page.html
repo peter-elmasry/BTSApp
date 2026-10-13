@@ -43,7 +43,6 @@
               item.status === 'ACTIVE' ? 'live' : item.status === 'CLOSED' ? 'done' : 'scheduled'
             "
           />
-          <p class="text-sm text-slate">{{ t('live.roundStatus.' + item.status) }}</p>
         </div>
       </section>
       <dl class="grid grid-cols-2 gap-2 text-center sm:grid-cols-4" data-testid="control-kpis">
@@ -98,6 +97,9 @@
         >
           <ng-template dsCell="game" let-match>
             <span class="font-bold">{{ gameName(match.game_id) }}</span>
+            @if (match.round_id !== selectedId()) {
+              <span class="block text-sm font-semibold">{{ roundTitle(t, match.round_id) }}</span>
+            }
             <span class="block text-sm text-slate">
               <ds-status-pill [status]="status(match)" />
             </span>

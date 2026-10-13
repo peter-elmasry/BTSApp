@@ -126,6 +126,42 @@
       </section>
     }
   }
+  @if (reader.data() && groups().done.length) {
+    <section
+      class="space-y-2"
+      aria-labelledby="station-history-title"
+      data-testid="station-history"
+    >
+      <h2 id="station-history-title" class="text-lg font-bold">
+        {{ t('station.history') }} ({{ groups().done.length }})
+      </h2>
+      <ds-data-table
+        [rows]="groups().done"
+        [columns]="historyColumns(t)"
+        [trackBy]="track"
+        [caption]="t('station.history')"
+        [searchText]="searchText"
+      >
+        <ng-template dsCell="teams" let-match>
+          <span class="flex flex-col gap-1">
+            @for (participant of match.participants; track participant.team_id) {
+              <span class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold">{{
+                  teamName(participant.team_id) || participant.team_code
+                }}</span>
+                @if (match.status === 'COMPLETED' && participant.outcome) {
+                  <ds-outcome [outcome]="participant.outcome" />
+                }
+              </span>
+            }
+            @if (match.status === 'VOID') {
+              <ds-status-pill status="void" />
+            }
+          </span>
+        </ng-template>
+      </ds-data-table>
+    </section>
+  }
   @if (events.event()) {
     <app-referee-schedule />
   }
