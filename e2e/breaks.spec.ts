@@ -37,9 +37,7 @@ async function withBreaks(page: Page) {
 }
 
 for (const lang of ['en', 'ar'] as const) {
-  test(`schedule and game details show breaks where no match is scheduled in ${lang}`, async ({
-    page,
-  }) => {
+  test(`a visitor's schedule shows their own breaks in ${lang}`, async ({ page }) => {
     const t = labels(lang);
     await page.addInitScript((value) => {
       localStorage.setItem('bts.lang', value);
@@ -53,24 +51,30 @@ for (const lang of ['en', 'ar'] as const) {
     const table = page.getByTestId('schedule-table');
     await expect(table.getByRole('rowheader')).toHaveCount(3);
     await expect(table.getByTestId('table-break')).toHaveCount(1);
-    await page.getByRole('button', { name: t.player.byRound }).click();
-    // Round 1: G02 break; round 2: G02 break; round 3: both games break.
-    await expect(table.getByTestId('table-break')).toHaveCount(4);
+    // Visitors see only their own team (D046): no by-round or by-game views.
+    await expect(page.getByRole('button', { name: t.player.byRound })).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     await page.getByTestId('view-cards').click();
     await expect(page.getByTestId('schedule-table')).toHaveCount(0);
-    await expect(page.getByTestId('break-card')).toHaveCount(4);
-    await page.getByRole('button', { name: t.player.myTeam }).click();
-    // Wait for the re-render to settle on one card before reading its text.
     await expect(page.getByTestId('break-card')).toHaveCount(1);
     await expect(page.getByTestId('break-card')).toContainText(t.player.teamBreak);
     // The chosen view is remembered on this device.
     await page.reload();
     await expect(page.getByTestId('view-cards')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByTestId('break-card')).toHaveCount(1);
+  });
+
+  test(`members see breaks by round and on game details in ${lang}`, async ({ page }) => {
+    const t = labels(lang);
+    await mockLiveEvent(page, { role: 'REFEREE', lang });
+    await withBreaks(page);
+    await page.goto('/schedule');
+    await page.getByRole('button', { name: t.player.byRound }).click();
+    // Round 1: G02 break; round 2: G02 break; round 3: both games break.
+    await expect(page.getByTestId('schedule-table').getByTestId('table-break')).toHaveCount(4);
     await page.goto('/games/G02');
     await expect(page.getByTestId('break-card')).toHaveCount(3);
     await expect(page.getByTestId('break-card').first()).toContainText(t.player.breakHint);

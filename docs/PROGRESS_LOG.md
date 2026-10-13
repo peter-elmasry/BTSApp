@@ -2,6 +2,98 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — UX enhancement U7 setup steps and U8 owner members — DONE
+
+- **Branch:** `codex/ux-u7-setup` (stacked on U6).
+- **Setup (U7):** steps Settings → Teams → Games → Rounds → Staff → Review with a done tick per step; the XLSX import card sits on the first step; scoring presets with an "Advanced" fold; the leaderboard switch lives only in its section (no duplicate checkbox).
+- **Bulk add:** add N teams (next free codes, colour swatches and avatar grid), N games and N rounds in one sheet.
+- **Schedule grid:** rounds × games grid; tap a cell to set or clear its pairing; break cells shown; repeated pairs flagged.
+- **Review:** lists what is missing (name, teams, games, rounds, empty or incomplete rounds, a team twice in one round, games without referees, too many opening rounds) with a link to the step that fixes it; repeated pairings are flagged in the grid.
+- **Owner (U8):** members are a searchable table (name with @username as row header, call link, status, actions); a new event's code defaults to `BTS-YYYY[-n]` and may be left blank.
+- **Deviations:** the owner events list stays as cards (few rows, each with several actions). D-3 auto-fill of pairings was not built (undecided).
+- **Checks:** i18n, unit tests, build, full browser suite including the new `setup.spec.ts`.
+
+## 2026-10-13 — UX enhancement U6 player and guide screens — DONE
+
+- **Branch:** `codex/ux-u6-public` (stacked on U5).
+- **Home:** "Now" hero (current game, 📍 location large, opponent, outcome, "Next station" when done, resting notice), next-matches table and a top-5 standings preview.
+- **Schedule (D039 kept):** Table/Cards switch stays; the table view is rebuilt on the shared table styles with break rows, own-team highlight and resting rows; visitors see only "My team" (D046).
+- **Leaderboard:** `standings-list` gains a `table` variant (rank, team with tie/my-team/rank-change badges, W-D-L, total with count-up, forfeits/adjustments from 640 px), search above ten teams, a late-results note from `rounds[].late_count` (D041) and row drill-down limited by `ViewerScope`. Home preview and the venue display keep the list layout.
+- **Team breakdown:** shared `app-team-breakdown` (summary, match-by-match table, adjustments, reconciliation) used by the drill-down sheet and the `/teams/:code` page.
+- **Game details (members only):** one table per game with a row per round and break rows.
+- **Guide chip:** signed-in guides see a "Guide" chip next to their team avatar (D044).
+- **Shared:** `ds-data-table` columns may render as row headers; table styles are global; `ds-outcome` wraps its word in its own element.
+- **Checks:** i18n (813 keys), 202 unit tests, build (initial 406.77 kB), full browser suite.
+- **Next:** U7 setup checklist, U8 owner tables, then merge to `master` and production verification.
+
+## 2026-10-13 — UX enhancement U5 referee "My station" — DONE
+
+- **Branch:** `codex/ux-u5-referee` (stacked on P1).
+- **Station (`/ref`):** header with the round timer ring; one hero card per match of the running round (game, 📍 location, teams, status pill incl. Queued, the teams' guides with one-tap call, Enter/Correct result); a searchable "Late results" table for ended rounds without a result (D041); the round × game schedule; event admins' phones (`get_event_contacts`). Pure helpers in `station-model.ts` (`stationGroups`, `nextActionable`, `guidesFor`).
+- **Match entry (`/ref/match/:id`):** uses the shared `app-result-entry` (inline review); bonuses/penalties behind a "Match bonuses & penalties" button; a confirmed result returns to `/ref` with a toast "Result saved · Next: <game>" (or "All your results are in"); a queued result stays on the page until it syncs.
+- **Hardening:** `ResultEntry.submit` now also refuses while the queue restores or a result is queued, ignores a reply for a match the component no longer shows, and cancels the review when permission is lost (old page-level safety tests ported to the component).
+- **Shared:** `liveMatchStatus`/`sortForChase` moved to `live-helpers.ts`; `ToastService.show(key, params)` and the toast now translate their key (previously a raw key was shown).
+- **Checks:** i18n, 202 unit tests, build (initial 403.39 kB), 80/80 browser tests incl. new station test (guides/admin phones, late table, axe, 360 px) in EN/AR.
+- **Next:** U6 player/guide screens.
+
+## 2026-10-13 — UX enhancement P1 visitor scope, phones, list search, logout clearing — DONE
+
+- **Branch:** `codex/ux-p1-privacy` (stacked on U4).
+- **Visitor scope (D046):** `core/player/viewer-scope.ts` — a visitor without a login sees only the selected team: Schedule shows only the "My team" tab, match/break cards and standings rows link only to the own team, `teams/:code` for another team and `games/:code` redirect home (`teamPageGuard`, `memberOnlyGuard`). Leaderboard and display stay visible only when published (D027, confirmed 2026-10-13).
+- **Phones (D048):** staff phones (referees, admins) render only for signed-in members; visitors see only their team's DST guide.
+- **Search (D049):** `ds-data-table` shows a search box above 10 rows (accent/Arabic-diacritic insensitive); new `ds-search-select` replaces long selects (owner members, adjustments team, adjustments filter).
+- **Logout (D047):** `clearDeviceData` clears local/session storage (keeps `bts.lang`), caches and the offline IndexedDB; the account menu warns when unsent operations exist and reloads to `/home`.
+- **Password redirect:** members created with temporary passwords (`must_change_password`, migration 0010) are sent to Change password by design; after saving they now return to the page they asked for (`returnUrl`) or their landing page.
+- **Checks:** unit tests, lint, build, 78/78 browser tests incl. new `privacy.spec.ts` (EN/AR visitor scope, member view, logout clearing).
+- **Next:** U5 referee "My station".
+
+## 2026-10-13 — UX enhancement U4 admin Control, Results, Adjustments, export, drill-down — DONE
+
+- **Branch:** `codex/ux-u4-admin` (stacked on U3).
+- **Control (`live-page`):** round tabs with late badges, timer ring, status pill, count-up KPIs (results in x/y, waiting, late, bonuses & penalties), tie banner, a "matches waiting for a result" table with referee one-tap calls and inline result entry, and a fixed action bar: Start (now / X minutes ago with planned end and overtime warning), +5/+10/custom, End round (late-results notice), End & start next (two queued operations with a retry for the start), Reopen. Results cards and the event-adjustments panel moved out.
+- **Results (`/manage/:id/results`):** `ds-data-table` per round sorted late → waiting → done → void; row or button opens the reusable `app-result-entry` in a sheet; ⋯ menu for reset/void; team names open the team breakdown.
+- **Adjustments (`/manage/:id/adjustments`):** filterable table (type, team, revoked), revoke sheet, "Add" sheet reusing the adjustments panel with current → projected total.
+- **Export (D045):** one-tap `app-export-sheet` (fresh snapshot → .xlsx download, phones excluded) from the toolbar, the More menu (`?export=1`) and Standings; "Preview first" keeps the frozen-preview flow (`?preview=1`).
+- **Team breakdown sheet:** match-by-match outcome and points/lives from the server, adjustments table and a reconciliation footer; opened from Results, Adjustments and admin Standings.
+- **Fix:** `StandingsReader` treats a non-array response as empty (an empty response previously broke rendering).
+- **Checks:** 194 unit tests, i18n (792 keys), build (initial 401.51 kB), 73/73 browser tests incl. new `admin-control.spec.ts` (inline entry, End & start next 10 minutes ago, drill-down, export sheet, adjustments) in EN/AR.
+- **Next:** privacy requirements from 2026-10-13 (anonymous scope, phones, logout clearing), then U5.
+
+## 2026-10-13 — UX enhancement U3 round lifecycle, contacts and breakdown — DONE
+
+- **Branch:** `codex/ux-u3-backend` (stacked on U2).
+- **Migration `0018_ux_round_contacts_breakdown.sql`:** `close_round` ends a round with pending matches kept `SCHEDULED` as late results and returns `late_match_ids` (no automatic void/forfeit, D041); `start_round(p_op_id,p_round,p_started_minutes_ago)` backdates 0–180 min and refuses a start before the previous round's `closed_at` (D042; the 2-argument start still works and queued old operations replay unchanged); assigned referees may enter the first result of a late match, corrections in ended rounds stay admin-only; `get_referee_board` returns current/upcoming/late buckets with `editable` and the guides of teams at the station; `get_live_event` adds `game_referee_contacts` and `team_guides`; new `get_event_contacts` for event members; `get_bootstrap` rounds add `late_count`; `get_team_view` adds per-match `points`/`lives_delta` and a `breakdown` computed from `phase6_standings` in both scoring modes.
+- **Deviation:** the late-results count is `rounds[].late_count` in `get_bootstrap` instead of a field on `get_standings`, so the standings array contract, export and display stay unchanged.
+- **Client:** End round no longer blocked (late-results notice instead of `closeBlocked`); referee board hides upcoming matches until U5; home/life-lost overlay read lives from the server breakdown (`livesLeft`), client `teamLives` removed (R6); referees may open late matches; new error strings.
+- **Tests:** new `0012_ux_round_contacts.test.sql` (62 assertions: offsets, replay, late first result vs correction, no auto void/forfeit, buckets, phone scoping, contacts permissions, POINTS and LIVES reconciliation incl. floor at zero, locks after a backdated start). Updated `0006` for the agreed rules. Full SQL suite (898 assertions) passed on a local Postgres 16 + pgTAP with Supabase stubs (no Docker on this machine); CI must still confirm on real Supabase. 185 unit tests, build (399.87 kB) and 69/69 browser tests pass.
+- **Next:** U4 admin Control, Results, Adjustments, one-tap export and team drill-down.
+
+## 2026-10-13 — UX enhancement U2 landing, navigation and Now sheet — DONE
+
+- **Branch:** `codex/ux-u2-navigation` (stacked on U1).
+- **Landing (§2.1):** `core/auth/landing.ts` — owners/admins → Control, referees → `/ref`, guides/players → home; used by `/` (`landingGuard`), the login redirect and the guest-only guard.
+- **D044:** `TeamSelectionStore.guidedTeamCodes/canSwitch/canChoose`; a signed-in guide is moved to their single guided team even after the lock, and a guide of several teams switches only among them. Anonymous lock (D035) unchanged.
+- **Navigation:** role-aware bottom nav (`layout/navigation.ts`, max five items); header 🔑/logout replaced by an initials button opening the account/More sheet (`layout/staff-menu`) with Import/Export, adjustments, audit, player view, display, members & events, language, password and logout.
+- **D045:** `/manage/:eventId` renders `ManageLayout` once with the section bar (Control · Results · Bonuses & penalties · Standings · Setup · Audit) and permanent "Import (Excel)" / "Export (Excel)" buttons; per-page bars removed. Router uses `paramsInheritanceStrategy: 'always'`. `results`/`adjustments` temporarily open Control until U4. Export opens Standings with `?export=1`, which prepares the export immediately.
+- **Now sheet:** the round banner opens a role-specific sheet (player match + location + next match, referee station status, admin results-in/pending/void count-ups with a pending table); staff also see a "Next: Round N" banner between rounds. Now sheet and menu are `@defer`-loaded.
+- **Checks:** 184 unit tests, i18n (713 keys), build (initial 399.87 kB), Prettier pass. Browser suite 68/69; the only failure is the known flaky `lives.spec.ts` life-lost case. Updated `admin-layout` and `session-privacy` specs for the agreed nav; new `navigation.spec.ts` (landing per role, toolbar on every manage page, guide auto-select, Now sheet) in EN/AR.
+- **Next:** U3 backend (migration 0018) and round lifecycle wiring.
+
+## 2026-10-13 — UX enhancement U1 shared UI foundations — DONE
+
+- **Branch:** `codex/ux-u1-foundations` (stacked on `codex/ux-u0-decisions`).
+- **Added (`shared/ui`):** `ds-data-table` (+ `dsCell` templates, column priority with row expand, status accent, sort, skeleton/empty), `ds-tabs` (renders the D040 `.ds-tabs/.ds-tab` classes with a sliding RTL-safe indicator and arrow keys), `ds-status-pill`, `ds-outcome`, `ds-phone-link`, `ds-timer-ring`; moved `app-count-up` to `shared/ui/count-up.ts` (adds `duration`, `fromZero`). Bottom sheet gains `size="full"` and slide-up motion. Router uses `withViewTransitions()` with RTL-mirrored CSS; header/nav keep their own transition names. New `ui.*` EN/AR strings.
+- **Checks:** 171 unit tests, i18n (667 keys), production build (initial 382.46 kB), Prettier on changed files pass. Browser suite 58/59 on the first full run; the failing `lives.spec.ts` life-lost case passed 18/18 on re-run (flaky under parallel load, not caused by this change). DB suite not run (no local Docker).
+- **Next:** U2 landing, navigation, Import/Export placement and Now sheet.
+
+## 2026-10-13 — UX enhancement U0 decisions — DONE
+
+- **Requested by:** Peter; start the agreed UX plan v3.1 (`Claude outputs/`), Schedule Cards switch kept.
+- **Preflight:** `master` @ `a827d45` (PR #18 Phase 8 merged), clean tree; branch `codex/ux-u0-decisions`.
+- **Changed:** Updated both `Claude outputs/` files to v3.1; added D041–D045; plan §6.1 close/start rows, Phase 5 acceptance, §20 amendments note and new §21.
+- **Checks:** Documentation only; `format:check` on changed Markdown.
+- **Next:** U1 shared UI foundations on `codex/ux-u1-foundations`.
+
 ## 2026-10-12 — Phase 8: team lock, referees, breaks, lives scoring, schedule table — HANDOFF
 
 - **Requested by:** Peter; approved slices 1–7 of the Phase 8 proposal. General inter-round breaks were cancelled; "no match for a game in a round = break" instead. Answers: first pick allowed after the lock; teams at zero lives stay at zero and keep playing; life emoji is free text with ten suggestions.

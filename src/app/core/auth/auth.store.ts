@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { OfflineDb } from '../offline/offline-db';
+import { clearDeviceData } from './device-data';
 import { isNetworkFailure } from '../offline/rpc-errors';
 import { environment } from '../../../environments/environment';
 
@@ -100,6 +101,8 @@ export class AuthStore {
     this.session.set(null);
     this.profile.set(null);
     if (userId) await this.db.removeCache(this.profileKey(userId)).catch(() => {});
+    // D047: nothing from this session stays on the device (only the language is kept).
+    await clearDeviceData(() => this.db.destroy());
   }
 
   private profileUser: string | null = null;

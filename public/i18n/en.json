@@ -20,6 +20,11 @@
   "nav.schedule": "Schedule",
   "nav.leaderboard": "Standings",
   "nav.about": "About us",
+  "nav.control": "Control",
+  "nav.results": "Results",
+  "nav.setup": "Setup",
+  "nav.more": "More",
+  "nav.myStation": "My station",
   "team.choose.title": "Pick your team",
   "team.choose.confirm": "Yes, that's my team!",
   "team.switch": "Switch team",
@@ -62,7 +67,7 @@
   "ref.confirm": "Confirm result",
   "admin.round.start": "Start round",
   "admin.round.extend": "Add time",
-  "admin.round.close": "Close round",
+  "admin.round.close": "End round",
   "admin.round.pending": "{{n}} matches still without a result",
   "errors.CAP_EXCEEDED": "Bonus/penalty cap reached ({{left}} left)",
   "offline.queued": "No connection — we'll send it once you're back online",
@@ -78,7 +83,8 @@
       "teams": "Teams",
       "games": "Games",
       "rounds": "Rounds",
-      "staff": "Staff"
+      "staff": "Staff",
+      "review": "Review"
     },
     "settings": "Event settings",
     "nameEn": "Event name (English)",
@@ -154,10 +160,18 @@
       "setup": "Setup",
       "standings": "Standings",
       "import": "Import",
-      "audit": "Audit log"
+      "audit": "Audit log",
+      "control": "Control",
+      "results": "Results",
+      "adjustments": "Bonuses & penalties"
     },
     "entityNameEn": "Name (English)",
-    "entityNameAr": "Name (Arabic)"
+    "entityNameAr": "Name (Arabic)",
+    "toolbar": {
+      "label": "Excel import and export",
+      "import": "Import (Excel)",
+      "export": "Export (Excel)"
+    }
   },
   "import": {
     "intro": "Upload an Excel workbook, review its rows, then confirm the import.",
@@ -316,7 +330,9 @@
     "openSetup": "Open event setup",
     "passwordFor": "New password for {{name}}",
     "passwordMismatch": "The passwords do not match.",
-    "passwordTooShort": "Use at least 12 characters."
+    "passwordTooShort": "Use at least 12 characters.",
+    "codeAuto": "Leave empty to use the suggested code.",
+    "memberColumn": "Member"
   },
   "errors.REQUIRED": "Please enter a name",
   "foundation": {
@@ -411,7 +427,9 @@
       "cards": "Cards"
     },
     "teamsColumn": "Teams",
-    "resultColumn": "Result"
+    "resultColumn": "Result",
+    "nextStation": "Next station",
+    "opponent": "Opponent"
   },
   "live": {
     "title": "Live control",
@@ -503,7 +521,8 @@
     "allTeams": "All teams ({{n}})",
     "breakCell": "Break",
     "roundColumn": "Round",
-    "activeRound": "Now"
+    "activeRound": "Now",
+    "endLateHint": "{{n}} matches still have no result. They stay open as late results: the referee or an admin can still enter them. Nothing is cancelled."
   },
   "errors.ROUND_NOT_DRAFT": "Only a draft round can be started.",
   "errors.ROUND_NOT_ACTIVE": "This round is no longer active. Refresh to see its current state.",
@@ -546,7 +565,12 @@
     "noResults": "Results will appear here after a match finishes.",
     "pauseCycle": "Pause cycling",
     "resumeCycle": "Resume cycling",
-    "loadFailed": "Could not load standings. Try again."
+    "loadFailed": "Could not load standings. Try again.",
+    "team": "Team",
+    "record": "W-D-L",
+    "total": "Total",
+    "livesColumn": "Lives {{emoji}}",
+    "pendingNote": "{{n}} result(s) from ended rounds are still being entered, so totals may change."
   },
   "phase6": {
     "pointsWarning": "Changing points recalculates all results and clears manual tie orders.",
@@ -685,5 +709,203 @@
     "lifeLostBody": "Shake it off — the next one is yours.",
     "lifeLostOk": "Got it"
   },
-  "errors.SCORING_LOCKED": "Scoring mode and starting lives cannot change after a round has started."
+  "errors.SCORING_LOCKED": "Scoring mode and starting lives cannot change after a round has started.",
+  "ui": {
+    "table": {
+      "details": "Show details",
+      "empty": "Nothing to show yet"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "live": "Live",
+      "pending": "Pending",
+      "late": "Late",
+      "done": "Done",
+      "void": "Void",
+      "queued": "Queued"
+    },
+    "call": "Call {{name}}",
+    "search": "Search",
+    "searchIn": "Search {{name}}",
+    "noMatches": "No matches for this search"
+  },
+  "menu": {
+    "title": "Menu",
+    "open": "Open account menu",
+    "roles": "Your roles in this event",
+    "eventTools": "Event tools",
+    "playerView": "Player view",
+    "display": "Big screen",
+    "members": "Members & events",
+    "role": {
+      "OWNER": "Owner",
+      "EVENT_ADMIN": "Event admin",
+      "REFEREE": "Referee",
+      "GUIDE": "Guide"
+    },
+    "unsent": "{{n}} changes are still waiting to upload. Logging out deletes them from this device.",
+    "logoutAnyway": "Log out anyway"
+  },
+  "now": {
+    "open": "Show what's happening now",
+    "tapHint": "Tap for details",
+    "title": "Right now",
+    "noActive": "No round is running right now",
+    "completed": "Results in",
+    "pending": "Waiting",
+    "pendingTable": "Matches still without a result",
+    "noPending": "All results are in 🎉",
+    "referees": "Referee",
+    "openControl": "Open control",
+    "openStation": "Open my station",
+    "myStation": "Your station this round",
+    "myMatch": "Your match",
+    "nextMatch": "Your next match",
+    "resting": "Your team is resting this round",
+    "none": "Pick your team to see your match",
+    "nextRound": "Next: {{name}}",
+    "game": "Game",
+    "teams": "Teams",
+    "status": "Status"
+  },
+  "errors.INVALID_START_OFFSET": "Choose between 0 and 180 minutes ago.",
+  "errors.START_BEFORE_PREVIOUS_ROUND_END": "A round can't start before the previous round ended.",
+  "results": {
+    "title": "Results",
+    "game": "Game",
+    "matchup": "Teams",
+    "status": "Status",
+    "referee": "Referee",
+    "entered": "Entered",
+    "actions": "Actions",
+    "more": "More actions"
+  },
+  "adjustments": {
+    "title": "Bonuses & penalties",
+    "add": "Add bonus or penalty",
+    "team": "Team",
+    "points": "Points",
+    "reason": "Reason",
+    "scope": "Type",
+    "by": "Given by",
+    "time": "Time",
+    "filters": "Filters",
+    "allScopes": "All types",
+    "allTeams": "All teams",
+    "showRevoked": "Show revoked",
+    "projected": "Total after this"
+  },
+  "breakdown": {
+    "title": "Team breakdown",
+    "round": "Round",
+    "game": "Game",
+    "opponent": "Opponent",
+    "outcome": "Result",
+    "points": "Points",
+    "lives": "Lives",
+    "reason": "Reason",
+    "by": "Given by",
+    "time": "Time",
+    "matches": "Match by match",
+    "livesStart": "Starting lives",
+    "livesLost": "lost",
+    "adjustments": "adjustments",
+    "livesFloor": "Lives never go below zero.",
+    "matchPoints": "Match points",
+    "openPage": "Open full team page"
+  },
+  "export": {
+    "title": "Export to Excel",
+    "includes": "The .xlsx file includes:",
+    "matches": "Matches",
+    "adjustments": "Bonuses & penalties",
+    "staff": "Staff",
+    "noPhones": "Phone numbers are not included.",
+    "generatedAt": "Snapshot taken",
+    "download": "Download .xlsx",
+    "previewFirst": "Preview first",
+    "failed": "The export could not be prepared. Check the connection and try again.",
+    "standingsButton": "Export standings (Excel)"
+  },
+  "control": {
+    "title": "Control",
+    "completed": "Results in",
+    "pending": "Waiting",
+    "late": "Late",
+    "adjustments": "Bonuses & penalties",
+    "ties": "{{n}} teams are tied — resolve the order in Standings",
+    "chase": "Matches waiting for a result",
+    "allResults": "All results →",
+    "actions": "Round actions",
+    "overtime": "Overtime {{time}} · {{n}} waiting",
+    "otherActive": "Another round is running. End it first.",
+    "endAndStart": "End & start next round",
+    "endConfirm": "End {{name}}?",
+    "nextStarts": "{{name}} starts",
+    "started": "The round started",
+    "startNow": "Now",
+    "minutesAgo": "minutes ago",
+    "endsAt": "Ends at {{time}} (Cairo)",
+    "startsInOvertime": "This round will start in overtime.",
+    "endedAndStarted": "Round ended and the next one started.",
+    "startFailed": "The round ended but the next one did not start.",
+    "retryStart": "Retry start"
+  },
+  "station": {
+    "now": "At your station now",
+    "late": "Late results",
+    "lateHint": "These rounds have ended without a result. Enter it now; nothing is cancelled automatically.",
+    "guides": "Team guides",
+    "admins": "Event admins",
+    "noActive": "No round is running. Your next matches are in the schedule below.",
+    "savedNext": "Result saved · Next: {{game}}",
+    "savedAll": "Result saved · All your results are in"
+  },
+  "setup": {
+    "importPrompt": "Have the event in Excel already?",
+    "importExcel": "Import from Excel",
+    "downloadTemplate": "Download blank template",
+    "presets": "Points preset",
+    "advanced": "Advanced (points names, caps, guide phones)",
+    "customColor": "Custom",
+    "addTeams": "Add teams",
+    "addGames": "Add games",
+    "addRounds": "Add rounds",
+    "team": "Team",
+    "game": "Game",
+    "assignment": "Assigned to",
+    "scheduleGrid": "Schedule",
+    "gridHint": "Tap a cell to set who plays that game in that round. An empty cell is a break.",
+    "rematch": "These teams already met",
+    "pickTwoTeams": "Choose two different teams.",
+    "makeBreak": "Make it a break",
+    "fix": "Fix",
+    "ready": "Everything is ready. You can start the event.",
+    "goControl": "Go to Control",
+    "downloadSetup": "Download setup as Excel",
+    "howMany": "How many?",
+    "create": "Create",
+    "bulkDone": "Added. You can rename them anytime.",
+    "bulkTitle": {
+      "teams": "Add teams",
+      "games": "Add games",
+      "rounds": "Add rounds"
+    },
+    "bulkHint": {
+      "teams": "Codes, avatars and colours are filled in automatically. Rename the teams afterwards.",
+      "games": "Codes are filled in automatically. Add names, locations and photos afterwards.",
+      "rounds": "Rounds are numbered after the last one."
+    }
+  },
+  "review": {
+    "noName": "The event has no name.",
+    "fewTeams": "Add at least two teams.",
+    "noGames": "Add at least one game.",
+    "noRounds": "Add at least one round.",
+    "manyOpening": "Only one opening round is allowed.",
+    "emptyRound": "Round {{n}} has no matches.",
+    "incompleteMatch": "Round {{n}} has a match without two teams.",
+    "teamTwice": "A team plays twice in round {{n}}.",
+    "noReferee": "{{n}} games in the schedule have no referee."
+  }
 }

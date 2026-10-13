@@ -4,15 +4,16 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { EventStore } from '../../core/player/event.store';
-import { BreakCard } from './break-card';
-import { PublicMatchCard } from './match-card';
-import { gameRows } from './schedule-model';
+import type { PublicMatch } from '../../core/player/public-types';
+import { DsCellDef, DsDataTable, type DsColumn } from '../../shared/ui/data-table';
+import { DsOutcome } from '../../shared/ui/outcome';
+import { gameRows, type ScheduleRow } from './schedule-model';
 import { gameImage, localizedLocation, localizedName, refereeNames } from './public-helpers';
 import { PublicState } from './public-state';
 
 @Component({
   selector: 'app-game-detail-page',
-  imports: [RouterLink, TranslocoDirective, PublicMatchCard, BreakCard, PublicState],
+  imports: [RouterLink, TranslocoDirective, PublicState, DsDataTable, DsCellDef, DsOutcome],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './game-detail-page.html',
 })
@@ -35,7 +36,27 @@ export class GameDetailPage {
   readonly location = localizedLocation;
   readonly image = gameImage;
   readonly referees = refereeNames;
+  readonly track = (row: ScheduleRow) => row.key;
+  readonly searchText = (row: ScheduleRow) => (row.match ? this.teams(row.match) : '');
   constructor() {
     void this.store.initialize();
+  }
+  teamName(code: string) {
+    return (
+      this.name(
+        this.store.teams().find((team) => team.code === code),
+        this.direction.language(),
+      ) || code
+    );
+  }
+  teams(match: PublicMatch) {
+    return match.participants.map((item) => this.teamName(item.team_code)).join(' · ');
+  }
+  columns(t: (key: string) => string): DsColumn<ScheduleRow>[] {
+    return [
+      { key: 'round', header: t('live.roundColumn'), rowHeader: true },
+      { key: 'teams', header: t('player.teamsColumn') },
+      { key: 'result', header: t('player.resultColumn'), priority: 2 },
+    ];
   }
 }

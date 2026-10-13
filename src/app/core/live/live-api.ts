@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { ReadCacheService } from '../offline/read-cache.service';
 import { OpQueueService } from '../offline/op-queue.service';
-import type { LiveMutation, LiveSnapshot, MutationReceipt } from './live-types';
+import type { LiveMutation, LiveSnapshot, MutationReceipt, StaffContact } from './live-types';
 
 @Injectable({ providedIn: 'root' })
 export class LiveApi {
@@ -12,6 +12,10 @@ export class LiveApi {
   }
   board(eventId: string): Promise<LiveSnapshot> {
     return this.cache.read('get_referee_board', { p_event: eventId });
+  }
+  /** Event administrators' contacts for guides, referees and admins of the event (D043). */
+  contacts(eventId: string): Promise<StaffContact[]> {
+    return this.cache.read('get_event_contacts', { p_event: eventId });
   }
   match(matchId: string): Promise<LiveSnapshot> {
     return this.cache.read('get_match_entry', { p_match: matchId });

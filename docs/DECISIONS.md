@@ -1,5 +1,87 @@
 # Implementation decisions
 
+## D049 — Search on long lists
+
+Product owner requirement 2026-10-13: any list with more than ten values is searchable.
+`ds-data-table` shows a search box automatically above tables with more than ten rows
+(case-, accent- and Arabic-diacritic-insensitive, every word must match); dropdowns with
+more than ten options use `ds-search-select`, which adds a search box to the native select
+and keeps the chosen option listed. Setup and owner pickers rebuilt in U7/U8 use the same
+components.
+
+## D048 — Phone numbers by audience
+
+Product owner requirement 2026-10-13: phone numbers are shown only to signed-in DST
+members, through the role-scoped staff reads of D043. Visitors without a login see only
+their own team's DST guide phone, and only while the event's `show_guide_phone` setting is
+on (the existing master switch). Referee names stay public (D036) without phones.
+
+## D047 — Logout clears the device
+
+Product owner requirement 2026-10-13: logging out removes everything the app stored on the
+device — local and session storage (including the team choice and Supabase session), the
+offline IndexedDB database (cached reads and queued operations) and Cache Storage — then
+reloads the app so no in-memory copy survives. Only the interface language is kept. When
+operations are still waiting to upload, logout first warns that they will be deleted and
+asks to confirm. After a forced password change the member returns to the page that asked
+for it (or their start page) instead of Home.
+
+## D046 — Visitors see only their own team
+
+Product owner requirement 2026-10-13: a visitor without a login sees only details of the
+team chosen on the device. The schedule offers only "My team" (no by-round or by-game
+views), other teams' pages and every game page redirect to Home, and team/game names are
+plain text instead of links. Signed-in DST members keep full access. Players are
+anonymous, so this is a screen rule like the team lock (D035), not a database boundary:
+the database cannot know which team a device picked. The leaderboard and the venue display
+remain visible to visitors only when the administrators publish them (D027; confirmed by
+the product owner 2026-10-13).
+
+## D045 — Manage navigation and Import/Export placement (amends D040)
+
+Product owner decision 2026-10-12/13 (UX plan v3.1, `Claude outputs/BTSApp_UX_Assessment.md`).
+The event-administration section bar becomes Control · Results · Adjustments ·
+Standings · Setup · Audit, rendered once by a `ManageLayout` route component. The
+`live` path stays and is labelled Control. Import and Export leave the section bar
+and become permanent, labelled toolbar buttons ("⬆ Import (Excel)", "⬇ Export
+(Excel)") on every manage page, plus entries in the staff More sheet, Setup and
+Standings. Export becomes one tap: one fresh snapshot is fetched and downloaded
+immediately; preview stays available as a secondary action. D040's shared classes
+and spacing remain.
+
+## D044 — Signed-in guides and the team lock (amends D035)
+
+A signed-in member holding GUIDE in the current event is set to their guided team
+on login, even after the first round started, and may switch only among the teams
+they guide. Anonymous devices (including guides without a login) stay locked as in
+D035. This remains a client rule; it is not a security boundary.
+
+## D043 — Staff contacts with one-tap call
+
+Event administrators and owners see referee and guide phone numbers; referees see
+the guides of the teams at their station and the event administrators; guides see
+the event administrators. Phones are returned only by role-scoped staff RPCs and
+shown as `tel:` links. Public referee names (D036) never carry phones, exports keep
+excluding phones, and guide phones for players stay governed by `show_guide_phone`.
+
+## D042 — Backdated round start
+
+An event administrator may start a round "now" or "X minutes ago" (0–180). The
+resulting `started_at` may not precede the latest `closed_at` of another round in
+the event. Timers, overtime, the team lock (D035) and the scoring lock (D038) all
+key off `started_at` unchanged.
+
+## D041 — Ending a round keeps late results
+
+"End round" (`close_round`) no longer requires every result. Matches still
+`SCHEDULED` stay `SCHEDULED` as late results and score 0 (or cost no life) until
+entered. Nothing is voided or forfeited automatically; voiding a single match stays
+a manual administrator action. The assigned referee may enter the first result of
+a late match; corrections in an ended round remain administrator-only. "End & start
+next round" is two idempotent operations, end then start. Standings expose a
+pending-results count so viewers know results are outstanding. Supersedes the
+PENDING_MATCHES close blocker in plan §6.1.
+
 ## D040 — One section bar and shared layout for staff screens
 
 Every `/manage/:eventId/*` screen shows the same section bar (Live, Setup,

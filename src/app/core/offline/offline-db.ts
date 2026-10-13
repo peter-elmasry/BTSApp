@@ -44,6 +44,21 @@ function completed(transaction: IDBTransaction): Promise<void> {
 @Injectable({ providedIn: 'root' })
 export class OfflineDb {
   private database?: Promise<IDBDatabase>;
+  /** Closes this tab's connection and deletes the whole offline database (logout, D047). */
+  async destroy(): Promise<void> {
+    const pending = this.database;
+    this.database = undefined;
+    try {
+      (await pending)?.close();
+    } catch {
+      /* A failed open leaves nothing to close. */
+    }
+    if (typeof indexedDB === 'undefined') return;
+    await new Promise<void>((resolve) => {
+      const request = indexedDB.deleteDatabase('bts-offline-v1');
+      request.onsuccess = request.onerror = request.onblocked = () => resolve();
+    });
+  }
   private open(): Promise<IDBDatabase> {
     if (this.database) return this.database;
     this.database = new Promise((resolve, reject) => {

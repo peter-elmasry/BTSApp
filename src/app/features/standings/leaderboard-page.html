@@ -33,14 +33,24 @@
   } @else if (events.event(); as event) {
     @if (standings.rows().length) {
       <app-standings-list
+        variant="table"
         [rows]="standings.rows()"
         [event]="event"
         [selectedCode]="selection.selectedCode()"
+        (teamOpen)="drill.set($event)"
       />
+      @if (lateResults()) {
+        <p class="text-sm text-slate" data-testid="standings-pending-note">
+          {{ t('standings.pendingNote', { n: lateResults() }) }}
+        </p>
+      }
     } @else {
       <p class="rounded-card bg-white p-5">{{ t('standings.empty') }}</p>
     }
   } @else {
     <p class="rounded-card bg-white p-5">{{ t('player.noEvent') }}</p>
+  }
+  @if (drill(); as code) {
+    <app-team-breakdown-sheet [code]="code" (close)="drill.set(null)" />
   }
 </section>

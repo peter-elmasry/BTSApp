@@ -45,17 +45,9 @@ for (const lang of ['en', 'ar']) {
       page.getByRole('heading', { level: 2, name: teamName(0), exact: true }),
     ).toBeVisible();
     await expect(page.locator('a[href^="tel:"]')).toHaveCount(0);
+    // Visitors cannot open game pages (D046); they return home.
     await page.goto('/games/G01');
-    await expect(
-      page.getByRole('heading', {
-        level: 2,
-        name: lang === 'ar' ? 'التتابع' : 'Relay',
-        exact: true,
-      }),
-    ).toBeVisible();
-    await expect(page.getByTestId('game-referees')).toContainText(
-      `${labels.player.referee}: ${lang === 'ar' ? 'مينا الحكم' : 'Mina Referee'}`,
-    );
+    await expect(page).toHaveURL(/\/home$/);
     await page.goto('/home');
     await page.getByRole('button', { name: new RegExp('^' + labels['team.switch']) }).click();
     await expect(page.locator('dialog')).toBeVisible();

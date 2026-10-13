@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { AuthStore, type StaffProfile } from '../../core/auth/auth.store';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { OpQueueService } from '../../core/offline/op-queue.service';
@@ -83,7 +83,11 @@ describe('admin standings confirmation and export safety', () => {
         { provide: ReadCacheService, useValue: { updates } },
         {
           provide: ActivatedRoute,
-          useValue: { paramMap: params.asObservable(), snapshot: { paramMap: params.value } },
+          useValue: {
+            paramMap: params.asObservable(),
+            queryParamMap: of(convertToParamMap({})),
+            snapshot: { paramMap: params.value, queryParamMap: convertToParamMap({}) },
+          },
         },
       ],
     });

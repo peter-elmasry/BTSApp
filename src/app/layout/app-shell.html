@@ -26,21 +26,24 @@
               [size]="36"
             />
           </button>
+          @if (selection.guidedTeamCodes().includes(team.code)) {
+            <span
+              class="shrink-0 rounded-full bg-navy px-2 py-1 text-xs font-bold text-white"
+              data-testid="guide-chip"
+              >{{ t('team.guide') }}</span
+            >
+          }
         }
         @if (auth.profile(); as profile) {
           <span class="hidden max-w-28 truncate text-xs sm:block">{{ profile.full_name_en }}</span>
-          <a
-            routerLink="/account/password"
-            class="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-navy px-2 text-sm font-bold text-navy"
-            [attr.aria-label]="t('account.changePassword')"
-            [title]="t('account.changePassword')"
-            >🔑</a
-          >
           <button
-            class="min-h-11 shrink-0 whitespace-nowrap rounded-xl border border-navy bg-navy px-3 text-sm font-bold text-white"
-            (click)="logout()"
+            type="button"
+            class="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full bg-navy px-2 text-sm font-extrabold text-white"
+            data-testid="account-menu"
+            [attr.aria-label]="t('menu.open')"
+            (click)="menuOpen.set(true)"
           >
-            {{ t('auth.logout') }}
+            {{ initials() }}
           </button>
         } @else {
           <a
@@ -107,23 +110,41 @@
         class="mx-auto grid max-w-3xl gap-1 px-2 py-2"
         [style.grid-template-columns]="'repeat(' + visibleNavigation().length + ', minmax(0, 1fr))'"
       >
-        @for (item of visibleNavigation(); track item.path) {
-          <a
-            [routerLink]="item.path"
-            routerLinkActive="nav-active"
-            ariaCurrentWhenActive="page"
-            class="flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-center text-xs leading-tight font-semibold"
-            ><span aria-hidden="true" class="text-xl">{{ item.icon }}</span
-            ><span class="max-w-full break-words">{{ t(item.key) }}</span></a
-          >
+        @for (item of visibleNavigation(); track item.key) {
+          @if (item.path) {
+            <a
+              [routerLink]="item.path"
+              routerLinkActive="nav-active"
+              ariaCurrentWhenActive="page"
+              class="flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-center text-xs leading-tight font-semibold"
+              ><span aria-hidden="true" class="text-xl">{{ item.icon }}</span
+              ><span class="max-w-full break-words">{{ t(item.key) }}</span></a
+            >
+          } @else {
+            <button
+              type="button"
+              class="flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-center text-xs leading-tight font-semibold"
+              data-testid="nav-more"
+              [attr.aria-expanded]="menuOpen()"
+              (click)="menuOpen.set(true)"
+            >
+              <span aria-hidden="true" class="text-xl">{{ item.icon }}</span
+              ><span class="max-w-full break-words">{{ t(item.key) }}</span>
+            </button>
+          }
         }
       </div>
     </nav>
   }
   <ds-toast />
+  @if (menuOpen()) {
+    @defer {
+      <app-staff-menu (close)="menuOpen.set(false)" />
+    }
+  }
   @if (switchSheet()) {
     <ds-bottom-sheet [title]="t('team.switch')" (close)="switchSheet.set(false)">
-      @if (selection.canChange()) {
+      @if (selection.canSwitch()) {
         <p class="mb-5">{{ t('team.switch.confirm') }}</p>
         <button class="ds-button primary w-full" (click)="switchTeam()">
           {{ t('team.switch') }}

@@ -6,13 +6,15 @@ import {
   ownerGuard,
   scoringGuard,
 } from './core/auth/guards';
+import { landingGuard } from './core/auth/landing';
+import { memberOnlyGuard, teamPageGuard } from './core/player/viewer-scope';
 import { leaderboardVisibleGuard, teamChosenGuard } from './core/player/player.guards';
 
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    canActivate: [teamChosenGuard],
+    canActivate: [landingGuard, teamChosenGuard],
     loadComponent: () => import('./features/public/home-page').then((m) => m.HomePage),
   },
   {
@@ -31,10 +33,12 @@ export const routes: Routes = [
   },
   {
     path: 'teams/:code',
+    canActivate: [teamPageGuard],
     loadComponent: () => import('./features/public/team-detail-page').then((m) => m.TeamDetailPage),
   },
   {
     path: 'games/:code',
+    canActivate: [memberOnlyGuard],
     loadComponent: () => import('./features/public/game-detail-page').then((m) => m.GameDetailPage),
   },
   {
@@ -89,8 +93,18 @@ export const routes: Routes = [
     path: 'manage/:eventId',
     canActivate: [authGuard, eventRoleGuard],
     data: { roles: ['EVENT_ADMIN'] },
+    loadComponent: () => import('./features/manage/manage-layout').then((m) => m.ManageLayout),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'live' },
+      {
+        path: 'results',
+        loadComponent: () => import('./features/manage/results-page').then((m) => m.ResultsPage),
+      },
+      {
+        path: 'adjustments',
+        loadComponent: () =>
+          import('./features/manage/adjustments-page').then((m) => m.AdjustmentsPage),
+      },
       {
         path: 'audit',
         loadComponent: () => import('./features/manage/audit-page').then((m) => m.AuditPage),

@@ -19,6 +19,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
 })
 export class DsBottomSheet implements OnDestroy {
   readonly title = input.required<string>();
+  /** `full` = near full-height sheet for drill-downs. */
+  readonly size = input<'auto' | 'full'>('auto');
   readonly close = output<void>();
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   private readonly document = inject(DOCUMENT);

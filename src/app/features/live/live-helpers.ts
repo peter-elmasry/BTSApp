@@ -1,4 +1,5 @@
 import type { StaffProfile } from '../../core/auth/auth.store';
+import type { DsStatus } from '../../shared/ui/status-pill';
 import type {
   LiveAdjustment,
   LiveMatch,
@@ -20,8 +21,12 @@ export function canEditLiveMatch(
 ) {
   if (!snapshot || !match || match.status === 'VOID') return false;
   if (isLiveAdmin(profile, snapshot.event.id)) return true;
+  // Referees enter results while the round runs, plus the first result of a late match (D041).
+  const round = snapshot.rounds.find((item) => item.id === match.round_id);
+  const open =
+    round?.status === 'ACTIVE' || (round?.status === 'CLOSED' && match.status === 'SCHEDULED');
   return (
-    snapshot.rounds.some((round) => round.id === match.round_id && round.status === 'ACTIVE') &&
+    open &&
     !!profile?.roles.some(
       (role) => role.event_id === snapshot.event.id && role.role === 'REFEREE',
     ) &&
@@ -105,6 +110,8 @@ export function liveErrorKey(error: unknown) {
     'INVALID_PARTICIPANTS',
     'INVALID_REASON',
     'INVALID_MINUTES',
+    'INVALID_START_OFFSET',
+    'START_BEFORE_PREVIOUS_ROUND_END',
     'MATCH_VOID',
     'ADJUSTMENT_REVOKED',
     'INVALID_POINTS',
@@ -116,4 +123,37 @@ export function liveErrorKey(error: unknown) {
     'UNAUTHENTICATED',
   ];
   return known.includes(code) ? `errors.${code}` : 'live.requestFailed';
+}
+
+/** Status of a match for staff tables: late = no result after its round ended (D041). */
+export function liveMatchStatus(
+  match: Pick<LiveMatch, 'status'>,
+  roundStatus: 'DRAFT' | 'ACTIVE' | 'CLOSED' | undefined,
+): DsStatus {
+  if (match.status === 'COMPLETED') return 'done';
+  if (match.status === 'VOID') return 'void';
+  if (roundStatus === 'CLOSED') return 'late';
+  if (roundStatus === 'ACTIVE') return 'pending';
+  return 'scheduled';
+}
+
+const ORDER: Record<DsStatus, number> = {
+  late: 0,
+  pending: 1,
+  live: 2,
+  scheduled: 3,
+  queued: 4,
+  done: 5,
+  void: 6,
+};
+
+/** Pending and late first, then done, then void; stable by game code. */
+export function sortForChase<T extends Pick<LiveMatch, 'status'>>(
+  matches: readonly T[],
+  status: (match: T) => DsStatus,
+  code: (match: T) => string,
+): T[] {
+  return [...matches].sort(
+    (a, b) => ORDER[status(a)] - ORDER[status(b)] || code(a).localeCompare(code(b)),
+  );
 }

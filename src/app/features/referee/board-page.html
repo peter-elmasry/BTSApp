@@ -1,6 +1,6 @@
 <div *transloco="let t" class="space-y-5">
   <header class="ds-page-header">
-    <h1 class="text-2xl font-extrabold">{{ t('live.refereeTitle') }}</h1>
+    <h1 class="text-2xl font-extrabold">{{ t('nav.myStation') }}</h1>
     <button class="ds-button ghost" [disabled]="reader.loading()" (click)="reader.refresh()">
       {{ t('player.refresh') }}
     </button>
@@ -17,20 +17,124 @@
     </section>
   } @else if (!events.event() && !events.loading()) {
     <p class="rounded-card bg-white p-4">{{ t('player.noEvent') }}</p>
-  } @else if (reader.data(); as data) {
-    @for (match of data.matches; track match.id) {
-      <article class="ds-card space-y-4">
-        <app-live-match-summary class="block" [snapshot]="data" [match]="match" /><a
-          class="ds-button primary inline-flex items-center"
-          [routerLink]="['/ref/match', match.id]"
-          >{{ t(match.status === 'COMPLETED' ? 'live.correctResult' : 'live.enterResult') }}</a
+  } @else if (reader.data()) {
+    <section class="space-y-3" aria-labelledby="station-now-title">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <h2 id="station-now-title" class="text-lg font-bold">{{ t('station.now') }}</h2>
+          @if (activeRound(); as round) {
+            <p class="text-sm text-slate">
+              {{
+                round.type === 'OPENING'
+                  ? t('round.opening')
+                  : t('player.roundNumber', { n: round.number })
+              }}
+            </p>
+          }
+        </div>
+        @if (activeRound(); as round) {
+          <ds-timer-ring [round]="round" [size]="56" />
+        }
+      </div>
+      @for (match of groups().current; track match.id) {
+        <article class="ds-card space-y-3" data-testid="station-now" animate.enter="ds-pop">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div class="min-w-0">
+              <h3 class="break-words text-xl font-bold">{{ gameName(match) }}</h3>
+              @if (location(match)) {
+                <p class="text-sm text-slate">📍 {{ location(match) }}</p>
+              }
+            </div>
+            <ds-status-pill [status]="status(match)" />
+          </div>
+          <ul class="space-y-2">
+            @for (participant of match.participants; track participant.team_id) {
+              <li class="flex min-w-0 items-center gap-2">
+                @if (team(participant.team_id); as item) {
+                  <ds-avatar [avatarKey]="item.avatar_key" [color]="item.color_hex" [size]="40" />
+                }
+                <span class="min-w-0 flex-1 break-words font-semibold">{{
+                  teamName(participant.team_id) || participant.team_code
+                }}</span>
+                @if (participant.outcome && participant.outcome !== 'PENDING') {
+                  <ds-outcome [outcome]="participant.outcome" />
+                }
+              </li>
+            }
+          </ul>
+          @if (guides(match).length) {
+            <div class="space-y-1" data-testid="station-guides">
+              <p class="text-sm font-semibold text-slate">{{ t('station.guides') }}</p>
+              @for (guide of guides(match); track guide.member_id + guide.team_id) {
+                <ds-phone-link
+                  [name]="name(guide) + ' · ' + teamName(guide.team_id)"
+                  [phone]="guide.phone"
+                />
+              }
+            </div>
+          }
+          @if (match.editable !== false) {
+            <a
+              class="ds-button primary flex w-full items-center justify-center"
+              [routerLink]="['/ref/match', match.id]"
+              >{{ t(match.status === 'COMPLETED' ? 'live.correctResult' : 'live.enterResult') }}</a
+            >
+          }
+        </article>
+      } @empty {
+        <p class="rounded-card bg-white p-5">
+          {{ t(activeRound() ? 'live.noAssignedMatches' : 'station.noActive') }}
+        </p>
+      }
+    </section>
+
+    @if (groups().late.length) {
+      <section class="space-y-2" aria-labelledby="station-late-title" data-testid="station-late">
+        <h2 id="station-late-title" class="text-lg font-bold">
+          {{ t('station.late') }} ({{ groups().late.length }})
+        </h2>
+        <p class="text-sm text-slate">{{ t('station.lateHint') }}</p>
+        <ds-data-table
+          [rows]="groups().late"
+          [columns]="lateColumns(t)"
+          [trackBy]="track"
+          [caption]="t('station.late')"
+          [rowStatus]="rowStatus"
+          [searchText]="searchText"
+          [clickable]="true"
+          (rowClick)="open($event)"
         >
-      </article>
-    } @empty {
-      <p class="rounded-card bg-white p-5">{{ t('live.noAssignedMatches') }}</p>
+          <ng-template dsCell="teams" let-match>
+            <span class="flex flex-col gap-1">
+              @for (participant of match.participants; track participant.team_id) {
+                <span class="font-semibold">{{
+                  teamName(participant.team_id) || participant.team_code
+                }}</span>
+              }
+            </span>
+          </ng-template>
+          <ng-template dsCell="action" let-match>
+            @if (match.editable !== false) {
+              <a class="ds-button secondary" [routerLink]="['/ref/match', match.id]">{{
+                t('live.enterResult')
+              }}</a>
+            } @else {
+              <ds-status-pill [status]="status(match)" />
+            }
+          </ng-template>
+        </ds-data-table>
+      </section>
     }
   }
   @if (events.event()) {
     <app-referee-schedule />
+  }
+  @if (admins().length) {
+    <section class="ds-card space-y-2" data-testid="station-admins">
+      <h2 class="text-lg font-bold">{{ t('station.admins') }}</h2>
+      @for (admin of admins(); track admin.member_id) {
+        <ds-phone-link [name]="name(admin)" [phone]="admin.phone" />
+      }
+    </section>
   }
 </div>

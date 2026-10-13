@@ -6,7 +6,6 @@
         {{ t('phase6.refresh') }}
       </button>
     </div>
-    <app-manage-nav [eventId]="eventId()" />
   </header>
   @if (notice()) {
     <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
@@ -48,6 +47,14 @@
         @if (!preview()) {
           <button
             class="ds-button primary"
+            data-testid="standings-export"
+            [disabled]="loading() || saving() || exporting()"
+            (click)="exportSheet.set(true)"
+          >
+            ⬇ {{ t('export.standingsButton') }}
+          </button>
+          <button
+            class="ds-button ghost"
             [disabled]="loading() || saving() || exporting()"
             (click)="prepareExport()"
           >
@@ -119,8 +126,14 @@
               <tr class="border-b border-line" [attr.data-team-code]="row.team.code">
                 <td class="p-3 font-bold">{{ row.rank }}</td>
                 <th scope="row" class="p-3 text-start font-semibold">
-                  {{ name(row.team, direction.language())
-                  }}<span class="block text-xs font-normal text-slate">{{ row.team.code }}</span>
+                  <button
+                    type="button"
+                    class="min-h-11 text-start text-teal"
+                    data-testid="standings-team"
+                    (click)="drill.set(row.team.code)"
+                  >
+                    {{ name(row.team, direction.language()) }}
+                  </button>
                 </th>
                 <td class="p-3 text-center">{{ row.played }}</td>
                 <td class="p-3 text-center">{{ row.wins }}</td>
@@ -237,5 +250,11 @@
         </div>
       </ds-bottom-sheet>
     }
+  }
+  @if (exportSheet()) {
+    <app-export-sheet [eventId]="eventId()" (close)="exportSheet.set(false)" />
+  }
+  @if (drill(); as code) {
+    <app-team-breakdown-sheet [code]="code" (close)="drill.set(null)" />
   }
 </div>

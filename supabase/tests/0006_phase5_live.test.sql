@@ -112,7 +112,8 @@ select is(public.get_live_event('35000000-0000-0000-0000-000000000001')->'event'
 select throws_ok($$select public.get_live_event('35000000-0000-0000-0000-000000000002')$$,'P0001','FORBIDDEN','admin cannot read another event live operations');
 select throws_ok($$select public.start_round(gen_random_uuid(),'65000000-0000-0000-0000-000000000003')$$,'P0001','INVALID_ROUND_MATCHES','start rejects a regular match with only one participant');
 select set_config('request.jwt.claim.sub','15000000-0000-0000-0000-000000000003',true);
-select is(jsonb_array_length(public.get_referee_board('35000000-0000-0000-0000-000000000001')->'matches'),0,'referee board has no draft matches');
+select is(jsonb_array_length(public.get_referee_board('35000000-0000-0000-0000-000000000001')->'matches'),4,'referee board lists assigned upcoming matches before any round starts (U3 B4)');
+select ok((select bool_and(x->>'bucket'='upcoming' and not (x->>'editable')::boolean) from jsonb_array_elements(public.get_referee_board('35000000-0000-0000-0000-000000000001')->'matches') x),'upcoming matches are read-only for referees');
 select is(jsonb_array_length(public.get_match_entry('75000000-0000-0000-0000-000000000001')->'matches'),1,'assigned match entry contains exactly one match');
 select is(public.get_match_entry('75000000-0000-0000-0000-000000000001')->'matches'->0->'participants'->0->>'outcome','PENDING','assigned operational entry includes hidden outcomes');
 select throws_ok($$select public.get_match_entry('75000000-0000-0000-0000-000000000002')$$,'P0001','FORBIDDEN','referee cannot read an unassigned game');
@@ -145,19 +146,15 @@ select is(public.extend_round('95000000-0000-0000-0000-000000000002','65000000-0
 select throws_ok($$select public.extend_round('95000000-0000-0000-0000-000000000002','65000000-0000-0000-0000-000000000001',6)$$,'P0001','OP_ID_CONFLICT','changed operation payload conflicts');
 select throws_ok($$select public.extend_round(gen_random_uuid(),'65000000-0000-0000-0000-000000000001',0)$$,'P0001','INVALID_MINUTES','zero extension is invalid');
 select throws_ok($$select public.extend_round(gen_random_uuid(),'65000000-0000-0000-0000-000000000001',121)$$,'P0001','INVALID_MINUTES','extension over 120 is invalid');
-select throws_ok($$select public.close_round(gen_random_uuid(),'65000000-0000-0000-0000-000000000001')$$,'P0001','PENDING_MATCHES','pending scheduled matches block close');
-do $capture$ declare v_detail text; begin
-  perform public.close_round('95000000-0000-0000-0000-000000000099','65000000-0000-0000-0000-000000000001');
-exception when sqlstate 'P0001' then get stacked diagnostics v_detail=pg_exception_detail; insert into phase5_errors values(sqlerrm,v_detail::jsonb); end $capture$;
-select ok((select detail->'match_ids' from phase5_errors where code='PENDING_MATCHES') @> '["75000000-0000-0000-0000-000000000001","75000000-0000-0000-0000-000000000002"]','close error details identify pending matches');
+-- D041: pending matches no longer block "End round"; that path is covered in 0012.
 select is(jsonb_array_length(public.get_pending_matches('65000000-0000-0000-0000-000000000001')),2,'admin can fetch pending match cards');
 reset role;
 select is((select count(*)::int from public.audit_log where event_id='35000000-0000-0000-0000-000000000001' and action='ROUND_STARTED'),1,'start replay writes only one audit');
-select is((select count(*)::int from public.client_ops where op_id='95000000-0000-0000-0000-000000000099'),0,'failed close consumes no operation id');
 update public.rounds set started_at=now()-interval '100 minutes' where id='65000000-0000-0000-0000-000000000001';
 set local role authenticated;
 select set_config('request.jwt.claim.sub','15000000-0000-0000-0000-000000000003',true);
-select is(jsonb_array_length(public.get_referee_board('35000000-0000-0000-0000-000000000001')->'matches'),1,'board only contains assigned active match');
+select is((select count(*)::int from jsonb_array_elements(public.get_referee_board('35000000-0000-0000-0000-000000000001')->'matches') x where x->>'bucket'='current'),1,'board has exactly the assigned active match as current');
+select is(jsonb_array_length(public.get_referee_board('35000000-0000-0000-0000-000000000001')->'matches'),4,'board still lists only assigned games');
 select is(public.submit_match_result('95000000-0000-0000-0000-000000000003','75000000-0000-0000-0000-000000000001',(select payload from phase5_payloads where kind='regular-valid' and payload->0->>'outcome'='WIN' and payload->1->>'outcome'='LOSS'))->>'status','COMPLETED','referee submits during overtime');
 select is(public.submit_match_result('95000000-0000-0000-0000-000000000003','75000000-0000-0000-0000-000000000001',(select payload from phase5_payloads where kind='regular-valid' and payload->0->>'outcome'='WIN' and payload->1->>'outcome'='LOSS'))->>'status','COMPLETED','result replay returns original completion');
 select throws_ok($$select public.submit_match_result('95000000-0000-0000-0000-000000000003','75000000-0000-0000-0000-000000000001',(select payload from phase5_payloads where kind='regular-valid' and payload->0->>'outcome'='DRAW'))$$,'P0001','OP_ID_CONFLICT','result replay rejects changed outcomes');
@@ -171,7 +168,7 @@ select throws_ok($$select public.submit_match_result(gen_random_uuid(),'75000000
 select throws_ok($$select public.submit_match_result(gen_random_uuid(),'75000000-0000-0000-0000-000000000001','[{"team_id":"45000000-0000-0000-0000-000000000001","outcome":"WIN"},{"team_id":"45000000-0000-0000-0000-000000000099","outcome":"LOSS"}]')$$,'P0001','INVALID_OUTCOMES','cross-event participant identifiers are rejected');
 select throws_ok($$select public.submit_match_result(gen_random_uuid(),'75000000-0000-0000-0000-000000000001',(select jsonb_set(payload,'{0,points}','100') from phase5_payloads where kind='regular-valid' limit 1))$$,'P0001','INVALID_OUTCOMES','outcome records reject unsupported fields');
 select is(public.get_referee_board('35000000-0000-0000-0000-000000000001')->'rounds'->1->>'status','ACTIVE','overtime never auto-closes the round');
-select ok(public.get_referee_board('35000000-0000-0000-0000-000000000001')::text !~ '"(auth_user_id|username|phone|void_reason)"[[:space:]]*:','operational response excludes account and protected fields');
+select ok((public.get_referee_board('35000000-0000-0000-0000-000000000001')-'team_guides')::text !~ '"(auth_user_id|username|phone|void_reason)"[[:space:]]*:','operational response excludes account and protected fields outside guide contacts (D043)');
 select ok(not (public.get_schedule('35000000-0000-0000-0000-000000000001')->1->'participants'->0 ? 'outcome'),'operational reads never expand public hidden schedule access');
 reset role;
 select is((select count(*)::int from public.audit_log where entity_id='75000000-0000-0000-0000-000000000001' and action in ('MATCH_RESULT_SUBMITTED','MATCH_RESULT_CORRECTED')),7,'result replays and rejected combinations add no audit entries');
@@ -224,7 +221,7 @@ select is(public.close_round('95000000-0000-0000-0000-000000000015','65000000-00
 select is(public.close_round('95000000-0000-0000-0000-000000000015','65000000-0000-0000-0000-000000000001')->>'status','CLOSED','close replay succeeds after transition');
 select throws_ok($$select public.extend_round(gen_random_uuid(),'65000000-0000-0000-0000-000000000001',5)$$,'P0001','ROUND_NOT_ACTIVE','closed round cannot be extended');
 select set_config('request.jwt.claim.sub','15000000-0000-0000-0000-000000000003',true);
-select is(jsonb_array_length(public.get_referee_board('35000000-0000-0000-0000-000000000001')->'matches'),0,'closed matches leave referee board');
+select ok(not exists(select 1 from jsonb_array_elements(public.get_referee_board('35000000-0000-0000-0000-000000000001')->'matches') x where x->>'id'='75000000-0000-0000-0000-000000000001'),'completed matches of an ended round leave the referee board');
 select is(jsonb_array_length(public.get_match_entry('75000000-0000-0000-0000-000000000001')->'matches'),1,'referee may still view assigned closed match');
 select throws_ok($$select public.submit_match_result(gen_random_uuid(),'75000000-0000-0000-0000-000000000001',(select payload from phase5_payloads where kind='regular-valid' limit 1))$$,'P0001','ROUND_NOT_ACTIVE','referee cannot correct closed match');
 select is(public.submit_match_result('95000000-0000-0000-0000-000000000003','75000000-0000-0000-0000-000000000001',(select payload from phase5_payloads where kind='regular-valid' and payload->0->>'outcome'='WIN' and payload->1->>'outcome'='LOSS'))->>'status','COMPLETED','prior acknowledged result can replay after closure');
@@ -264,7 +261,7 @@ update public.events set leaderboard_public=true where id='35000000-0000-0000-00
 set local role authenticated;
 select set_config('request.jwt.claim.sub','15000000-0000-0000-0000-000000000003',true);
 select throws_ok($$select public.get_match_entry('75000000-0000-0000-0000-000000000002')$$,'P0001','FORBIDDEN','public leaderboard never opens unassigned operational entry');
-select is(jsonb_array_length(public.get_referee_board('35000000-0000-0000-0000-000000000001')->'matches'),1,'public leaderboard never expands referee board beyond assigned active match');
+select ok(not exists(select 1 from jsonb_array_elements(public.get_referee_board('35000000-0000-0000-0000-000000000001')->'matches') x where x->>'game_id'<>'55000000-0000-0000-0000-000000000001'),'public leaderboard never expands referee board beyond assigned games');
 reset role;
 select ok(exists(select 1 from phase5_signals),'live writes emit broadcasts');
 select ok(not exists(select 1 from phase5_signals where is_private is distinct from false),'live signals use the agreed public channel');

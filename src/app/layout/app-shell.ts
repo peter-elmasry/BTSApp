@@ -26,6 +26,8 @@ import { ReadCacheService } from '../core/offline/read-cache.service';
 import { EventChannelService } from '../core/realtime/event-channel.service';
 import { SessionOutlet } from '../core/auth/session-outlet';
 import { InstallService } from '../core/pwa/install.service';
+import { navigationFor } from './navigation';
+import { StaffMenu } from './staff-menu';
 
 @Component({
   selector: 'app-shell',
@@ -38,6 +40,7 @@ import { InstallService } from '../core/pwa/install.service';
     DsAvatar,
     DsBottomSheet,
     RoundBanner,
+    StaffMenu,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app-shell.html',
@@ -52,6 +55,7 @@ export class AppShell {
   readonly cache = inject(ReadCacheService);
   private readonly channel = inject(EventChannelService);
   readonly switchSheet = signal(false);
+  readonly menuOpen = signal(false);
   private readonly clock = inject(ServerClockService);
   private readonly i18n = inject(TranslocoService);
   private readonly router = inject(Router);
@@ -97,10 +101,6 @@ export class AppShell {
     this.switchSheet.set(false);
     await this.router.navigate(['/choose-team'], { queryParams: { switch: '1' } });
   }
-  async logout() {
-    await this.auth.logout();
-    await this.router.navigateByUrl('/home');
-  }
   lastUpdated() {
     const stamp = this.cache.lastUpdated();
     return stamp
@@ -117,35 +117,28 @@ export class AppShell {
     const translated = this.i18n.translate(key);
     return translated === key ? this.i18n.translate('live.uploadFailed') : translated;
   }
-  readonly navigation = [
-    { path: '/home', key: 'nav.home', icon: '⌂' },
-    { path: '/schedule', key: 'nav.schedule', icon: '▦' },
-    { path: '/about', key: 'nav.about', icon: '◉' },
-  ];
-  readonly visibleNavigation = computed(() => {
-    const items = [...this.navigation];
+  readonly initials = computed(() => {
     const profile = this.auth.profile();
-    if (this.events.event() && canSeeAllOutcomes(this.events.event(), profile))
-      items.splice(2, 0, { path: '/leaderboard', key: 'nav.leaderboard', icon: '♜' });
-    if (profile?.system_role === 'OWNER') {
-      items.push({ path: '/owner/members', key: 'owner.title', icon: '♙' });
-    }
-    const eventId = this.events.event()?.id;
-    const adminRole = profile?.roles.find(
-      (role) => role.role === 'EVENT_ADMIN' && role.event_id === eventId,
+    const name =
+      (this.direction.language() === 'ar' ? profile?.full_name_ar : profile?.full_name_en) ||
+      profile?.full_name_en ||
+      profile?.username ||
+      '';
+    return (
+      name
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0])
+        .join('')
+        .toUpperCase() || '•'
     );
-    const manageEvent = adminRole?.event_id ?? (profile?.system_role === 'OWNER' ? eventId : null);
-    if (manageEvent) {
-      items.push({
-        path: `/manage/${manageEvent}/live`,
-        key: 'manage.title',
-        icon: '⚙',
-      });
-    } else if (
-      profile?.roles.some((role) => role.role === 'REFEREE' && role.event_id === eventId)
-    ) {
-      items.push({ path: '/ref', key: 'live.refereeTitle', icon: '⚑' });
-    }
-    return items;
   });
+  readonly visibleNavigation = computed(() =>
+    navigationFor(
+      this.auth.profile(),
+      this.events.event()?.id ?? null,
+      !!this.events.event() && canSeeAllOutcomes(this.events.event(), this.auth.profile()),
+    ),
+  );
 }

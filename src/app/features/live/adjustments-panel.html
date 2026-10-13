@@ -7,14 +7,7 @@
   }
   @if (canAdd()) {
     <form [formGroup]="form" (ngSubmit)="add()" class="space-y-3">
-      <label class="block space-y-1"
-        ><span>{{ t('live.team') }}</span
-        ><select class="ds-control w-full" formControlName="team">
-          @for (team of teams(); track team.id) {
-            <option [value]="team.id">{{ name(team, direction.language()) }}</option>
-          }
-        </select></label
-      >
+      <ds-search-select formControlName="team" [label]="t('live.team')" [options]="teamOptions()" />
       <div class="block space-y-1">
         <span>{{ t('live.points') }}</span
         ><span class="flex gap-2"
@@ -44,6 +37,16 @@
       <p class="text-sm text-slate">
         {{ t('live.remaining') }}: {{ allowance() === null ? t('live.unlimited') : allowance() }}
       </p>
+      @if (currentTotal() !== null && projectedTotal() !== null) {
+        <p
+          class="rounded-xl bg-ivory p-3 font-bold tabular"
+          data-testid="projected-total"
+          dir="ltr"
+        >
+          {{ t('adjustments.projected') }}: {{ currentTotal() }} →
+          <app-count-up [value]="projectedTotal()!" />
+        </p>
+      }
       <label class="block space-y-1"
         ><span>{{ t('live.reason') }}</span
         ><textarea
@@ -56,7 +59,7 @@
       <button class="ds-button primary" [disabled]="saving()">{{ t('live.addAdjustment') }}</button>
     </form>
   }
-  @for (item of adjustments(); track item.id) {
+  @for (item of showList() ? adjustments() : []; track item.id) {
     <article class="space-y-2 border-t border-mist pt-3" [class.line-through]="!!item.revoked_at">
       <p class="font-semibold">{{ teamName(item.team_id) }}</p>
       <p class="tabular font-bold">{{ item.points > 0 ? '+' : '' }}{{ item.points }}</p>
@@ -73,7 +76,9 @@
       }
     </article>
   } @empty {
-    <p class="text-slate">{{ t('player.noAdjustments') }}</p>
+    @if (showList()) {
+      <p class="text-slate">{{ t('player.noAdjustments') }}</p>
+    }
   }
   @if (revokeTarget()) {
     <ds-bottom-sheet [title]="t('live.revokeTitle')" (close)="!saving() && revokeTarget.set(null)"

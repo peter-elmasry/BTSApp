@@ -5,19 +5,24 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  computed,
   inject,
   input,
+  output,
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { DirectionService } from '../../core/i18n/i18n.service';
+import { ViewerScope } from '../../core/player/viewer-scope';
 import type { PublicEvent } from '../../core/player/public-types';
 import type { StandingRow } from '../../core/standings/standings-types';
 import { DsAvatar } from '../../shared/ui/avatar';
 import { localizedName } from '../public/public-helpers';
 import { currencyLabel, rankChanges } from './rank-motion';
-import { CountUp } from './count-up';
+import { CountUp } from '../../shared/ui/count-up';
+import { matchesSearch, SEARCH_THRESHOLD } from '../../shared/ui/data-table';
+import { isLivesMode, lifeEmoji } from '../../core/player/scoring';
 
 @Component({
   selector: 'app-standings-list',
@@ -32,7 +37,25 @@ export class StandingsList {
   readonly selectedCode = input<string | null>(null);
   readonly compact = input(false);
   readonly display = input(false);
+  /** `table` (leaderboard, U6) or the card list (home preview, venue display). */
+  readonly variant = input<'list' | 'table'>('list');
+  /** A row the viewer may open was activated (drill-down, D046 scope). */
+  readonly teamOpen = output<string>();
+  readonly searchThreshold = SEARCH_THRESHOLD;
+  readonly query = signal('');
+  readonly visibleRows = computed(() => {
+    const query = this.query();
+    return query
+      ? this.rows().filter((row) =>
+          matchesSearch([row.team.code, row.team.name_en, row.team.name_ar ?? ''].join(' '), query),
+        )
+      : this.rows();
+  });
+  readonly lives = computed(() => isLivesMode(this.event()));
+  readonly emoji = computed(() => lifeEmoji(this.event()));
   readonly direction = inject(DirectionService);
+  /** Visitors open only their own team and no game pages (D046). */
+  readonly scope = inject(ViewerScope);
   readonly name = localizedName;
   readonly currency = currencyLabel;
   readonly changes = signal(new Map<string, number>());
@@ -43,6 +66,10 @@ export class StandingsList {
   private animations: Animation[] = [];
   private clearChips?: ReturnType<typeof setTimeout>;
   private scrolledCode: string | null = null;
+
+  open(code: string) {
+    if (this.scope.canOpenTeam(code)) this.teamOpen.emit(code);
+  }
 
   constructor() {
     const destroy = inject(DestroyRef);

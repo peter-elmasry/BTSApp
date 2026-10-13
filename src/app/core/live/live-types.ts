@@ -21,6 +21,17 @@ export interface LiveEvent extends PublicEvent {
 export interface LiveMatch extends PublicMatch {
   result_entered_by: string | null;
   result_entered_at: string | null;
+  /** Referee board only: current (active round), upcoming (draft) or late (ended, no result). */
+  bucket?: 'current' | 'upcoming' | 'late';
+  /** Referee board only: whether this member may enter a result now. */
+  editable?: boolean;
+}
+/** A staff member with a phone for one-tap calls (D043). */
+export interface StaffContact {
+  member_id: string;
+  name_en: string;
+  name_ar: string | null;
+  phone: string | null;
 }
 export interface LiveAdjustment {
   id: string;
@@ -41,6 +52,10 @@ export interface LiveSnapshot {
   rounds: PublicRound[];
   matches: LiveMatch[];
   adjustments: LiveAdjustment[];
+  /** Admin snapshot only: referees per game. */
+  game_referee_contacts?: (StaffContact & { game_id: string })[];
+  /** Admin snapshot: every guide; referee board: guides of teams at the station. */
+  team_guides?: (StaffContact & { team_id: string })[];
 }
 export type LiveMutation =
   | 'start_round'

@@ -1,0 +1,130 @@
+<ds-bottom-sheet *transloco="let t" [title]="t('now.title')" (close)="close.emit()">
+  <div class="space-y-4" data-testid="now-sheet">
+    @if (round(); as current) {
+      <section class="ds-card flex items-center gap-4">
+        <ds-timer-ring [round]="current" [size]="72" />
+        <div class="min-w-0">
+          <p class="text-lg font-extrabold">
+            {{
+              roundLabel(current) ||
+                (current.type === 'OPENING'
+                  ? t('round.opening')
+                  : t('player.roundNumber', { n: current.number }))
+            }}
+          </p>
+          <ds-status-pill status="live" />
+        </div>
+      </section>
+    } @else {
+      <p class="ds-card">{{ t('now.noActive') }}</p>
+    }
+
+    @if (admin()) {
+      @if (round()) {
+        <dl class="grid grid-cols-3 gap-2 text-center" data-testid="now-kpis">
+          <div class="ds-card">
+            <dt class="text-sm text-slate">{{ t('now.completed') }}</dt>
+            <dd class="text-2xl font-extrabold tabular">
+              <app-count-up [value]="progress().completed" [fromZero]="true" />/{{
+                progress().total
+              }}
+            </dd>
+          </div>
+          <div class="ds-card">
+            <dt class="text-sm text-slate">{{ t('now.pending') }}</dt>
+            <dd class="text-2xl font-extrabold tabular text-warning">
+              <app-count-up [value]="progress().pending" [fromZero]="true" />
+            </dd>
+          </div>
+          <div class="ds-card">
+            <dt class="text-sm text-slate">{{ t('ui.status.void') }}</dt>
+            <dd class="text-2xl font-extrabold tabular">
+              <app-count-up [value]="progress().void" [fromZero]="true" />
+            </dd>
+          </div>
+        </dl>
+        <ds-data-table
+          [rows]="pendingMatches()"
+          [columns]="columns(t)"
+          [trackBy]="track"
+          [caption]="t('now.pendingTable')"
+          [emptyText]="t('now.noPending')"
+          [rowStatus]="status"
+        >
+          <ng-template dsCell="game" let-match>
+            <span class="font-bold">{{ name(game(match.game_id)) }}</span>
+            @if (referees(match.game_id)) {
+              <span class="block text-sm text-slate"
+                >{{ t('now.referees') }}: {{ referees(match.game_id) }}</span
+              >
+            }
+          </ng-template>
+          <ng-template dsCell="status" let-match>
+            <ds-status-pill [status]="status(match)" />
+          </ng-template>
+        </ds-data-table>
+      }
+      @if (eventId(); as id) {
+        <a
+          class="ds-button primary flex w-full items-center justify-center"
+          [routerLink]="['/manage', id, 'live']"
+          (click)="close.emit()"
+          >{{ t('now.openControl') }}</a
+        >
+      }
+    } @else if (referee()) {
+      @if (round()) {
+        <ds-data-table
+          [rows]="stationMatches()"
+          [columns]="columns(t)"
+          [trackBy]="track"
+          [caption]="t('now.myStation')"
+          [emptyText]="t('live.noAssignedMatches')"
+          [rowStatus]="status"
+        >
+          <ng-template dsCell="status" let-match>
+            <ds-status-pill [status]="status(match)" />
+          </ng-template>
+        </ds-data-table>
+      }
+      <a
+        class="ds-button primary flex w-full items-center justify-center"
+        routerLink="/ref"
+        (click)="close.emit()"
+        >{{ t('now.openStation') }}</a
+      >
+    } @else {
+      @if (round()) {
+        <section class="ds-card space-y-2" data-testid="now-my-match">
+          <h3 class="font-bold text-slate">{{ t('now.myMatch') }}</h3>
+          @if (myMatch(); as match) {
+            <p class="text-xl font-extrabold">{{ name(game(match.game_id)) }}</p>
+            @if (location(match.game_id)) {
+              <p class="text-lg font-bold text-teal">📍 {{ location(match.game_id) }}</p>
+            }
+            <p>{{ t('match.vs') }} {{ opponents(match) }}</p>
+            @if (myOutcome(match); as outcome) {
+              @if (outcome !== 'PENDING') {
+                <ds-outcome [outcome]="outcome" />
+              }
+            }
+          } @else if (selection.selectedCode()) {
+            <p>{{ t('now.resting') }}</p>
+          } @else {
+            <p>{{ t('now.none') }}</p>
+          }
+        </section>
+      }
+      @if (nextMatch(); as match) {
+        <section class="ds-card space-y-1" data-testid="now-next-match">
+          <h3 class="font-bold text-slate">{{ t('now.nextMatch') }}</h3>
+          <p class="text-lg font-bold">{{ name(game(match.game_id)) }}</p>
+          @if (location(match.game_id)) {
+            <p class="text-teal">📍 {{ location(match.game_id) }}</p>
+          }
+          <p>{{ t('match.vs') }} {{ opponents(match) }}</p>
+        </section>
+      }
+    }
+  </div>
+</ds-bottom-sheet>

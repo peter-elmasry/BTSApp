@@ -1,0 +1,33 @@
+<div
+  #list
+  class="ds-tabs ds-tabs-indicated"
+  role="tablist"
+  [class.sub]="variant() === 'sub'"
+  [attr.aria-label]="label()"
+>
+  @if (indicator(); as box) {
+    <span
+      class="ds-tab-indicator"
+      aria-hidden="true"
+      [style.width.px]="box.width"
+      [style.transform]="'translateX(' + box.x + 'px)'"
+    ></span>
+  }
+  @for (item of items(); track item.id; let index = $index) {
+    <button
+      #tab
+      type="button"
+      role="tab"
+      class="ds-tab"
+      [attr.aria-selected]="active() === item.id"
+      [attr.tabindex]="active() === item.id ? 0 : -1"
+      (click)="select(item.id)"
+      (keydown)="keydown($event, index)"
+    >
+      {{ item.label }}
+      @if (item.badge !== null && item.badge !== undefined && item.badge !== 0) {
+        <span class="ds-tab-badge tabular">{{ item.badge }}</span>
+      }
+    </button>
+  }
+</div>

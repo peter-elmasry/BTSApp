@@ -1,0 +1,83 @@
+<ds-bottom-sheet *transloco="let t" [title]="t('menu.title')" (close)="close.emit()">
+  <div class="space-y-4" data-testid="staff-menu">
+    <section class="ds-card space-y-2">
+      <p class="text-lg font-extrabold">{{ name() }}</p>
+      <ul class="flex flex-wrap gap-2" [attr.aria-label]="t('menu.roles')">
+        @for (role of roles(); track $index) {
+          <li class="rounded-full bg-ivory px-3 py-1 text-sm font-bold">
+            {{ t('menu.role.' + role.key) }}
+            @if (role.team) {
+              · {{ role.team }}
+            }
+          </li>
+        }
+      </ul>
+    </section>
+    @if (admin() && eventId(); as id) {
+      <nav class="grid gap-2" [attr.aria-label]="t('menu.eventTools')">
+        <a class="menu-row" [routerLink]="['/manage', id, 'import']" (click)="close.emit()"
+          ><span aria-hidden="true">⬆</span>{{ t('manage.toolbar.import') }}</a
+        >
+        <a
+          class="menu-row"
+          [routerLink]="['/manage', id, 'standings']"
+          [queryParams]="{ export: 1 }"
+          (click)="close.emit()"
+          ><span aria-hidden="true">⬇</span>{{ t('manage.toolbar.export') }}</a
+        >
+        <a class="menu-row" [routerLink]="['/manage', id, 'adjustments']" (click)="close.emit()"
+          ><span aria-hidden="true">±</span>{{ t('manage.nav.adjustments') }}</a
+        >
+        <a class="menu-row" [routerLink]="['/manage', id, 'audit']" (click)="close.emit()"
+          ><span aria-hidden="true">🗂</span>{{ t('audit.title') }}</a
+        >
+      </nav>
+    }
+    <nav class="grid gap-2" [attr.aria-label]="t('menu.playerView')">
+      <a class="menu-row" routerLink="/home" (click)="close.emit()"
+        ><span aria-hidden="true">⌂</span>{{ t('menu.playerView') }}</a
+      >
+      <a class="menu-row" routerLink="/schedule" (click)="close.emit()"
+        ><span aria-hidden="true">▦</span>{{ t('nav.schedule') }}</a
+      >
+      @if (display()) {
+        <a class="menu-row" routerLink="/display" (click)="close.emit()"
+          ><span aria-hidden="true">🖥</span>{{ t('menu.display') }}</a
+        >
+      }
+      <a class="menu-row" routerLink="/about" (click)="close.emit()"
+        ><span aria-hidden="true">◉</span>{{ t('nav.about') }}</a
+      >
+      @if (owner()) {
+        <a class="menu-row" routerLink="/owner/members" (click)="close.emit()"
+          ><span aria-hidden="true">♙</span>{{ t('menu.members') }}</a
+        >
+      }
+    </nav>
+    <div class="grid gap-2">
+      <button type="button" class="menu-row" (click)="direction.toggle()">
+        <span aria-hidden="true">🌐</span>{{ t('common.switchLanguage') }}
+      </button>
+      <a class="menu-row" routerLink="/account/password" (click)="close.emit()"
+        ><span aria-hidden="true">🔑</span>{{ t('account.changePassword') }}</a
+      >
+      @if (confirmLogout()) {
+        <div class="ds-card space-y-3" role="alert" data-testid="logout-warning">
+          <p class="font-bold text-error">{{ t('menu.unsent', { n: queue.pending() }) }}</p>
+          <div class="ds-actions">
+            <button type="button" class="ds-button ghost" (click)="confirmLogout.set(false)">
+              {{ t('common.cancel') }}
+            </button>
+            <button type="button" class="ds-button danger" (click)="logout(true)">
+              {{ t('menu.logoutAnyway') }}
+            </button>
+          </div>
+        </div>
+      } @else {
+        <button type="button" class="menu-row text-error" (click)="logout()">
+          <span aria-hidden="true">⎋</span>{{ t('auth.logout') }}
+        </button>
+      }
+    </div>
+  </div>
+</ds-bottom-sheet>

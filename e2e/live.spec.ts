@@ -15,10 +15,12 @@ for (const lang of ['en', 'ar'] as const) {
     await page.getByRole('link', { name: t.live.enterResult, exact: true }).click();
     await page.getByRole('button').filter({ hasText: t.live.choice.aWins }).click();
     await page.getByTestId('review-result').click();
-    await expect(page.locator('dialog')).toBeVisible();
+    await expect(page.getByTestId('confirm-result')).toBeVisible();
     expect(fixture.calls.filter((c) => c.name === 'submit_match_result')).toHaveLength(0);
     await page.getByTestId('confirm-result').click();
-    await expect(page.getByText(t.live.resultSaved, { exact: true })).toBeVisible();
+    // U5: back to the station with a toast naming what is next.
+    await expect(page).toHaveURL(/\/ref$/);
+    await expect(page.getByTestId('toast')).toBeVisible();
     expect(fixture.applied.size).toBe(1);
     expect(fixture.calls[0].args.p_outcomes).toEqual([
       { team_id: 'team-1', outcome: 'WIN' },
@@ -45,7 +47,7 @@ test('opening round permits every team to win after confirmation', async ({ page
   await winners.nth(1).click();
   await page.getByTestId('review-result').click();
   await page.getByTestId('confirm-result').click();
-  await expect(page.getByText(t.live.resultSaved, { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/ref$/);
   expect(
     fixture.calls
       .find((c) => c.name === 'submit_match_result')!
@@ -100,28 +102,21 @@ test('airplane-mode submission waits for reconnection', async ({ page, context }
   await expect(page.getByText(t.player.outcome.DRAW, { exact: true }).first()).toBeVisible();
 });
 
-test('admin resolves pending overtime matches before closing, then reopens with a reason', async ({
+test('admin ends an overtime round with a late result, then reopens with a reason', async ({
   page,
 }) => {
   const fixture = await mockLiveEvent(page, { role: 'EVENT_ADMIN', overtime: true });
   const t = labels('en');
   await page.goto(`/manage/${eventId}/live`);
   await page.getByRole('button', { name: t['admin.round.close'], exact: true }).first().click();
-  await expect(
-    page.locator('dialog').getByText(t.live.closeBlocked, { exact: true }),
-  ).toBeVisible();
-  expect(fixture.calls.some((c) => c.name === 'close_round')).toBe(false);
-  await page.locator('dialog').getByRole('button', { name: t.common.cancel, exact: true }).click();
-  await page.getByRole('button', { name: t.live.voidMatch, exact: true }).click();
-  await page
-    .locator('dialog')
-    .getByRole('textbox', { name: t.live.reason, exact: true })
-    .fill('Station unavailable');
-  await page.getByTestId('confirm-live-action').click();
-  await expect.poll(() => fixture.snapshot.matches[0].status).toBe('VOID');
-  await page.getByRole('button', { name: t['admin.round.close'], exact: true }).first().click();
+  // D041: pending matches no longer block ending the round; they stay as late results.
+  await expect(page.locator('dialog').getByTestId('late-notice')).toHaveText(
+    t.live.endLateHint.replace('{{n}}', '1'),
+  );
   await page.getByTestId('confirm-live-action').click();
   await expect.poll(() => fixture.snapshot.rounds[0].status).toBe('CLOSED');
+  expect(fixture.snapshot.matches[0].status).toBe('SCHEDULED');
+  expect(fixture.calls.some((c) => c.name === 'void_match')).toBe(false);
   await page.getByRole('button', { name: t.live.reopen, exact: true }).click();
   await page
     .locator('dialog')
@@ -139,6 +134,7 @@ test('match adjustment shows giver, remaining cap and revoked history', async ({
   const fixture = await mockLiveEvent(page);
   const t = labels('en');
   await page.goto('/ref/match/match-1');
+  await page.getByTestId('toggle-adjustments').click();
   await page.getByRole('textbox', { name: t.live.reason, exact: true }).fill('Great sportsmanship');
   await page.getByRole('button', { name: t.live.addAdjustment, exact: true }).click();
   await expect(page.getByText('Great sportsmanship', { exact: true })).toBeVisible();
@@ -151,3 +147,35 @@ test('match adjustment shows giver, remaining cap and revoked history', async ({
   await expect(page.getByText(`${t.live.remaining}: 3`, { exact: true })).toBeVisible();
   await expect(page.locator('article.line-through')).toContainText('Entered by mistake');
 });
+
+for (const lang of ['en', 'ar'] as const) {
+  test(`referee station shows guides, late results and admin phones in ${lang}`, async ({
+    page,
+  }) => {
+    const fixture = await mockLiveEvent(page, { lang });
+    const t = labels(lang);
+    await page.goto('/ref');
+    const now = page.getByTestId('station-now').first();
+    await expect(now).toBeVisible();
+    await expect(
+      now.getByTestId('station-guides').locator('a[href="tel:01001234567"]'),
+    ).toBeVisible();
+    await expect(
+      page.getByTestId('station-admins').locator('a[href="tel:01111111111"]'),
+    ).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    await page.screenshot({ path: `artifacts/ref-station-${lang}.png`, fullPage: true });
+
+    // D041: the round ends with no result; the match moves to the late table.
+    fixture.snapshot.rounds[0].status = 'CLOSED';
+    await page.reload();
+    const late = page.getByTestId('station-late');
+    await expect(late).toBeVisible();
+    await late.getByRole('link', { name: t.live.enterResult, exact: true }).first().click();
+    await expect(page).toHaveURL(/\/ref\/match\//);
+    await expect(page.getByTestId('review-result')).toBeVisible();
+  });
+}

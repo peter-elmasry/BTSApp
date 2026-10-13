@@ -16,12 +16,14 @@ import { DirectionService } from '../../core/i18n/i18n.service';
 import { LiveApi } from '../../core/live/live-api';
 import type { LiveAdjustment, LiveSnapshot } from '../../core/live/live-types';
 import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
+import { CountUp } from '../../shared/ui/count-up';
+import { DsSearchSelect } from '../../shared/ui/search-select';
 import { localizedName } from '../public/public-helpers';
 import { canEditLiveMatch, isLiveAdmin, liveErrorKey, remainingAllowance } from './live-helpers';
 
 @Component({
   selector: 'app-adjustments-panel',
-  imports: [TranslocoDirective, ReactiveFormsModule, DsBottomSheet],
+  imports: [TranslocoDirective, ReactiveFormsModule, DsBottomSheet, CountUp, DsSearchSelect],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './adjustments-panel.html',
 })
@@ -29,6 +31,10 @@ export class AdjustmentsPanel {
   readonly snapshot = input.required<LiveSnapshot>();
   readonly matchId = input<string | null>(null);
   readonly disabled = input(false);
+  /** Hide the history list (the Adjustments page shows it as a table). */
+  readonly showList = input(true);
+  /** Current totals by team id; when given, the form previews the projected total. */
+  readonly totals = input<ReadonlyMap<string, number> | null>(null);
   readonly changed = output<void>();
   private readonly api = inject(LiveApi);
   private readonly auth = inject(AuthStore);
@@ -62,6 +68,12 @@ export class AdjustmentsPanel {
           this.match()?.participants.some((participant) => participant.team_id === team.id),
         )
       : this.snapshot().teams,
+  );
+  readonly teamOptions = computed(() =>
+    this.teams().map((team) => ({
+      value: team.id,
+      label: this.name(team, this.direction.language()),
+    })),
   );
   readonly canAdd = computed(
     () =>
@@ -97,6 +109,16 @@ export class AdjustmentsPanel {
       this.matchId(),
       positive,
     );
+  });
+  readonly currentTotal = computed(() => {
+    const totals = this.totals();
+    const team = this.values().team;
+    return totals && team && totals.has(team) ? totals.get(team)! : null;
+  });
+  readonly projectedTotal = computed(() => {
+    const current = this.currentTotal();
+    const points = this.values().points ?? 0;
+    return current === null || !Number.isInteger(points) ? null : current + points;
   });
   constructor() {
     effect(() => {

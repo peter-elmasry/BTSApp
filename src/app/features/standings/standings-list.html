@@ -1,78 +1,197 @@
 <ng-container *transloco="let t">
-  <ol
-    class="standings"
-    [class.display-list]="display()"
-    [class.compact-list]="compact()"
-    [attr.aria-label]="t('standings.title')"
-  >
-    @for (row of rows(); track row.team.id) {
-      <li
-        class="standing"
-        [class.selected]="row.team.code === selectedCode()"
-        [attr.data-team-id]="row.team.id"
-        [attr.data-team-code]="row.team.code"
-      >
-        <span class="rank tabular" [attr.aria-label]="t('standings.rank', { n: row.rank })">{{
-          row.rank
-        }}</span>
-        <ds-avatar
-          [avatarKey]="row.team.avatar_key"
-          [color]="row.team.color_hex"
-          [size]="display() ? 64 : 44"
+  @if (variant() === 'table') {
+    @if (rows().length > searchThreshold) {
+      <label class="mb-2 block">
+        <span class="sr-only">{{ t('ui.search') }}</span>
+        <input
+          type="search"
+          class="ds-control w-full"
+          data-testid="standings-search"
+          autocomplete="off"
+          [placeholder]="'🔍 ' + t('ui.search')"
+          [value]="query()"
+          (input)="query.set($any($event.target).value)"
         />
-        <div class="team-name">
-          <a class="team-link" [routerLink]="['/teams', row.team.code]">{{
-            name(row.team, direction.language())
-          }}</a>
-          <div class="badges">
-            @if (row.is_tied) {
-              <span class="tie-badge">{{ t('standings.tied') }}</span>
-            }
-            @if (row.team.code === selectedCode()) {
-              <span class="my-team">{{ t('standings.myTeam') }}</span>
-            }
-            @if (changes().get(row.team.id); as delta) {
-              <span
-                class="rank-change"
-                [class.falling]="delta < 0"
-                [attr.aria-label]="
-                  t(delta > 0 ? 'standings.movedUp' : 'standings.movedDown', {
-                    n: delta < 0 ? -delta : delta,
-                  })
-                "
-                dir="ltr"
-                >{{ delta > 0 ? '↑' : '↓' }} {{ delta < 0 ? -delta : delta }}</span
-              >
-            }
-          </div>
-        </div>
-        <dl class="record">
-          <div>
-            <dt>{{ t('standings.wins') }}</dt>
-            <dd>{{ row.wins }}</dd>
-          </div>
-          <div>
-            <dt>{{ t('standings.draws') }}</dt>
-            <dd>{{ row.draws }}</dd>
-          </div>
-          <div>
-            <dt>{{ t('standings.losses') }}</dt>
-            <dd>{{ row.losses }}</dd>
-          </div>
-          <div>
-            <dt>{{ t('standings.forfeits') }}</dt>
-            <dd>{{ row.forfeits }}</dd>
-          </div>
-          <div>
-            <dt>{{ t('standings.adjustments') }}</dt>
-            <dd dir="ltr">{{ row.adjustment_points > 0 ? '+' : '' }}{{ row.adjustment_points }}</dd>
-          </div>
-        </dl>
-        <div class="total">
-          <app-count-up class="total-number tabular" [value]="row.total" />
-          <span class="currency">{{ currency(row.total, event(), direction.language()) }}</span>
-        </div>
-      </li>
+      </label>
     }
-  </ol>
+    <div
+      class="ds-table-region"
+      role="region"
+      tabindex="0"
+      [attr.aria-label]="t('standings.title')"
+    >
+      <table class="ds-table standings-table" data-testid="standings-table">
+        <caption class="sr-only">
+          {{
+            t('standings.title')
+          }}
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col" class="text-end">#</th>
+            <th scope="col" class="text-start">{{ t('standings.team') }}</th>
+            <th scope="col" class="text-end">{{ t('standings.record') }}</th>
+            <th scope="col" class="text-end">
+              {{ lives() ? t('standings.livesColumn', { emoji: emoji() }) : t('standings.total') }}
+            </th>
+            <th scope="col" class="text-end hidden sm:table-cell">{{ t('standings.forfeits') }}</th>
+            <th scope="col" class="text-end hidden sm:table-cell">
+              {{ t('standings.adjustments') }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of visibleRows(); track row.team.id) {
+            <tr
+              [class.selected]="row.team.code === selectedCode()"
+              [class.ds-row-highlight]="row.team.code === selectedCode()"
+              [class.ds-row-clickable]="scope.canOpenTeam(row.team.code)"
+              [attr.tabindex]="scope.canOpenTeam(row.team.code) ? 0 : null"
+              [attr.data-team-id]="row.team.id"
+              [attr.data-team-code]="row.team.code"
+              (click)="open(row.team.code)"
+              (keydown.enter)="open(row.team.code)"
+            >
+              <td class="rank text-end tabular">{{ row.rank }}</td>
+              <td>
+                <span class="flex min-w-0 items-center gap-2">
+                  <ds-avatar
+                    [avatarKey]="row.team.avatar_key"
+                    [color]="row.team.color_hex"
+                    [size]="36"
+                  />
+                  <span class="min-w-0">
+                    <span class="block break-words font-bold">{{
+                      name(row.team, direction.language())
+                    }}</span>
+                    <span class="badges">
+                      @if (row.is_tied) {
+                        <span class="tie-badge">{{ t('standings.tied') }}</span>
+                      }
+                      @if (row.team.code === selectedCode()) {
+                        <span class="my-team">{{ t('standings.myTeam') }}</span>
+                      }
+                      @if (changes().get(row.team.id); as delta) {
+                        <span
+                          class="rank-change"
+                          [class.falling]="delta < 0"
+                          [attr.aria-label]="
+                            t(delta > 0 ? 'standings.movedUp' : 'standings.movedDown', {
+                              n: delta < 0 ? -delta : delta,
+                            })
+                          "
+                          dir="ltr"
+                          >{{ delta > 0 ? '↑' : '↓' }} {{ delta < 0 ? -delta : delta }}</span
+                        >
+                      }
+                    </span>
+                  </span>
+                </span>
+              </td>
+              <td class="text-end tabular" dir="ltr">
+                {{ row.wins }}-{{ row.draws }}-{{ row.losses }}
+              </td>
+              <td class="text-end">
+                <app-count-up
+                  class="total-number text-lg font-extrabold tabular"
+                  [value]="row.total"
+                />
+              </td>
+              <td class="text-end tabular hidden sm:table-cell">{{ row.forfeits }}</td>
+              <td class="text-end tabular hidden sm:table-cell" dir="ltr">
+                {{ row.adjustment_points > 0 ? '+' : '' }}{{ row.adjustment_points }}
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td class="ds-empty" colspan="6">{{ t('ui.noMatches') }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <ol
+      class="standings"
+      [class.display-list]="display()"
+      [class.compact-list]="compact()"
+      [attr.aria-label]="t('standings.title')"
+    >
+      @for (row of rows(); track row.team.id) {
+        <li
+          class="standing"
+          [class.selected]="row.team.code === selectedCode()"
+          [attr.data-team-id]="row.team.id"
+          [attr.data-team-code]="row.team.code"
+        >
+          <span class="rank tabular" [attr.aria-label]="t('standings.rank', { n: row.rank })">{{
+            row.rank
+          }}</span>
+          <ds-avatar
+            [avatarKey]="row.team.avatar_key"
+            [color]="row.team.color_hex"
+            [size]="display() ? 64 : 44"
+          />
+          <div class="team-name">
+            @if (scope.canOpenTeam(row.team.code)) {
+              <a class="team-link" [routerLink]="['/teams', row.team.code]">{{
+                name(row.team, direction.language())
+              }}</a>
+            } @else {
+              <span class="team-link">{{ name(row.team, direction.language()) }}</span>
+            }
+            <div class="badges">
+              @if (row.is_tied) {
+                <span class="tie-badge">{{ t('standings.tied') }}</span>
+              }
+              @if (row.team.code === selectedCode()) {
+                <span class="my-team">{{ t('standings.myTeam') }}</span>
+              }
+              @if (changes().get(row.team.id); as delta) {
+                <span
+                  class="rank-change"
+                  [class.falling]="delta < 0"
+                  [attr.aria-label]="
+                    t(delta > 0 ? 'standings.movedUp' : 'standings.movedDown', {
+                      n: delta < 0 ? -delta : delta,
+                    })
+                  "
+                  dir="ltr"
+                  >{{ delta > 0 ? '↑' : '↓' }} {{ delta < 0 ? -delta : delta }}</span
+                >
+              }
+            </div>
+          </div>
+          <dl class="record">
+            <div>
+              <dt>{{ t('standings.wins') }}</dt>
+              <dd>{{ row.wins }}</dd>
+            </div>
+            <div>
+              <dt>{{ t('standings.draws') }}</dt>
+              <dd>{{ row.draws }}</dd>
+            </div>
+            <div>
+              <dt>{{ t('standings.losses') }}</dt>
+              <dd>{{ row.losses }}</dd>
+            </div>
+            <div>
+              <dt>{{ t('standings.forfeits') }}</dt>
+              <dd>{{ row.forfeits }}</dd>
+            </div>
+            <div>
+              <dt>{{ t('standings.adjustments') }}</dt>
+              <dd dir="ltr">
+                {{ row.adjustment_points > 0 ? '+' : '' }}{{ row.adjustment_points }}
+              </dd>
+            </div>
+          </dl>
+          <div class="total">
+            <app-count-up class="total-number tabular" [value]="row.total" />
+            <span class="currency">{{ currency(row.total, event(), direction.language()) }}</span>
+          </div>
+        </li>
+      }
+    </ol>
+  }
 </ng-container>

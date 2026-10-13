@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthStore } from '../../core/auth/auth.store';
+import { PASSWORD_URL } from '../../core/auth/guards';
+import { landingFor } from '../../core/auth/landing';
+import { EventStore } from '../../core/player/event.store';
 import { DsButton } from '../../shared/ui/button';
 import { DsInput } from '../../shared/ui/controls';
 
@@ -15,6 +18,8 @@ import { DsInput } from '../../shared/ui/controls';
 export class ChangePasswordPage {
   readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly events = inject(EventStore);
   readonly busy = signal(false);
   readonly error = signal('');
   readonly forced = computed(() => this.auth.profile()?.must_change_password === true);
@@ -48,6 +53,19 @@ export class ChangePasswordPage {
       return;
     }
     this.form.reset();
-    await this.router.navigateByUrl('/home');
+    // Back to the page that asked for the new password (e.g. My station), else the start page.
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (
+      returnUrl?.startsWith('/') &&
+      !returnUrl.startsWith('//') &&
+      !returnUrl.startsWith(PASSWORD_URL)
+    )
+      await this.router.navigateByUrl(returnUrl);
+    else {
+      await this.events.refresh().catch(() => undefined);
+      await this.router.navigateByUrl(
+        landingFor(this.auth.profile(), this.events.event()?.id ?? null),
+      );
+    }
   }
 }

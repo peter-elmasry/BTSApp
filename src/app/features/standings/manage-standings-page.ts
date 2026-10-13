@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { ManageNav } from '../manage/manage-nav';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { AuthStore } from '../../core/auth/auth.store';
 import { DirectionService } from '../../core/i18n/i18n.service';
@@ -18,6 +17,8 @@ import { ReadCacheService } from '../../core/offline/read-cache.service';
 import { rpcFailure } from '../../core/offline/rpc-errors';
 import { EventChannelService } from '../../core/realtime/event-channel.service';
 import { StandingsApi } from '../../core/standings/standings-api';
+import { ExportSheet } from './export-sheet';
+import { TeamBreakdownSheet } from './team-breakdown-sheet';
 import type { StandingRow, StandingsExport } from '../../core/standings/standings-types';
 import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
 import { isLiveAdmin } from '../live/live-helpers';
@@ -64,7 +65,7 @@ export function standingsAdminError(error: unknown) {
 
 @Component({
   selector: 'app-manage-standings-page',
-  imports: [ManageNav, TranslocoDirective, DsBottomSheet],
+  imports: [TranslocoDirective, DsBottomSheet, ExportSheet, TeamBreakdownSheet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './manage-standings-page.html',
 })
@@ -82,6 +83,10 @@ export class ManageStandingsPage {
     initialValue: this.route.snapshot.paramMap,
   });
   readonly eventId = computed(() => this.params().get('eventId') ?? '');
+  private readonly query = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
+  private exportRequested = false;
   readonly allowed = computed(
     () => !!this.auth.session() && isLiveAdmin(this.auth.profile(), this.eventId()),
   );
@@ -114,6 +119,8 @@ export class ManageStandingsPage {
   readonly saving = signal(false);
   readonly exporting = signal(false);
   readonly preview = signal(false);
+  readonly exportSheet = signal(false);
+  readonly drill = signal<string | null>(null);
   readonly error = signal('');
   readonly notice = signal('');
   readonly action = signal<Action | null>(null);
@@ -125,6 +132,13 @@ export class ManageStandingsPage {
   private dragId: string | null = null;
 
   constructor() {
+    // "Preview first" in the Export sheet (D045) opens this page with a frozen preview.
+    effect(() => {
+      if (this.query().get('preview') !== '1' || this.exportRequested) return;
+      if (!this.snapshot() || this.loading() || this.preview()) return;
+      this.exportRequested = true;
+      untracked(() => void this.prepareExport());
+    });
     effect((cleanup) => {
       const id = this.eventId();
       if (id && this.allowed()) cleanup(this.realtime.acquire(id));

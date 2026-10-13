@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { EventStore } from '../../core/player/event.store';
-import { costsLife, isLivesMode, lifeEmoji, teamLives } from '../../core/player/scoring';
+import { costsLife, isLivesMode, lifeEmoji, livesLeft } from '../../core/player/scoring';
 import { TeamSelectionStore } from '../../core/player/team-selection.store';
 import { TeamViewState } from './team-view-state';
 
@@ -61,7 +61,7 @@ export class LifeLostOverlay {
         if (fresh.length)
           this.show({
             emoji: lifeEmoji(event),
-            left: teamLives(event, view.matches, view.adjustments, code),
+            left: livesLeft(view),
           });
       });
     });

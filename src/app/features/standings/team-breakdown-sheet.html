@@ -1,0 +1,106 @@
+<ds-bottom-sheet
+  *transloco="let t"
+  size="full"
+  [title]="view() ? name(view()!.team) : t('breakdown.title')"
+  (close)="close.emit()"
+>
+  <div class="space-y-4" data-testid="team-breakdown">
+    @if (state.loading() && !view()) {
+      <p role="status">{{ t('player.loading') }}</p>
+    } @else if (state.error()) {
+      <p role="alert">{{ t('player.resultsError') }}</p>
+    } @else if (view(); as data) {
+      <section class="ds-card flex flex-wrap items-center gap-4">
+        <ds-avatar [avatarKey]="data.team.avatar_key" [color]="data.team.color_hex" [size]="64" />
+        <div class="min-w-0 flex-1 space-y-1">
+          @if (data.standing; as row) {
+            <p class="font-bold tabular">{{ t('standings.rank', { n: row.rank }) }}</p>
+          }
+          @if (lives() && breakdown(); as b) {
+            <ds-lives-meter
+              [lives]="b.total"
+              [initial]="b.initial_lives ?? b.total"
+              [emoji]="emoji()"
+            />
+          }
+          @for (guide of guides(); track $index) {
+            @if (guide.phone) {
+              <ds-phone-link [name]="t('team.guide') + ': ' + name(guide)" [phone]="guide.phone" />
+            } @else {
+              <p class="text-sm">{{ t('team.guide') }}: {{ name(guide) }}</p>
+            }
+          }
+        </div>
+      </section>
+
+      <ds-data-table
+        [rows]="matches()"
+        [columns]="matchColumns(t)"
+        [trackBy]="trackMatch"
+        [caption]="t('breakdown.matches')"
+        [emptyText]="t('player.noMatches')"
+      >
+        <ng-template dsCell="round" let-match>
+          {{
+            round(match) ||
+              (roundNumber(match)?.type === 'OPENING'
+                ? t('round.opening')
+                : t('player.roundNumber', { n: roundNumber(match)?.number ?? '—' }))
+          }}
+        </ng-template>
+        <ng-template dsCell="game" let-match>
+          <span class="font-semibold">{{ name(game(match)) }}</span>
+          @if (location(match)) {
+            <span class="block text-sm text-slate">{{ location(match) }}</span>
+          }
+        </ng-template>
+        <ng-template dsCell="opponent" let-match>{{ opponents(match) }}</ng-template>
+        <ng-template dsCell="outcome" let-match>
+          @if (match.status === 'VOID') {
+            <span class="text-slate line-through">{{ t('ui.status.void') }}</span>
+          } @else {
+            <ds-outcome [outcome]="outcome(match)" />
+          }
+        </ng-template>
+      </ds-data-table>
+
+      <h3 class="text-lg font-bold">{{ t('player.adjustments') }}</h3>
+      <ds-data-table
+        [rows]="data.adjustments"
+        [columns]="adjustmentColumns(t)"
+        [trackBy]="trackAdjustment"
+        [caption]="t('player.adjustments')"
+        [emptyText]="t('player.noAdjustments')"
+      />
+
+      @if (breakdown(); as b) {
+        <section class="ds-card bg-navy text-white" data-testid="breakdown-total">
+          @if (lives()) {
+            <p class="tabular text-lg font-bold">
+              {{ t('breakdown.livesStart') }} {{ b.initial_lives }} − {{ t('breakdown.livesLost') }}
+              {{ b.lives_lost }} {{ b.adjustment_points >= 0 ? '+' : '−' }}
+              {{ t('breakdown.adjustments') }}
+              {{ b.adjustment_points < 0 ? -b.adjustment_points : b.adjustment_points }} =
+              <span class="text-gold"><app-count-up [value]="b.total" [fromZero]="true" /></span>
+              {{ emoji() }}
+            </p>
+            <p class="text-sm">{{ t('breakdown.livesFloor') }}</p>
+          } @else {
+            <p class="tabular text-lg font-bold">
+              {{ t('breakdown.matchPoints') }} {{ b.match_points }}
+              {{ b.adjustment_points >= 0 ? '+' : '−' }} {{ t('breakdown.adjustments') }}
+              {{ b.adjustment_points < 0 ? -b.adjustment_points : b.adjustment_points }} =
+              <span class="text-gold"><app-count-up [value]="b.total" [fromZero]="true" /></span>
+            </p>
+          }
+        </section>
+      }
+      <a
+        class="ds-button ghost inline-flex items-center"
+        [routerLink]="['/teams', code()]"
+        (click)="close.emit()"
+        >{{ t('breakdown.openPage') }}</a
+      >
+    }
+  </div>
+</ds-bottom-sheet>

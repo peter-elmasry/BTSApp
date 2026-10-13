@@ -45,7 +45,9 @@ describe('staff route guards', () => {
     const result = await TestBed.runInInjectionContext(() =>
       authGuard({} as never, { url: '/ref' } as never),
     );
-    expect(TestBed.inject(Router).serializeUrl(result as UrlTree)).toBe('/account/password');
+    expect(TestBed.inject(Router).serializeUrl(result as UrlTree)).toBe(
+      '/account/password?returnUrl=%2Fref',
+    );
     expect(
       await TestBed.runInInjectionContext(() =>
         authGuard({} as never, { url: '/account/password' } as never),

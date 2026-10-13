@@ -1,4 +1,4 @@
-import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { AuthStore } from '../auth/auth.store';
 import { EventStore } from './event.store';
 
@@ -36,6 +36,27 @@ export class TeamSelectionStore {
   );
   /** A player who never picked a team may still pick once after the lock. */
   readonly canChange = computed(() => !this.locked() || !this.selectedCode());
+  /** Codes of the teams the signed-in member guides in the current event (D044). */
+  readonly guidedTeamCodes = computed(() => {
+    const eventId = this.events.event()?.id;
+    const teamIds = new Set(
+      (this.auth.profile()?.roles ?? [])
+        .filter((role) => role.event_id === eventId && role.role === 'GUIDE' && role.team_id)
+        .map((role) => role.team_id),
+    );
+    return this.events
+      .teams()
+      .filter((team) => teamIds.has(team.id))
+      .map((team) => team.code);
+  });
+  /** Signed-in guides may always move among their own teams, even after the lock (D044). */
+  readonly canSwitch = computed(() => this.canChange() || this.guidedTeamCodes().length > 1);
+
+  canChoose(code: string): boolean {
+    return (
+      this.canChange() || this.selectedCode() === code || this.guidedTeamCodes().includes(code)
+    );
+  }
 
   constructor() {
     effect(() => {
@@ -49,12 +70,28 @@ export class TeamSelectionStore {
         if (code && !valid) this.persist(eventId, null);
       }
     });
+    effect(() => {
+      const eventId = this.events.event()?.id;
+      const guided = this.guidedTeamCodes();
+      if (!eventId || !guided.length) return;
+      const selected = this.selectedCode();
+      if (selected && guided.includes(selected)) return;
+      untracked(() => this.autoGuide(eventId, guided));
+    });
+  }
+
+  private autoGuide(eventId: string, guided: readonly string[]) {
+    // A guide's device follows their team on sign-in; several teams are picked by the guide.
+    const current = this.choices().get(eventId) ?? null;
+    if (guided.length !== 1 || current === guided[0]) return;
+    this.choices.set(new Map(this.choices()).set(eventId, guided[0]));
+    this.persist(eventId, guided[0]);
   }
 
   choose(code: string): boolean {
     const eventId = this.events.event()?.id;
     if (!eventId || !this.events.teams().some((team) => team.code === code)) return false;
-    if (!this.canChange() && this.selectedCode() !== code) return false;
+    if (!this.canChoose(code)) return false;
     this.choices.set(new Map(this.choices()).set(eventId, code));
     this.persist(eventId, code);
     return true;

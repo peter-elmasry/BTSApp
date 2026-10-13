@@ -93,15 +93,6 @@ export async function mockLiveEvent(
       else {
         const round = snapshot.rounds.find((r) => r.id === args.p_round);
         const match = snapshot.matches.find((m) => m.id === args.p_match);
-        if (
-          name === 'close_round' &&
-          snapshot.matches.some((m) => m.round_id === args.p_round && m.status === 'SCHEDULED')
-        )
-          return fail('PENDING_MATCHES', {
-            match_ids: snapshot.matches
-              .filter((m) => m.round_id === args.p_round && m.status === 'SCHEDULED')
-              .map((m) => m.id),
-          });
         if (name === 'start_round' && round) {
           round.status = 'ACTIVE';
           round.started_at = new Date().toISOString();
@@ -113,6 +104,7 @@ export async function mockLiveEvent(
             Date.parse(round.ends_at!) + args.p_minutes * 60000,
           ).toISOString();
         }
+        // D041: ending a round keeps pending matches as late results.
         if (name === 'close_round' && round) round.status = 'CLOSED';
         if (name === 'reopen_round' && round) round.status = 'ACTIVE';
         if (name === 'submit_match_result' && match) {
@@ -174,10 +166,33 @@ export async function mockLiveEvent(
       if (name === 'get_referee_board')
         data = {
           ...snapshot,
-          matches: snapshot.matches.filter((m) =>
-            snapshot.rounds.some((r) => r.id === m.round_id && r.status === 'ACTIVE'),
-          ),
+          // Same buckets as the server (0018): running round = current, ended without result = late.
+          matches: snapshot.matches.flatMap((m) => {
+            const round = snapshot.rounds.find((r) => r.id === m.round_id);
+            if (round?.status === 'ACTIVE') return [{ ...m, bucket: 'current', editable: true }];
+            if (round?.status === 'CLOSED' && m.status === 'SCHEDULED')
+              return [{ ...m, bucket: 'late', editable: true }];
+            return [];
+          }),
+          team_guides: [
+            {
+              member_id: 'guide-1',
+              name_en: 'Sara Guide',
+              name_ar: 'سارة المرشدة',
+              phone: '01001234567',
+              team_id: snapshot.matches[0].participants[0].team_id,
+            },
+          ],
         };
+      if (name === 'get_event_contacts')
+        data = [
+          {
+            member_id: 'admin-1',
+            name_en: 'Omar Admin',
+            name_ar: 'عمر المسؤول',
+            phone: '01111111111',
+          },
+        ];
       if (name === 'get_match_entry')
         data = { ...snapshot, matches: snapshot.matches.filter((m) => m.id === args.p_match) };
       if (name === 'get_team_view')
