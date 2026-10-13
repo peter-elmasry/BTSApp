@@ -44,7 +44,7 @@ export class ProfilePage {
       filled = profile.id;
       this.form.reset({
         username: profile.username,
-        full_name_en: profile.full_name_en,
+        full_name_en: profile.full_name_ar || profile.full_name_en,
         full_name_ar: profile.full_name_ar ?? '',
         phone: profile.phone ?? '',
       });
@@ -60,7 +60,9 @@ export class ProfilePage {
     }
     this.busy.set(true);
     this.error.set('');
-    const result = await this.auth.updateOwnProfile(this.form.getRawValue());
+    // One name per member (D054): both columns hold the same text.
+    const value = this.form.getRawValue();
+    const result = await this.auth.updateOwnProfile({ ...value, full_name_ar: value.full_name_en });
     this.busy.set(false);
     if (result) {
       this.error.set(result);
@@ -70,7 +72,7 @@ export class ProfilePage {
     if (profile)
       this.form.reset({
         username: profile.username,
-        full_name_en: profile.full_name_en,
+        full_name_en: profile.full_name_ar || profile.full_name_en,
         full_name_ar: profile.full_name_ar ?? '',
         phone: profile.phone ?? '',
       });

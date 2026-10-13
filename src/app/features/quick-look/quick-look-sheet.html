@@ -1,0 +1,146 @@
+<ng-container *transloco="let t">
+  @if (team(); as item) {
+    <ds-bottom-sheet [title]="name(item, direction.language())" (close)="look.close()">
+      <div class="space-y-4" data-testid="quick-look-team">
+        <div class="flex items-center gap-3">
+          <ds-avatar [avatarKey]="item.avatar_key" [color]="item.color_hex" [size]="56" />
+          <div class="min-w-0">
+            <p class="text-sm text-slate">{{ t('quick.team') }} · {{ item.code }}</p>
+            @if (showScore() && view()?.breakdown; as b) {
+              <p class="text-lg font-extrabold tabular" data-testid="quick-score">
+                @if (view()?.standing; as row) {
+                  {{ t('standings.rank', { n: row.rank }) }} ·
+                }
+                {{ b.total }} {{ lives() ? emoji() : pointsName() || t('quick.points') }}
+              </p>
+            }
+          </div>
+        </div>
+        <section class="space-y-1">
+          <h3 class="text-sm font-bold text-slate">{{ t('quick.guides') }}</h3>
+          @for (guide of guides(); track $index) {
+            <ds-phone-link [name]="name(guide, direction.language())" [phone]="guide.phone" />
+          } @empty {
+            <p class="text-slate">—</p>
+          }
+        </section>
+        <section class="ds-card space-y-1" data-testid="quick-now">
+          <h3 class="text-sm font-bold text-slate">{{ t('quick.now') }}</h3>
+          @if (teamNow(); as match) {
+            <div class="flex items-center justify-between gap-3">
+              <div class="min-w-0">
+                <p class="font-bold">
+                  {{ roundLabel(match, t) }} · {{ name(gameOf(match), direction.language()) }}
+                </p>
+                @if (location(gameOf(match), direction.language()); as place) {
+                  <p class="text-lg font-extrabold">📍 {{ place }}</p>
+                }
+                <p>{{ t('match.vs') }} {{ opponents(match) }}</p>
+              </div>
+              @if (activeRound(); as round) {
+                <ds-timer-ring [round]="round" [size]="56" />
+              }
+            </div>
+          } @else {
+            <p class="text-slate">{{ t('quick.noMatchNow') }}</p>
+          }
+        </section>
+        @if (teamNext(); as match) {
+          <p>
+            <span class="font-bold">{{ t('quick.next') }}:</span>
+            {{ roundLabel(match, t) }} · {{ name(gameOf(match), direction.language()) }}
+            @if (location(gameOf(match), direction.language()); as place) {
+              · 📍 {{ place }}
+            }
+            · {{ t('match.vs') }} {{ opponents(match) }}
+          </p>
+        }
+        @if (teamLast(); as match) {
+          <p class="flex flex-wrap items-center gap-2">
+            <span class="font-bold">{{ t('player.lastResult') }}:</span>
+            {{ roundLabel(match, t) }} · {{ name(gameOf(match), direction.language()) }}
+            @if (ownOutcome(match); as outcome) {
+              @if (outcome !== 'PENDING') {
+                <ds-outcome [outcome]="outcome" />
+              }
+            }
+          </p>
+        }
+        @if (scope.canOpenTeam(item.code)) {
+          <a
+            class="ds-button secondary w-full"
+            [routerLink]="['/teams', item.code]"
+            (click)="look.close()"
+            >{{ t('quick.openTeam') }}</a
+          >
+        }
+      </div>
+    </ds-bottom-sheet>
+  } @else if (game(); as item) {
+    <ds-bottom-sheet [title]="name(item, direction.language())" (close)="look.close()">
+      <div class="space-y-4" data-testid="quick-look-game">
+        <div>
+          <p class="text-sm text-slate">{{ t('quick.game') }} · {{ item.code }}</p>
+          @if (location(item, direction.language()); as place) {
+            <p class="text-xl font-extrabold">📍 {{ place }}</p>
+          }
+        </div>
+        <section class="space-y-1">
+          <h3 class="text-sm font-bold text-slate">{{ t('quick.referees') }}</h3>
+          @for (referee of referees(); track $index) {
+            <ds-phone-link [name]="name(referee, direction.language())" [phone]="referee.phone" />
+          } @empty {
+            <p class="text-slate">—</p>
+          }
+        </section>
+        <section class="ds-card space-y-1" data-testid="quick-now">
+          <h3 class="text-sm font-bold text-slate">{{ t('quick.playingNow') }}</h3>
+          @if (gameNow(); as match) {
+            <div class="flex items-center justify-between gap-3">
+              <p class="font-bold">{{ teamsOf(match).join(' ' + t('match.vs') + ' ') }}</p>
+              @if (activeRound(); as round) {
+                <ds-timer-ring [round]="round" [size]="56" />
+              }
+            </div>
+          } @else {
+            <p class="text-slate">{{ t('quick.noMatchNow') }}</p>
+          }
+        </section>
+        @if (gameNext(); as match) {
+          <p>
+            <span class="font-bold">{{ t('quick.next') }}:</span>
+            {{ roundLabel(match, t) }} · {{ teamsOf(match).join(' ' + t('match.vs') + ' ') }}
+          </p>
+        }
+        @if (scope.member() && gameDone().length) {
+          <section class="space-y-1">
+            <h3 class="text-sm font-bold text-slate">{{ t('quick.results') }}</h3>
+            <ul class="space-y-1">
+              @for (match of gameDone(); track match.id) {
+                <li class="flex flex-wrap items-center gap-2 text-sm">
+                  <span class="font-semibold">{{ roundLabel(match, t) }}:</span>
+                  @for (participant of match.participants; track participant.team_id) {
+                    <span>{{ teamName(participant.team_code) }}</span>
+                    @if (seeAll() && outcomeOf(match, participant.team_code); as outcome) {
+                      @if (outcome !== 'PENDING') {
+                        <ds-outcome [outcome]="outcome" />
+                      }
+                    }
+                  }
+                </li>
+              }
+            </ul>
+          </section>
+        }
+        @if (scope.canOpenGames()) {
+          <a
+            class="ds-button secondary w-full"
+            [routerLink]="['/games', item.code]"
+            (click)="look.close()"
+            >{{ t('quick.openGame') }}</a
+          >
+        }
+      </div>
+    </ds-bottom-sheet>
+  }
+</ng-container>

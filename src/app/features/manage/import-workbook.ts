@@ -92,6 +92,13 @@ const blank = (value: unknown) =>
   value === null || value === undefined || (typeof value === 'string' && value.trim() === '');
 const integer = (value: unknown, min = 0, max = 999999) =>
   typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max;
+const CURRENCY_KEYS = [
+  'currency_en_one',
+  'currency_en_other',
+  'currency_ar_one',
+  'currency_ar_two',
+  'currency_ar_plural',
+] as const;
 const numericColumns = new Set([
   'number',
   'round_number',
@@ -417,11 +424,7 @@ function prefill(setup: ImportValidationContext): Prefill {
       points_win: event['points_win'] ?? 2,
       points_draw: event['points_draw'] ?? 1,
       points_loss: event['points_loss'] ?? 0,
-      currency_ar_one: event['currency_ar_one'] ?? 'نقطة',
-      currency_ar_two: event['currency_ar_two'] ?? 'نقطتين',
-      currency_ar_plural: event['currency_ar_plural'] ?? 'نقط',
-      currency_en_one: event['currency_en_one'] ?? 'Point',
-      currency_en_other: event['currency_en_other'] ?? 'Points',
+      points_name: event['currency_ar_plural'] ?? event['currency_en_other'] ?? 'نقط',
       match_bonus_cap: event['match_bonus_cap'] ?? null,
       match_penalty_cap: event['match_penalty_cap'] ?? null,
       event_bonus_cap: event['event_bonus_cap'] ?? null,
@@ -649,10 +652,10 @@ export async function createImportTemplate(
     ev.getRow(r).height = 24;
   });
   ev.getColumn(4).hidden = true;
+  // Win/Draw/Loss may be negative: hearts mode removes hearts (D053).
+  for (const key of ['points_win', 'points_draw', 'points_loss'])
+    whole(ev, eventRow(key), eventRow(key), 2, -999999, 999999);
   for (const key of [
-    'points_win',
-    'points_draw',
-    'points_loss',
     'match_bonus_cap',
     'match_penalty_cap',
     'event_bonus_cap',
@@ -660,7 +663,7 @@ export async function createImportTemplate(
   ])
     whole(ev, eventRow(key), eventRow(key), 2, 0, 999);
   whole(ev, eventRow('opening_duration_min'), eventRow('opening_duration_min'), 2, 1, 600);
-  whole(ev, eventRow('initial_lives'), eventRow('initial_lives'), 2, 1, 99);
+  whole(ev, eventRow('initial_lives'), eventRow('initial_lives'), 2, 1, 9999);
   list(
     ev,
     eventRow('scoring_mode'),
@@ -687,15 +690,10 @@ export async function createImportTemplate(
   );
   const previewRow = TABLE_ROW + EVENT_FIELDS.length + 1;
   ev.mergeCells(previewRow, 1, previewRow, 3);
-  const [one, two, plural, win] = [
-    'currency_ar_one',
-    'currency_ar_two',
-    'currency_ar_plural',
-    'points_win',
-  ].map((k) => `B${eventRow(k)}`);
+  const [pointsName, win] = ['points_name', 'points_win'].map((k) => `B${eventRow(k)}`);
   const preview = ev.getCell(previewRow, 1);
   preview.value = {
-    formula: `"مثال العملة:  ١ "&${one}&"   ·   ٢ "&${two}&"   ·   ٥ "&${plural}&"   ·   فوز = "&${win}&" "&IF(${win}=2,${two},IF(${win}=1,${one},${plural}))`,
+    formula: `"مثال:  فوز = "&${win}&" "&${pointsName}`,
   };
   preview.font = { name: FONT, size: 12, bold: true, color: { argb: 'FF7A5B00' } };
   preview.fill = solid(NOTE);
@@ -820,7 +818,7 @@ export async function createImportTemplate(
     sc,
     sumC,
     '📅  جدول المباريات',
-    'كل صف = جولة · كل لعبة ليها خانتين (فريق ١ ضد فريق ٢) · الخانتين الفاضيين = استراحة للعبة دي مش مباراة · الأحمر = غلط',
+    'كل صف = جولة · كل لعبة ليها خانتين (فريق ١ vs فريق ٢) · الخانتين الفاضيين = استراحة للعبة دي مش مباراة · الأحمر = غلط',
     'F57C00',
   );
   const fixedHead = (c: number, label: string, color: string) => {
@@ -1174,20 +1172,32 @@ export async function parseImportWorkbook(
   let openingGame = '';
   let openingDuration: unknown = null;
   const ev = sheets.event!;
-  for (let r = TABLE_ROW; r < TABLE_ROW + EVENT_FIELDS.length + 2; r++) {
+  // Older templates (v3/v4) list five currency rows instead of one points name.
+  for (let r = TABLE_ROW; r < TABLE_ROW + EVENT_FIELDS.length + 8; r++) {
     const key = text(ev.getCell(r, 4).value);
-    const field = EVENT_FIELDS.find((f) => f.key === key);
+    const field =
+      EVENT_FIELDS.find((f) => f.key === key) ??
+      ((CURRENCY_KEYS as readonly string[]).includes(key) ? { key } : undefined);
     if (!field) continue;
     const raw = scalar(ev.getCell(r, 2).value, 'Event', r, 'B', errors);
     let value: unknown = blank(raw) ? null : raw;
     if (
       typeof value === 'string' &&
-      /^\d+$/.test(value) &&
+      /^-?\d+$/.test(value) &&
       key !== 'name' &&
+      key !== 'points_name' &&
       key !== 'life_emoji' &&
       !key.startsWith('currency')
     )
       value = Number(value);
+    // One points name fills every currency form the server keeps (D054).
+    if (key === 'points_name') {
+      for (const currency of CURRENCY_KEYS) {
+        payload.event[currency] = value;
+        eventRows.set(currency, r);
+      }
+      continue;
+    }
     if (key === 'name') {
       payload.event['name_en'] = value;
       payload.event['name_ar'] = value;
@@ -1458,7 +1468,12 @@ export function validateImportPayload(
   }
   for (const [key, value] of Object.entries(payload.event)) {
     const record = { row: Object.keys(eventDefaults).indexOf(key) + 2 };
-    if (numericColumns.has(key) && !(key.endsWith('_cap') && blank(value)) && !integer(value))
+    const signed = key === 'points_win' || key === 'points_draw' || key === 'points_loss';
+    if (
+      numericColumns.has(key) &&
+      !(key.endsWith('_cap') && blank(value)) &&
+      !integer(value, signed ? -999999 : 0)
+    )
       add('Event', record, key, 'INVALID_NUMBER');
     if (
       (key.startsWith('currency_') || key.startsWith('name_')) &&
@@ -1470,7 +1485,7 @@ export function validateImportPayload(
       add('Event', record, key, 'INVALID_BOOLEAN');
     if (key === 'scoring_mode' && value !== 'POINTS' && value !== 'LIVES')
       add('Event', record, key, 'INVALID_TEXT');
-    if (key === 'initial_lives' && !integer(value, 1, 99))
+    if (key === 'initial_lives' && !integer(value, 1, 9999))
       add('Event', record, key, 'INVALID_NUMBER');
     if (key === 'life_emoji' && (typeof value !== 'string' || !value || value.length > 16))
       add('Event', record, key, 'INVALID_TEXT');

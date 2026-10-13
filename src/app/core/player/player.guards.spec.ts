@@ -28,7 +28,7 @@ describe('player team route guard', () => {
       providers: [
         provideRouter([]),
         { provide: EventStore, useValue: { event, initialize } },
-        { provide: TeamSelectionStore, useValue: { selectedCode } },
+        { provide: TeamSelectionStore, useValue: { selectedCode, staffWithoutTeam: () => false } },
       ],
     });
   });

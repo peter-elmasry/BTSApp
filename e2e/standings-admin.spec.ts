@@ -29,7 +29,7 @@ test('Arabic setup renders choose, delete and remove labels instead of translati
   await expect(page.locator('main').last()).not.toContainText(/common\.(remove|delete|choose)/);
 });
 
-test('live scoring settings warn about recalculation and reuse Arabic currency rules', async ({
+test('live scoring settings warn about recalculation and keep one points name', async ({
   page,
 }) => {
   const t = JSON.parse(readFileSync('public/i18n/en.json', 'utf8')).phase6;
@@ -37,13 +37,9 @@ test('live scoring settings warn about recalculation and reuse Arabic currency r
   await page.goto(`/manage/${eventId}/setup`);
   await expect(page.getByText(t.pointsWarning, { exact: true })).toBeVisible();
   await page.getByTestId('advanced-settings').locator('summary').click();
-  await page.locator('#currency-count').fill('11');
-  await expect(page.locator('#currency-count + p')).toHaveText(
-    `11 ${fixture.snapshot.event.currency_ar_one}`,
-  );
-  await page.locator('#currency-count').fill('2');
-  await expect(page.locator('#currency-count + p')).toHaveText(
-    `2 ${fixture.snapshot.event.currency_ar_two}`,
+  // One points name (D054), shown in every language.
+  await expect(page.getByTestId('points-name')).toHaveValue(
+    fixture.snapshot.event.currency_ar_plural,
   );
 });
 
@@ -53,7 +49,7 @@ test('draft scoring settings do not show the live recalculation warning', async 
   fixture.snapshot.event.status = 'DRAFT';
   await page.goto(`/manage/${eventId}/setup`);
   await page.getByTestId('advanced-settings').locator('summary').click();
-  await expect(page.locator('#currency-count')).toBeVisible();
+  await expect(page.getByTestId('points-name')).toBeVisible();
   await expect(page.getByText(t.pointsWarning, { exact: true })).toHaveCount(0);
 });
 

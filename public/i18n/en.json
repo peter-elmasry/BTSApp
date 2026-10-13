@@ -230,7 +230,11 @@
       "label": "Excel import and export",
       "import": "Import (Excel)",
       "export": "Export (Excel)"
-    }
+    },
+    "eventName": "Event name",
+    "entityName": "Name",
+    "location": "Location",
+    "pointsName": "Points name"
   },
   "import": {
     "intro": "Upload an Excel workbook, review its rows, then confirm the import.",
@@ -405,7 +409,9 @@
       "all": "All",
       "active": "Active",
       "inactive": "Inactive"
-    }
+    },
+    "eventName": "Event name",
+    "fullName": "Full name"
   },
   "errors.REQUIRED": "Please enter a name",
   "foundation": {
@@ -770,21 +776,25 @@
     "points": "Points",
     "pointsHint": "Wins, draws and losses earn the points configured below.",
     "lives": "Lives",
-    "livesHint": "Every team starts with the same number of lives and loses one for each loss.",
+    "livesHint": "Every team starts with the same number of hearts; each result adds or removes hearts.",
     "initialLives": "Starting lives per team (1–99)",
-    "initialLivesError": "Enter a number of lives from 1 to 99.",
+    "initialLivesError": "Enter a number of hearts from 1 to 9999.",
     "lifeEmoji": "Life symbol (any emoji)",
     "emojiSuggestions": "Suggestions",
     "useEmoji": "Use {{emoji}}",
     "preview": "Each team starts with",
-    "livesRules": "A win or draw keeps lives. A loss or forfeit costs one life. Lives never go below zero, and teams at zero keep playing. Bonuses and penalties add or remove lives.",
+    "livesRules": "Each team starts with the same hearts. Every result adds or removes the hearts set above (use minus for losses). Hearts can go below zero and teams keep playing. Bonuses and penalties add or remove hearts.",
     "locked": "Scoring mode and starting lives are fixed because a round has already started.",
     "livesLeft": "Lives left: {{n}}",
-    "lifeLostTitle": "You lost a life!",
+    "lifeLostTitle": "You lost hearts!",
     "lifeLostLeft": "Keep going — {{n}} {{emoji}} left.",
     "lifeLostNone": "Out of lives, but the game goes on. Play for the spirit! 💪",
     "lifeLostBody": "Shake it off — the next one is yours.",
-    "lifeLostOk": "Got it"
+    "lifeLostOk": "Got it",
+    "gainsTitle": "What each result does to the hearts",
+    "gainWin": "Win",
+    "gainDraw": "Draw",
+    "gainLoss": "Loss / forfeit"
   },
   "errors.SCORING_LOCKED": "Scoring mode and starting lives cannot change after a round has started.",
   "ui": {
@@ -889,7 +899,8 @@
     "adjustments": "adjustments",
     "livesFloor": "Lives never go below zero.",
     "matchPoints": "Match points",
-    "openPage": "Open full team page"
+    "openPage": "Open full team page",
+    "livesMatches": "from matches"
   },
   "export": {
     "title": "Export to Excel",
@@ -998,12 +1009,27 @@
     "phone": "Mobile number",
     "phoneHint": "Example: 01012345678. Leave empty to hide it.",
     "save": "Save my details",
-    "saved": "Your details were saved."
+    "saved": "Your details were saved.",
+    "name": "Name"
   },
   "errors.INVALID_USERNAME": "Username must be 3–30 characters: English letters, numbers, dot or underscore.",
   "errors.INVALID_NAME": "Write your name in English (up to 80 characters).",
   "errors.INVALID_PHONE": "That mobile number is not valid.",
   "errors.DUPLICATE_USERNAME": "Another member already uses this username.",
   "errors.DUPLICATE_PHONE": "Another member already uses this mobile number.",
-  "errors.OFFLINE": "You are offline. Try again when you are connected."
+  "errors.OFFLINE": "You are offline. Try again when you are connected.",
+  "quick": {
+    "team": "Team",
+    "game": "Game",
+    "points": "points",
+    "guides": "Guides",
+    "referees": "Referees",
+    "now": "Now",
+    "playingNow": "Playing here now",
+    "noMatchNow": "No match right now.",
+    "next": "Next",
+    "results": "Results here",
+    "openTeam": "Open Team page",
+    "openGame": "Open Game page"
+  }
 }

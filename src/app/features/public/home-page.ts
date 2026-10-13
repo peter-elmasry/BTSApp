@@ -23,9 +23,12 @@ import { guideNames, localizedLocation, localizedName, teamGuides } from './publ
 import { PublicState } from './public-state';
 import { TeamViewState } from './team-view-state';
 
+import { GameLink, TeamLink } from '../quick-look/quick-links';
 @Component({
   selector: 'app-home-page',
   imports: [
+    GameLink,
+    TeamLink,
     RouterLink,
     TranslocoDirective,
     DsAvatar,

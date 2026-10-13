@@ -2,6 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-13 — UX round 3: hearts gains, single names, quick look, phone rows — DONE
+
+- **Branch:** `codex/ux-round3`.
+- **Database:** migrations `0021_hearts_gains.sql` (D053), `0022_single_names.sql` (D054), `0023_staff_directory.sql` (D055); pgTAP `0014_hearts_gains`, `0015_staff_directory`, updated `0011`/`0012`. Local Postgres 16 + pgTAP: all pass except the three stub-only storage checks in `0003`.
+- **App:** hearts gains with presets in Setup and the workbook (v5); one name field per item in Setup, Owner and My details; quick-look sheet on team and game names (schedule, home, match and break cards); English terms in the Arabic UI and "vs"; staff without a team never see team selection; compact two-line table rows on phones (D056).
+- **Checks:** i18n, unit tests, build, browser suite.
+
 ## 2026-10-13 — Self-service member details (D052) — DONE
 
 - **Branch:** `codex/ux-round2`.

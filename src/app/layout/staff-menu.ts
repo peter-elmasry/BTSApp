@@ -20,6 +20,8 @@ import { LiveApi } from '../core/live/live-api';
 import type { StaffContact } from '../core/live/live-types';
 import { isEventAdmin } from './navigation';
 
+import { TeamSelectionStore } from '../core/player/team-selection.store';
+
 /** Account and "More" sheet for signed-in members (UX plan §4.1, §4.4). */
 @Component({
   selector: 'app-staff-menu',
@@ -30,6 +32,7 @@ import { isEventAdmin } from './navigation';
 export class StaffMenu {
   readonly close = output<void>();
   readonly auth = inject(AuthStore);
+  readonly selection = inject(TeamSelectionStore);
   readonly events = inject(EventStore);
   readonly direction = inject(DirectionService);
   private readonly router = inject(Router);

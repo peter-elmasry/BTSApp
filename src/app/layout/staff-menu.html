@@ -42,9 +42,11 @@
       </nav>
     }
     <nav class="grid gap-2" [attr.aria-label]="t('menu.playerView')">
-      <a class="menu-row" routerLink="/home" (click)="close.emit()"
-        ><span aria-hidden="true">⌂</span>{{ t('menu.playerView') }}</a
-      >
+      @if (!selection.staffWithoutTeam()) {
+        <a class="menu-row" routerLink="/home" (click)="close.emit()"
+          ><span aria-hidden="true">⌂</span>{{ t('menu.playerView') }}</a
+        >
+      }
       <a class="menu-row" routerLink="/schedule" (click)="close.emit()"
         ><span aria-hidden="true">▦</span>{{ t('nav.schedule') }}</a
       >

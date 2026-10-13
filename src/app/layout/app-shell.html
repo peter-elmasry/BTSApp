@@ -13,7 +13,7 @@
           <p class="truncate text-sm font-extrabold">{{ eventName() }}</p>
           <p class="text-xs text-navy">ONE TEAM. ONE SPIRIT.</p>
         </div>
-        @if (selection.selectedTeam(); as team) {
+        @if (!selection.staffWithoutTeam() && selection.selectedTeam(); as team) {
           <button
             class="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full"
             (click)="switchSheet.set(true)"
@@ -137,6 +137,9 @@
     </nav>
   }
   <ds-toast />
+  @if (quickLook.target()) {
+    <app-quick-look-sheet />
+  }
   @if (menuOpen()) {
     @defer (on immediate) {
       <app-staff-menu (close)="menuOpen.set(false)" />

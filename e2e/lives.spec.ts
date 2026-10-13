@@ -122,7 +122,7 @@ for (const lang of ['en', 'ar'] as const) {
             match_points: lost ? 2 : 3,
             adjustment_points: 0,
             total: lost ? 2 : 3,
-            lives_lost: lost ? 1 : 0,
+            lives_change: lost ? -1 : 0,
           },
         };
       return route.fulfill({ status: 200, headers, json: data });

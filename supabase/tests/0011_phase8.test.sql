@@ -70,8 +70,8 @@ select throws_ok($$select public.upsert_event_settings(gen_random_uuid(),'380000
   'P0001','INVALID_SETTINGS','unknown scoring mode rejected');
 select throws_ok($$select public.upsert_event_settings(gen_random_uuid(),'38000000-0000-0000-0000-000000000001','{"scoring_mode":"LIVES","initial_lives":0}')$$,
   'P0001','INVALID_SETTINGS','zero starting lives rejected');
-select throws_ok($$select public.upsert_event_settings(gen_random_uuid(),'38000000-0000-0000-0000-000000000001','{"scoring_mode":"LIVES","initial_lives":100}')$$,
-  'P0001','INVALID_SETTINGS','more than 99 starting lives rejected');
+select throws_ok($$select public.upsert_event_settings(gen_random_uuid(),'38000000-0000-0000-0000-000000000001','{"scoring_mode":"LIVES","initial_lives":10000}')$$,
+  'P0001','INVALID_SETTINGS','more than 9999 starting hearts rejected (D053)');
 select throws_ok($$select public.upsert_event_settings(gen_random_uuid(),'38000000-0000-0000-0000-000000000001','{"life_emoji":"   "}')$$,
   'P0001','INVALID_SETTINGS','blank life emoji rejected');
 select is(public.upsert_event_settings('98000000-0000-0000-0000-000000000001','38000000-0000-0000-0000-000000000001',
@@ -124,8 +124,8 @@ create temp table p8_rows as select value as r from jsonb_array_elements(public.
 select is((select r->>'total' from p8_rows where r->'team'->>'code'='T01'),'2','win keeps a life, loss costs one (3 to 2)');
 select is((select r->>'total' from p8_rows where r->'team'->>'code'='T04'),'3','draw keeps lives and void matches cost nothing');
 select is((select r->>'total' from p8_rows where r->'team'->>'code'='T02'),'0','forfeit costs a life like a loss');
-select is((select r->>'match_points' from p8_rows where r->'team'->>'code'='T03'),'0','lives from matches never go below zero');
-select is((select r->>'total' from p8_rows where r->'team'->>'code'='T03'),'1','a team at zero keeps playing and bonuses still count');
+select is((select r->>'match_points' from p8_rows where r->'team'->>'code'='T03'),'-1','hearts may go below zero (D053)');
+select is((select r->>'total' from p8_rows where r->'team'->>'code'='T03'),'0','a team below zero keeps playing and bonuses still count');
 select is((select r->>'rank' from p8_rows where r->'team'->>'code'='T04'),'1','most lives ranks first');
 select is((select r->>'losses' from p8_rows where r->'team'->>'code'='T03'),'4','loss counts stay available');
 

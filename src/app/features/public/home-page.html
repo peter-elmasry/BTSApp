@@ -94,13 +94,7 @@
               <div class="min-w-0">
                 <p class="text-sm font-semibold text-teal">{{ roundLabel(match, t) }}</p>
                 <h3 class="break-words text-lg font-bold">
-                  @if (scope.canOpenGames() && gameOf(match); as game) {
-                    <a class="underline" [routerLink]="['/games', game.code]">{{
-                      name(game, direction.language())
-                    }}</a>
-                  } @else {
-                    {{ name(gameOf(match), direction.language()) }}
-                  }
+                  <app-game-link [gameId]="match.game_id" />
                 </h3>
                 @if (location(gameOf(match), direction.language()); as place) {
                   <p class="break-words text-xl font-extrabold" data-testid="current-location">
@@ -127,9 +121,9 @@
                       [size]="44"
                     />
                   }
-                  <span class="min-w-0 break-words text-lg font-bold">{{
-                    name(opponent.team, direction.language()) || opponent.team_code
-                  }}</span>
+                  <span class="min-w-0 break-words text-lg font-bold"
+                    ><app-team-link [code]="opponent.team_code"
+                  /></span>
                 </p>
               }
             }

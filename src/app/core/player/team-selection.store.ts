@@ -49,6 +49,13 @@ export class TeamSelectionStore {
       .filter((team) => teamIds.has(team.id))
       .map((team) => team.code);
   });
+  /**
+   * Signed-in staff who guide no team (owners, admins, referees) never pick a team: they
+   * work from their own screens (product owner, 2026-10-13).
+   */
+  readonly staffWithoutTeam = computed(
+    () => !!this.auth.session() && !!this.auth.profile() && this.guidedTeamCodes().length === 0,
+  );
   /** Signed-in guides may always move among their own teams, even after the lock (D044). */
   readonly canSwitch = computed(() => this.canChange() || this.guidedTeamCodes().length > 1);
 

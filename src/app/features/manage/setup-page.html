@@ -44,16 +44,10 @@
         @if (setup()?.event?.status === 'LIVE' && scoringMode() !== 'LIVES') {
           <p class="rounded-xl bg-gold-soft p-3" role="status">{{ t('phase6.pointsWarning') }}</p>
         }
-        <div class="grid gap-3 sm:grid-cols-2">
-          <label class="space-y-1"
-            ><span>{{ t('manage.nameEn') }}</span
-            ><input class="ds-control w-full" maxlength="120" formControlName="name_en"
-          /></label>
-          <label class="space-y-1"
-            ><span>{{ t('manage.nameAr') }}</span
-            ><input class="ds-control w-full" formControlName="name_ar" dir="rtl"
-          /></label>
-        </div>
+        <label class="block space-y-1"
+          ><span>{{ t('manage.eventName') }}</span
+          ><input class="ds-control w-full" maxlength="120" formControlName="name_en" dir="auto"
+        /></label>
         <fieldset
           class="space-y-3 rounded-xl border border-mist p-3"
           data-testid="scoring-settings"
@@ -91,7 +85,7 @@
                   class="ds-control w-full"
                   type="number"
                   min="1"
-                  max="99"
+                  max="9999"
                   formControlName="initial_lives"
                   data-testid="initial-lives"
               /></label>
@@ -138,6 +132,56 @@
                 />
               </div>
             }
+            <div class="space-y-2" data-testid="hearts-gains">
+              <p class="font-semibold">{{ t('scoring.gainsTitle') }}</p>
+              <div class="ds-actions" role="group" [attr.aria-label]="t('setup.presets')">
+                <button
+                  type="button"
+                  class="ds-tab"
+                  [attr.aria-pressed]="presetActive(0, 0, -1)"
+                  (click)="setHeartsPreset(0, 0, -1)"
+                >
+                  0 · 0 · −1
+                </button>
+                <button
+                  type="button"
+                  class="ds-tab"
+                  [attr.aria-pressed]="presetActive(0, -5, -10)"
+                  (click)="setHeartsPreset(0, -5, -10)"
+                >
+                  0 · −5 · −10
+                </button>
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <label class="space-y-1"
+                  ><span>{{ t('scoring.gainWin') }}</span
+                  ><input
+                    class="ds-control w-full"
+                    type="number"
+                    dir="ltr"
+                    formControlName="points_win"
+                    data-testid="gain-win"
+                /></label>
+                <label class="space-y-1"
+                  ><span>{{ t('scoring.gainDraw') }}</span
+                  ><input
+                    class="ds-control w-full"
+                    type="number"
+                    dir="ltr"
+                    formControlName="points_draw"
+                    data-testid="gain-draw"
+                /></label>
+                <label class="space-y-1"
+                  ><span>{{ t('scoring.gainLoss') }}</span
+                  ><input
+                    class="ds-control w-full"
+                    type="number"
+                    dir="ltr"
+                    formControlName="points_loss"
+                    data-testid="gain-loss"
+                /></label>
+              </div>
+            </div>
             <p class="text-sm text-slate">{{ t('scoring.livesRules') }}</p>
           }
         </fieldset>
@@ -170,15 +214,15 @@
         <div class="grid gap-3 sm:grid-cols-3" [hidden]="scoringMode() === 'LIVES'">
           <label class="space-y-1"
             ><span>{{ t('manage.pointsWin') }}</span
-            ><input class="ds-control w-full" type="number" min="0" formControlName="points_win"
+            ><input class="ds-control w-full" type="number" formControlName="points_win"
           /></label>
           <label class="space-y-1"
             ><span>{{ t('manage.pointsDraw') }}</span
-            ><input class="ds-control w-full" type="number" min="0" formControlName="points_draw"
+            ><input class="ds-control w-full" type="number" formControlName="points_draw"
           /></label>
           <label class="space-y-1"
             ><span>{{ t('manage.pointsLoss') }}</span
-            ><input class="ds-control w-full" type="number" min="0" formControlName="points_loss"
+            ><input class="ds-control w-full" type="number" formControlName="points_loss"
           /></label>
         </div>
         <details
@@ -195,44 +239,15 @@
             [hidden]="scoringMode() === 'LIVES'"
           >
             <legend class="px-1 font-bold">{{ t('manage.currency') }}</legend>
-            <div class="grid gap-3 sm:grid-cols-2">
-              <label class="space-y-1"
-                ><span>{{ t('manage.currencyEnOne') }}</span
-                ><input class="ds-control w-full" formControlName="currency_en_one"
-              /></label>
-              <label class="space-y-1"
-                ><span>{{ t('manage.currencyEnOther') }}</span
-                ><input class="ds-control w-full" formControlName="currency_en_other"
-              /></label>
-              <label class="space-y-1"
-                ><span>{{ t('manage.currencyArOne') }}</span
-                ><input class="ds-control w-full" formControlName="currency_ar_one" dir="rtl"
-              /></label>
-              <label class="space-y-1"
-                ><span>{{ t('manage.currencyArTwo') }}</span
-                ><input class="ds-control w-full" formControlName="currency_ar_two" dir="rtl"
-              /></label>
-              <label class="space-y-1"
-                ><span>{{ t('manage.currencyArPlural') }}</span
-                ><input class="ds-control w-full" formControlName="currency_ar_plural" dir="rtl"
-              /></label>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <label class="font-semibold" for="currency-count">{{
-                t('manage.previewCount')
-              }}</label>
-              <input
-                id="currency-count"
-                class="ds-control w-24"
-                type="number"
-                min="0"
-                [value]="previewCount()"
-                (input)="previewCount.set(+$any($event.target).value)"
-              />
-              <p aria-live="polite" class="rounded-lg bg-ivory px-3 py-2">
-                {{ previewCount() }} {{ previewCurrency() }}
-              </p>
-            </div>
+            <label class="block space-y-1"
+              ><span>{{ t('manage.pointsName') }}</span
+              ><input
+                class="ds-control w-full"
+                maxlength="40"
+                formControlName="currency_ar_plural"
+                dir="auto"
+                data-testid="points-name"
+            /></label>
           </fieldset>
           <fieldset class="space-y-3 rounded-xl border border-mist p-3">
             <legend class="px-1 font-bold">{{ t('manage.caps') }}</legend>
@@ -304,12 +319,8 @@
             </p>
           }
           <label class="space-y-1"
-            ><span>{{ t('manage.entityNameEn') }}</span
+            ><span>{{ t('manage.entityName') }}</span
             ><input class="ds-control w-full" maxlength="80" formControlName="name_en"
-          /></label>
-          <label class="space-y-1"
-            ><span>{{ t('manage.entityNameAr') }}</span
-            ><input class="ds-control w-full" formControlName="name_ar" dir="rtl"
           /></label>
           <fieldset class="space-y-2 sm:col-span-2">
             <legend class="font-semibold">{{ t('manage.avatar') }}</legend>
@@ -432,24 +443,16 @@
             </p>
           }
           <label class="space-y-1"
-            ><span>{{ t('manage.entityNameEn') }}</span
+            ><span>{{ t('manage.entityName') }}</span
             ><input class="ds-control w-full" maxlength="100" formControlName="name_en"
           /></label>
           <label class="space-y-1"
-            ><span>{{ t('manage.entityNameAr') }}</span
-            ><input class="ds-control w-full" formControlName="name_ar" dir="rtl"
-          /></label>
-          <label class="space-y-1"
-            ><span>{{ t('manage.locationEn') }}</span
-            ><input class="ds-control w-full" maxlength="120" formControlName="location_en"
-          /></label>
-          <label class="space-y-1"
-            ><span>{{ t('manage.locationAr') }}</span
+            ><span>{{ t('manage.location') }}</span
             ><input
               class="ds-control w-full"
               maxlength="120"
-              formControlName="location_ar"
-              dir="rtl"
+              formControlName="location_en"
+              dir="auto"
           /></label>
           <div class="space-y-2 sm:col-span-2">
             <label class="block space-y-1"
@@ -568,12 +571,8 @@
             </select></label
           >
           <label class="space-y-1"
-            ><span>{{ t('manage.entityNameEn') }}</span
+            ><span>{{ t('manage.entityName') }}</span
             ><input class="ds-control w-full" maxlength="100" formControlName="name_en"
-          /></label>
-          <label class="space-y-1"
-            ><span>{{ t('manage.entityNameAr') }}</span
-            ><input class="ds-control w-full" formControlName="name_ar" dir="rtl"
           /></label>
           <label class="space-y-1"
             ><span>{{ t('manage.duration') }}</span

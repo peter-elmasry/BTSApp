@@ -47,7 +47,6 @@ for (const lang of ['en', 'ar'] as const) {
     await withBreaks(page);
     await page.goto('/schedule');
     // Table is the default view. My team: rounds 1 and 2 are matches, round 3 is a break.
-    await expect(page.getByTestId('view-table')).toHaveAttribute('aria-pressed', 'true');
     const table = page.getByTestId('schedule-table');
     await expect(table.getByRole('rowheader')).toHaveCount(3);
     await expect(table.getByTestId('table-break')).toHaveCount(1);
@@ -57,6 +56,9 @@ for (const lang of ['en', 'ar'] as const) {
       true,
     );
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    // Phones get compact rows only (D056); the Table/Cards switch starts at 640 px.
+    await expect(page.getByTestId('view-cards')).toHaveCount(0);
+    await page.setViewportSize({ width: 800, height: 740 });
     await page.getByTestId('view-cards').click();
     await expect(page.getByTestId('schedule-table')).toHaveCount(0);
     await expect(page.getByTestId('break-card')).toHaveCount(1);
