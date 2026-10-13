@@ -489,8 +489,9 @@ fieldset:disabled .ds-choice {
     opacity: 0.6;
   }
 }
-/* Route transitions (withViewTransitions); header and nav stay put. */
-header {
+/* Route transitions (withViewTransitions); header and nav stay put. Only the shell
+   header carries the name: a second <header> on a page made every transition abort. */
+.app-header {
   view-transition-name: app-header;
 }
 nav.safe-bottom {

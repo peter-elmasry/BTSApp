@@ -50,7 +50,7 @@ import { ManageNav } from './manage-nav';
     <div class="hidden md:block"><app-manage-nav [eventId]="eventId()" /></div>
     <router-outlet />
     @if (exporting()) {
-      @defer {
+      @defer (on immediate) {
         <app-export-sheet [eventId]="eventId()" (close)="closeExport()" />
       }
     }

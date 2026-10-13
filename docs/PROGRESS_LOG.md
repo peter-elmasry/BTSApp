@@ -10,7 +10,8 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Members:** list first; "Add member" and edit open a sheet; one ⋯ per row opens Edit / Change password / Deactivate; All / Active / Inactive filter with counts.
 - **Player:** home shows "Last result" for the latest finished round; choose-team text says switching is possible until the first round starts.
 - **Refresh:** round teal icon buttons on Home, Schedule, My station, Control and Results.
-- **Checks:** i18n, 207 unit tests, build, 83 browser tests.
+- **Found on production after #20:** live refreshes blanked Home's current match and the schedule for a moment (data now stays until fresh data arrives); every page with its own `<header>` aborted route transitions (duplicate `view-transition-name`, now only on the shell header); deferred sheets render immediately when opened (`@defer (on immediate)`), with a browser test that reopens the menu after × and Escape.
+- **Checks:** i18n, 207 unit tests, build, 84 browser tests.
 
 ## 2026-10-13 — Production walkthrough fixes (visitor, admin, referee) — HANDOFF
 

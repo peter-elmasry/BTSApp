@@ -81,7 +81,9 @@ export class EventStore {
     let context = this.authContext();
     this.loading.set(true);
     this.error.set(null);
-    this.matches.set([]);
+    // A refresh for the same viewer keeps the shown schedule until fresh data arrives,
+    // so live updates never blank the screen; a different viewer starts empty.
+    if (this.responseContext() !== context) this.matches.set([]);
     const current = () => generation === this.generation && context === this.authContext();
     const request = Promise.resolve().then(async () => {
       try {
