@@ -13,6 +13,14 @@
         }
       </ul>
     </section>
+    @if (admins().length) {
+      <section class="ds-card space-y-1" data-testid="menu-admins">
+        <h3 class="font-bold">{{ t('station.admins') }}</h3>
+        @for (contact of admins(); track contact.member_id) {
+          <ds-phone-link [name]="contactName(contact)" [phone]="contact.phone" />
+        }
+      </section>
+    }
     @if (admin() && eventId(); as id) {
       <nav class="grid gap-2" [attr.aria-label]="t('menu.eventTools')">
         <a class="menu-row" [routerLink]="['/manage', id, 'import']" (click)="close.emit()"

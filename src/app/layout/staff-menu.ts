@@ -15,12 +15,15 @@ import { DirectionService } from '../core/i18n/i18n.service';
 import { canSeeAllOutcomes, EventStore } from '../core/player/event.store';
 import { localizedName } from '../features/public/public-helpers';
 import { DsBottomSheet } from '../shared/ui/bottom-sheet';
+import { DsPhoneLink } from '../shared/ui/phone-link';
+import { LiveApi } from '../core/live/live-api';
+import type { StaffContact } from '../core/live/live-types';
 import { isEventAdmin } from './navigation';
 
 /** Account and "More" sheet for signed-in members (UX plan §4.1, §4.4). */
 @Component({
   selector: 'app-staff-menu',
-  imports: [RouterLink, TranslocoDirective, DsBottomSheet],
+  imports: [RouterLink, TranslocoDirective, DsBottomSheet, DsPhoneLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './staff-menu.html',
 })
@@ -59,6 +62,20 @@ export class StaffMenu {
     }
     return labels;
   });
+
+  /** Guides and referees reach the event administrators from any screen (D043). */
+  readonly admins = signal<StaffContact[]>([]);
+  private readonly loadAdmins = (() => {
+    const id = this.eventId();
+    if (!id || this.admin() || !this.auth.profile()) return;
+    inject(LiveApi)
+      .contacts(id)
+      .then((contacts) => this.admins.set(Array.isArray(contacts) ? contacts : []))
+      .catch(() => this.admins.set([]));
+  })();
+  contactName(contact: StaffContact) {
+    return localizedName(contact, this.direction.language());
+  }
 
   readonly queue = inject(OpQueueService);
   private readonly document = inject(DOCUMENT);
