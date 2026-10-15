@@ -111,6 +111,7 @@ select throws_ok($$delete from public.teams where id='44000000-0029-0000-0000-00
 select ok(not (public.get_bootstrap('33000000-0029-0000-0000-000000000001')::text ~ 'Same Name|Corrected|device_hash|201012345678'), 'public bootstrap excludes player details');
 update public.events set registration_open=true where id='33000000-0029-0000-0000-000000000001';
 update public.team_invites set expires_at=now()-interval '1 second' where token=current_setting('test.reg_new_token');
+select set_config('request.jwt.claim.sub','',true);
 set local role anon;
 select throws_ok($$select public.join_team_invite(gen_random_uuid(),'33000000-0029-0000-0000-000000000001',current_setting('test.reg_new_token'),repeat('c',64),'Expired',null)$$,'P0001','INVITE_UNAVAILABLE','expired link cannot enroll');
 reset role;
