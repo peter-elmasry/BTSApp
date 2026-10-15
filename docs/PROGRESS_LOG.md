@@ -2,6 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-15 — Named HEX team palette — STARTED
+
+- **Requested by:** Gendy's configuration/HEX implementation plan.
+- **Preflight:** Attachment slice committed/pushed as 939ba97, PR #27; cloud pending. Branch codex/team-colour-palette is stacked on it. Team-picture PR #26 is cloud-verified; sound assets remain preserved.
+- **Scope:** Audited/idempotent event palette RPC, validated named HEX entries, Settings editor, reusable single/bulk team swatches and exact named-colour XLSX round trip with earlier template compatibility.
+- **Milestone:** Migration 0027 and Settings editor support up to 32 unique name/HEX entries, with normalization and scoped/idempotent audit. Single/bulk setup reuse configured swatches. Workbook dropdown/list and conditional formatting include escaped custom labels and parse back to HEX; layout/version remains v6.
+- **Checks:** Production build, app/spec TypeScript and 1007-key translation parity passed; both EN/AR save/reuse/duplicate browser journeys and all 27 focused palette/bulk/workbook unit tests passed. New pgTAP coverage awaits cloud.
+- **Next:** Finish local checks, publish a stacked PR and verify cloud; then consent-based audio using the supplied clips. Attachment PR #27 frontend has passed; database job remains in progress.
+
 ## 2026-10-15 — Public opening attachments — STARTED
 
 - **Requested by:** Gendy's approved image/PDF implementation plan.

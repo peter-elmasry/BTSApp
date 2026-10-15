@@ -41,6 +41,8 @@ import { ManageContext } from './manage-context';
 import { DsAvatar } from '../../shared/ui/avatar';
 import { teamImageUrl } from '../../shared/ui/team-image';
 import { OpeningAttachmentEditor } from './opening-attachment-editor';
+import { TeamPaletteEditor } from './team-palette-editor';
+import { normalizeTeamPalette } from '../../shared/team-palette';
 
 type Row = any;
 type SetupData = {
@@ -89,6 +91,7 @@ export function singleNames(args: Record<string, unknown>): Record<string, unkno
     DsLivesMeter,
     DsAvatar,
     OpeningAttachmentEditor,
+    TeamPaletteEditor,
     DsBottomSheet,
     DsDataTable,
     DsCellDef,
@@ -98,6 +101,16 @@ export function singleNames(args: Record<string, unknown>): Record<string, unkno
   templateUrl: './setup-page.html',
 })
 export class EventSetupPage {
+  readonly customPalette = computed(
+    () => normalizeTeamPalette(this.setup()?.event?.team_palette) ?? [],
+  );
+  readonly teamSwatches = computed(() => [
+    ...new Set([...TEAM_SWATCHES, ...this.customPalette().map((entry) => entry.hex)]),
+  ]);
+  swatchLabel(hex: string) {
+    const name = this.customPalette().find((entry) => entry.hex === hex)?.name;
+    return name ? `${name} (${hex})` : hex;
+  }
   private readonly direction = inject(DirectionService);
   label(row: Row, field = 'name') {
     return entityLabel(row, this.direction.language(), field);
@@ -841,7 +854,7 @@ export class EventSetupPage {
     const count = this.bulkCount.value;
     const calls: [string, Record<string, unknown>][] =
       kind === 'teams'
-        ? newTeams(this.teams(), count).map((team) => [
+        ? newTeams(this.teams(), count, this.teamSwatches()).map((team) => [
             'upsert_team',
             { p_event: this.eventId, p_team: team },
           ])

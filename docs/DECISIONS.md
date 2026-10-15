@@ -28,7 +28,12 @@ Implementation and device acceptance remain pending; see MEDIA_AUDIO_PLAN.md.
 Keep default swatches and add explicit #RRGGBB entry plus named event custom
 swatches. Validate/normalise consistently and preserve unknown custom HEX in
 XLSX export/import instead of substituting a default palette colour. Removing a
-swatch never changes a team's saved colour. Planned, not implemented.
+swatch never changes a team's saved colour. Migration 0027 stores up to 32 custom
+name/HEX pairs, normalizes input and rejects duplicate names/colours. Configuration
+uses a separate audited/idempotent RPC, so palette edits never recalculate scores
+or ties. Workbook custom labels include HEX to avoid built-in name ambiguity;
+parsing resolves the list back to HEX. The layout/version stays v6, accepting
+earlier supported files. Defaults remain built in.
 
 ## D059 — Team photos supplement catalog avatars
 
