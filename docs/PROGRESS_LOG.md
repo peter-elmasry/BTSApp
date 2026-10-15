@@ -2,7 +2,7 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-15 — Reliable round sound and anonymous Home navigation — STARTED
+## 2026-10-15 — Reliable round sound and anonymous Home navigation — HANDOFF
 
 - **Requested by:** Gendy reports no MP3 cue when admins finish/start rounds and intermittent anonymous Home taps doing nothing. Round cues must reach every viewer role after explicit device sound activation.
 - **Preflight:** Clean deployment-record branch; fetched origin and created codex/round-audio-home-fixes from deployed master 9b4d75e. PR #31 remains separate; preserve its test correction and deployment record.
@@ -11,6 +11,7 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Implementation milestone:** Explicit Home now renders its existing pick-team prompt without redirecting back to the same picker; root/QR/staff and schedule/detail guards are retained. Round cues verify on normal round updates, successful write cache invalidation and a two-second foreground recovery check even with a subscribed socket. Fresh cues arriving while MP3s prepare are queued instead of discarded; mute/freshness/deduplication remain enforced. D063 and plan §22 record the amended behavior. No database migration or permission expansion.
 - **Local checks:** Production build passed (below 500 kB), spec TypeScript and 1,034-key translation parity passed. All 19 focused audio/buffering/guard unit tests passed. Browser audio/player suite passed 20/22; both new Home tests initially used the wrong translation lookup, corrected to existing flat keys, then both passed. Includes actual admin close/start actions without broadcasts, owner/admin/referee no-team round playback, subscribed-but-missed broadcast recovery, consent/mute, own results, two tabs and EN/AR/QR/lock behavior. No live production scoring writes were made.
 - **Publication next:** Inspect/publish this isolated fix PR against master and verify full cloud CI/Vercel preview. The fix is not deployed until separately authorized to merge; prior merge authorization covered PR #30.
+- **Cloud acceptance/publication:** PR #32 at runtime head 5f0c452 passed both jobs in run 38768748331; Vercel preview GTY79DbYGLm1BxnpBGgXXFYyibuM succeeded. Final documentation records that acceptance. No production event changes or deployment of this fix occurred. Next: explicit authorization to merge PR #32, verify its master deployment, then ask each device to enable sound and rehearse committed start/end cues. Physical background/autoplay restrictions still constrain delivery; app tests do not claim forced playback without activation.
 
 ## 2026-10-15 — Release integration and deployment readiness — HANDOFF
 
