@@ -15,6 +15,14 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **CI milestone:** Corrected legacy label assertion and scoring-trigger dependency in commits 72f925b / 5d623a2. Run 38665799519 passes all 213 unit tests, 90 browser tests, build, translations, Edge checks and Lighthouse, but the optional report upload fails because GitHub artifact storage quota is exhausted. Making only diagnostic upload best effort; all product checks remain strict. Repaired migration applies on real Supabase; 930 assertions run with no failed assertions, but the new regression section aborts at single-dollar SQL quoting before completing its TAP plan. Corrected the generated test delimiters; full runtime acceptance still pending.
 - **Next:** Verify fresh full cloud frontend/Supabase results before starting the media slice. Team photos, opening attachments, reusable custom swatches and full consent/audio service remain subsequent slices.
 
+## 2026-10-15 — Planning PR CI repair — HANDOFF
+
+- **Requested by:** Standing requirement to publish checked logical changes and verify the whole PR chain.
+- **Preflight:** Clean planning branch at 335c846, fetched origin; master remains a774e36. Implementation is on stacked PRs #25–#29; no merges performed. Audio frontend passed and its public-contract assertion fix is rerunning separately.
+- **Scope:** Ignore the empty sounds placeholder (and the ignore file itself) in Prettier. Align final diagnostic artifact upload with D062's existing best-effort policy because account artifact quota is exhausted; product checks stay strict.
+- **Checks:** Changed-file formatting (including the explicitly ignored placeholder/ignore file), YAML parsing via Prettier and git diff whitespace checks passed. Runtime code is unchanged; full cloud checks follow publication.
+- **Next:** Commit/push this isolated CI repair to PR #24; verify cloud while returning to the final implementation branch. Preserve published history.
+
 ## 2026-10-15 — Explicit sound opt-in and sounds folder — DONE
 
 - **Requested by:** Gendy; ask viewers for sound permission first and add public/sounds/.gitkeep now.

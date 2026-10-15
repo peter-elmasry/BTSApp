@@ -1,10 +1,12 @@
 node_modules/
+.prettierignore
 dist/
 .angular/
 package-lock.json
 design/
 public/brand/
 public/avatars/*.svg
+public/sounds/.gitkeep
 src/environments/environment.ts
 artifacts/
 test-results/
