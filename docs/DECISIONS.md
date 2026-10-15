@@ -1,5 +1,13 @@
 # Implementation decisions
 
+## D062 — CI diagnostic artifacts are best effort
+
+GitHub artifact quota exhaustion must not invalidate passing product checks.
+Only the final upload-artifact step uses continue-on-error; formatting, Edge,
+unit/browser tests, build, Lighthouse and database checks remain blocking.
+Upload failures remain visible in logs. This avoids deleting existing evidence
+or changing billing settings to finish a feature verification.
+
 ## D061 — Live sound is device-activated and follows committed actions
 
 Gendy requests round start/end sounds for all viewers and win/loss sounds for
