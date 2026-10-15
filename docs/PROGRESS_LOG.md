@@ -2,13 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-15 — Release integration and deployment readiness — STARTED
+## 2026-10-15 — Release integration and deployment readiness — HANDOFF
 
 - **Requested by:** Gendy; proceed with combined CI, database/frontend deployment and readiness checks after the past PRs were merged.
 - **Preflight:** Clean codex/event-audio; fetched origin. PRs #24–#29 are merged, but only #24 targeted master. Master is d7e9867 with migrations through 0023; later PRs landed on their stacked bases, so deploying master would omit the features. Current master CI 38760674574 passed; no new production migration run exists.
 - **Scope/milestone:** Created codex/media-audio-release from origin/master and integrated origin/codex/team-colour-palette, which includes the merged audio slice. Only conflicts are additive progress history and sounds ignore patterns; preserve both histories and both ignore patterns. No application code conflict. Publish one combined integration PR and verify its full CI before requesting its merge; deployment requires the combined code on master.
-- **Validation milestone:** Combined source/database trees match the completed feature branch exactly; differences are only progress history and the preserved placeholder ignore pattern. Changed-document formatting, 1,034-key translation parity and whitespace checks pass. Local production build is in progress; full cloud integration checks follow publication.
-- **Next:** Publish the PR and inspect CI/deployment access. Physical Android/iPhone and venue-speaker rehearsal remains a human/device acceptance step, not a desktop test claim.
+- **Validation milestone:** Combined source/database trees match the completed feature branch exactly; differences are only progress history and the preserved placeholder ignore pattern. Changed-document formatting, 1,034-key translation parity and whitespace checks pass. Local production build passed at 452.24 kB initial.
+- **Publication/acceptance:** Integration PR #30 targets master; runtime head e1650c1 passed both jobs in cloud run 38763511403 (237 unit tests, 109 browser tests, 1,037 database assertions across 20 files, plus build/Edge/translation/format/Lighthouse and owner/Auth checks). Final documentation records this outcome; its automatic follow-up CI may still be pending. New Vercel preview 4s1BTAr4apR5Ap2S2R9SxLjtiHkp remains blocked; GitHub supplies no detailed reason. Current master has not received or deployed the feature migrations.
+- **Readiness measurement:** Existing simulated 3G audit failed its 4-second target: EN 8,709 ms, AR 9,041 ms (400 ms latency, 1.6 Mbps down, 4x CPU slowdown, mocked backend, uncompressed local production assets, service worker disabled). Report is ignored artifacts/audit-performance.json. This is not a hosted or physical-device measurement; loading-performance acceptance remains open.
+- **Next/authorization:** Request explicit merge authorization for new integration PR #30 under AGENTS.md; earlier merged PRs do not integrate themselves into master. After merge, verify master CI and production Supabase workflow for migrations 0024–0028, and resolve Vercel's private dashboard blocker before hosted rehearsal. Gendy's proceed instruction authorizes deployment follow-through, not billing/visibility/identity changes. Real Android/iPhone/venue rehearsal, hosted performance and printable QR sheets remain open readiness work. The local audit server was stopped; branch is committed/pushed, with no production data or deployment changes in this session.
 
 ## 2026-10-15 — Planning PR CI repair — HANDOFF
 
