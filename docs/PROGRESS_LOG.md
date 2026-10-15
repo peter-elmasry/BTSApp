@@ -2,6 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-16 — Registration production release verification — DONE
+
+- **Requested/preflight:** Gendy confirmed PR #33 merged and authorized post-merge follow-through. Clean workspace; fetched origin and branched `codex/registration-release-verification` from merged master `743e7b1`.
+- **Scope:** Verify master CI, production migration 0029, Vercel and read-only EN/AR hosted registration smoke checks. No live registration, roster, configuration or scoring writes. Reconcile runbook release status and publish the checked handoff.
+- **Deployment verified:** Master [CI 38814241798](https://github.com/peter-elmasry/BTSApp/actions/runs/38814241798), [Supabase deployment 38814241643](https://github.com/peter-elmasry/BTSApp/actions/runs/38814241643) and Vercel succeeded on `743e7b1`. Logs explicitly confirm migration 0029 applied, db push completed and login/members deployed.
+- **Hosted checks:** Real production mobile Chromium EN/AR renders 12 teams, rejects a synthetic invalid invite with INVITE_UNAVAILABLE and denies anonymous roster execution (42501). Zero page errors or horizontal overflow. Screenshots/report are ignored artifacts/registration-production-*. Initial probe needed an explicit lazy-render wait; anonymous roster rejection is database function privilege denial rather than an RPC business error. No production data writes.
+- **Handoff/next:** Updated the runbook's stale deployment status; changed-document formatting and whitespace checks passed. Publish this documentation-only release record separately; runtime acceptance is the merged master's successful CI. Real Android/iPhone join/correction/link replacement/batch restore rehearsal remains pending, followed by the Phase 7 load target, printable QR sheets and full venue rehearsal. No further deployment is required for PR #33.
+
 ## 2026-10-15 — Team invites and reversible player registration — DONE
 
 - **Requested/preflight:** Gendy approved name-required/phone-optional invite registration, remembered one-team membership and reversible corrections. Clean workspace; fetched origin and branched `codex/team-invite-registration` from master `76b4af5` (PR #32). No other work overwritten.
