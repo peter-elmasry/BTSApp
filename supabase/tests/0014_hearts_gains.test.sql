@@ -47,16 +47,16 @@ update public.match_participants set outcome='DRAW' where match_id='7c000000-000
 select is((public.get_team_view('3c000000-0000-0000-0000-000000000001','T02')->'breakdown'->>'total')::numeric,9::numeric,'two draws remove exactly one heart');
 select is((public.get_team_view('3c000000-0000-0000-0000-000000000001','T01')->'breakdown'->>'total')::numeric,9.5::numeric,'one draw preserves the half total');
 set local role anon;
-select lives_ok($select public.get_team_view('3c000000-0000-0000-0000-000000000001','T01')$,'anonymous own-team view retains half hearts');
-select throws_ok($select public.get_standings('3c000000-0000-0000-0000-000000000001')$,'P0001','LEADERBOARD_HIDDEN','fractional scoring does not open hidden standings');
+select lives_ok($$select public.get_team_view('3c000000-0000-0000-0000-000000000001','T01')$$,'anonymous own-team view retains half hearts');
+select throws_ok($$select public.get_standings('3c000000-0000-0000-0000-000000000001')$$,'P0001','LEADERBOARD_HIDDEN','fractional scoring does not open hidden standings');
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','1c000000-0000-0000-0000-000000000001',true);
-select lives_ok($select public.set_tiebreak(gen_random_uuid(),'3c000000-0000-0000-0000-000000000001',array['4c000000-0000-0000-0000-000000000001','4c000000-0000-0000-0000-000000000003']::uuid[])$,'half-heart tie cohort is exact');
-select throws_ok($select public.set_tiebreak(gen_random_uuid(),'3c000000-0000-0000-0000-000000000001',array['4c000000-0000-0000-0000-000000000001','4c000000-0000-0000-0000-000000000002']::uuid[])$,'P0001','INVALID_TIEBREAK','whole and half totals must not be collapsed into a tie');
-select throws_ok($select public.upsert_event_settings(gen_random_uuid(),'3c000000-0000-0000-0000-000000000001','{"points_win":0.5}')$,'P0001','INVALID_SETTINGS','win gains remain integers');
+select lives_ok($$select public.set_tiebreak(gen_random_uuid(),'3c000000-0000-0000-0000-000000000001',array['4c000000-0000-0000-0000-000000000001','4c000000-0000-0000-0000-000000000003']::uuid[])$$,'half-heart tie cohort is exact');
+select throws_ok($$select public.set_tiebreak(gen_random_uuid(),'3c000000-0000-0000-0000-000000000001',array['4c000000-0000-0000-0000-000000000001','4c000000-0000-0000-0000-000000000002']::uuid[])$$,'P0001','INVALID_TIEBREAK','whole and half totals must not be collapsed into a tie');
+select throws_ok($$select public.upsert_event_settings(gen_random_uuid(),'3c000000-0000-0000-0000-000000000001','{"points_win":0.5}')$$,'P0001','INVALID_SETTINGS','win gains remain integers');
 select is(public.upsert_event_settings(gen_random_uuid(),'3c000000-0000-0000-0000-000000000001','{"scoring_mode":"POINTS"}')->'settings'->>'points_draw','1','switching back to POINTS restores the default draw gain');
-select throws_ok($select public.upsert_event_settings(gen_random_uuid(),'3c000000-0000-0000-0000-000000000001','{"points_draw":-0.5}')$,'P0001','INVALID_SETTINGS','POINTS does not accept fractional gains');
+select throws_ok($$select public.upsert_event_settings(gen_random_uuid(),'3c000000-0000-0000-0000-000000000001','{"points_draw":-0.5}')$$,'P0001','INVALID_SETTINGS','POINTS does not accept fractional gains');
 select is(public.upsert_event_settings(gen_random_uuid(),'3c000000-0000-0000-0000-000000000001','{"points_draw":2}')->'settings'->>'points_draw','2','POINTS keeps configurable integer draws');
 reset role;
 
