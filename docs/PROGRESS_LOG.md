@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-15 — Resolve latest fix PR conflicts — STARTED
+
+- **Requested by:** Gendy; resolve the latest PR conflict.
+- **Preflight:** Clean codex/round-audio-home-fixes at 609f660; fetched origin. PR #32 is conflicted after PR #31 merged into master df720de. Existing PR #32 frontend/database/Vercel checks pass. No unrelated workspace edits.
+- **Scope/next:** Merge current master into the existing PR branch without rewriting published history. Preserve both progress histories, incoming logout-test correction and the round-audio/Home fixes; inspect actual conflicts, run appropriate formatting/whitespace and regression checks, push and verify updated CI/mergeability. This request does not authorize merging PR #32 into master or changing the live event.
+
 ## 2026-10-15 — Reliable round sound and anonymous Home navigation — HANDOFF
 
 - **Requested by:** Gendy reports no MP3 cue when admins finish/start rounds and intermittent anonymous Home taps doing nothing. Round cues must reach every viewer role after explicit device sound activation.
