@@ -15,6 +15,8 @@ insert into public.event_roles(event_id,member_id,role) values
 ('3f000000-0000-0000-0000-000000000001','2f000000-0000-0000-0000-000000000003','REFEREE');
 insert into public.teams(id,event_id,code,name_en,avatar_key,color_hex,final_tiebreak_pos) values
 ('4f000000-0000-0000-0000-000000000001','3f000000-0000-0000-0000-000000000001','T01','Rose','falcon','#ABCDEF',1);
+-- Roster insertion invalidates ties; establish the baseline after that trigger runs.
+update public.teams set final_tiebreak_pos=1 where id='4f000000-0000-0000-0000-000000000001';
 set local role authenticated;
 select set_config('request.jwt.claim.sub','1f000000-0000-0000-0000-000000000002',true);
 select is(public.set_team_palette('9f000000-0000-0000-0000-000000000001','3f000000-0000-0000-0000-000000000001','[{"name":" Rose ","hex":" #abcDEF "}]'),'[{"name":"Rose","hex":"#ABCDEF"}]'::jsonb,'admin normalizes named HEX palette');
