@@ -63,6 +63,7 @@ export interface PublicRound {
   is_overtime: boolean;
   /** Matches still without a result after the round ended (D041). */
   late_count?: number;
+  attachment?: import('../../shared/media/opening-attachment').OpeningAttachment | null;
 }
 export type Outcome = 'PENDING' | 'WIN' | 'LOSS' | 'DRAW' | 'FORFEIT';
 export interface PublicParticipant {

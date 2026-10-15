@@ -572,6 +572,11 @@
 
     @if (tab() === 'rounds') {
       <section class="space-y-4">
+        @for (round of rounds(); track round.id) {
+          @if (round.type === 'OPENING') {
+            <app-opening-attachment-editor [eventId]="eventId" [round]="round" (saved)="reload()" />
+          }
+        }
         <form
           [formGroup]="roundForm"
           (ngSubmit)="saveRound()"

@@ -1040,5 +1040,19 @@
     "results": "Results here",
     "openTeam": "Open Team page",
     "openGame": "Open Game page"
-  }
+  },
+  "attachment": {
+    "heading": "Opening round attachment",
+    "file": "Image or PDF",
+    "title": "Title / image description",
+    "visible": "Display for everyone",
+    "publicHelp": "Images: JPEG, PNG or WebP up to 20 MB. PDFs: up to 10 MB. Save to publish changes. Files are public: hiding or removing the card does not revoke a shared file link.",
+    "pdfHelp": "If the PDF preview is unavailable, open the file using the link below.",
+    "unavailable": "The attachment is unavailable. Try opening the file or reconnecting.",
+    "open": "Open file",
+    "remove": "Remove attachment",
+    "invalid": "Choose a valid JPEG, PNG, WebP or PDF within the size limits.",
+    "saveFailed": "Could not save the attachment. Reconnect and retry."
+  },
+  "errors.INVALID_ATTACHMENT": "Choose a valid JPEG, PNG, WebP or PDF within the size limits."
 }

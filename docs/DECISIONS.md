@@ -43,12 +43,15 @@ assets. Removing the displayed picture does not revoke a previously shared URL.
 
 ## D058 — Opening attachment is public without login or team selection
 
-Gendy confirms images and PDFs. Plan one optional published attachment per
+Gendy confirms images and PDFs. Migration 0026 adds one optional published attachment per
 OPENING round, managed by the event owner/admin and projected through public
 RPCs. It is available despite hidden standings and without selecting a team;
 this is a specific exception to D046's visitor screen scope. Public Storage links
 remain readable when merely hidden; deletion is needed to revoke future reads.
-Planned, not implemented.
+The shared shell card sits before route/team-choice/standings gates. Images are
+prepared as WebP; PDFs require a PDF header and are capped at 10 MiB. The editor
+shows the public-link warning. Immutable objects are retained conservatively as
+in D059, including after removing metadata; automatic cleanup remains deferred.
 
 ## D057 — SVG hearts and a fixed half-heart draw
 

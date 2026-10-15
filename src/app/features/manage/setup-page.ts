@@ -40,6 +40,7 @@ import { DsLivesMeter } from '../../shared/ui/lives-meter';
 import { ManageContext } from './manage-context';
 import { DsAvatar } from '../../shared/ui/avatar';
 import { teamImageUrl } from '../../shared/ui/team-image';
+import { OpeningAttachmentEditor } from './opening-attachment-editor';
 
 type Row = any;
 type SetupData = {
@@ -87,6 +88,7 @@ export function singleNames(args: Record<string, unknown>): Record<string, unkno
     TranslocoDirective,
     DsLivesMeter,
     DsAvatar,
+    OpeningAttachmentEditor,
     DsBottomSheet,
     DsDataTable,
     DsCellDef,
