@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-15 — Retry Vercel after approved access — STARTED
+
+- **Requested by:** Gendy confirms the Vercel access request was approved and asks to retry.
+- **Preflight/scope:** Clean codex/event-audio; refreshing origin and the current deployment statuses. Existing blocked statuses do not automatically prove whether approval has taken effect. Trigger a fresh PR #29 preview through this progress commit, then retry the remaining preview branches if access is recognized. No merge or production deployment.
+- **Checks/next:** Documentation formatting and whitespace checks precede publication. Inspect the new Vercel status/build result; no successful post-approval preview is confirmed yet.
+
 ## 2026-10-15 — Diagnose blocked Vercel previews — HANDOFF
 
 - **Requested by:** Gendy; investigate and fix the failing Vercel deployment checks across PRs #24–#29 where possible.
