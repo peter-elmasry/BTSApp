@@ -46,6 +46,7 @@ select is((select (x->>'lives_delta')::numeric from jsonb_array_elements(public.
 update public.match_participants set outcome='DRAW' where match_id='7c000000-0000-0000-0000-000000000001';
 select is((public.get_team_view('3c000000-0000-0000-0000-000000000001','T02')->'breakdown'->>'total')::numeric,9::numeric,'two draws remove exactly one heart');
 select is((public.get_team_view('3c000000-0000-0000-0000-000000000001','T01')->'breakdown'->>'total')::numeric,9.5::numeric,'one draw preserves the half total');
+select set_config('request.jwt.claim.sub','',true);
 set local role anon;
 select lives_ok($$select public.get_team_view('3c000000-0000-0000-0000-000000000001','T01')$$,'anonymous own-team view retains half hearts');
 select throws_ok($$select public.get_standings('3c000000-0000-0000-0000-000000000001')$$,'P0001','LEADERBOARD_HIDDEN','fractional scoring does not open hidden standings');
