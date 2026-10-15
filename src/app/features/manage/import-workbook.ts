@@ -422,7 +422,7 @@ function prefill(setup: ImportValidationContext): Prefill {
     event: {
       name: pickName(event) || 'يوم DST',
       points_win: event['points_win'] ?? 2,
-      points_draw: event['points_draw'] ?? 1,
+      points_draw: event['scoring_mode'] === 'LIVES' ? -0.5 : (event['points_draw'] ?? 1),
       points_loss: event['points_loss'] ?? 0,
       points_name: event['currency_ar_plural'] ?? event['currency_en_other'] ?? 'نقط',
       match_bonus_cap: event['match_bonus_cap'] ?? null,
@@ -652,9 +652,19 @@ export async function createImportTemplate(
     ev.getRow(r).height = 24;
   });
   ev.getColumn(4).hidden = true;
+  ev.getRow(eventRow('life_emoji')).hidden = true; // Legacy field, fixed SVG presentation.
   // Win/Draw/Loss may be negative: hearts mode removes hearts (D053).
-  for (const key of ['points_win', 'points_draw', 'points_loss'])
+  for (const key of ['points_win', 'points_loss'])
     whole(ev, eventRow(key), eventRow(key), 2, -999999, 999999);
+  ev.getCell(eventRow('points_draw'), 2).dataValidation = {
+    type: 'custom',
+    allowBlank: false,
+    showErrorMessage: true,
+    error: 'التعادل في القلوب ثابت -0.5؛ النقط عدد صحيح',
+    formulae: [
+      `IF(B${eventRow('scoring_mode')}="${SCORING_LABELS.LIVES}",B${eventRow('points_draw')}=-0.5,AND(ISNUMBER(B${eventRow('points_draw')}),MOD(B${eventRow('points_draw')},1)=0,ABS(B${eventRow('points_draw')})<=999999))`,
+    ],
+  };
   for (const key of [
     'match_bonus_cap',
     'match_penalty_cap',
@@ -1183,7 +1193,7 @@ export async function parseImportWorkbook(
     let value: unknown = blank(raw) ? null : raw;
     if (
       typeof value === 'string' &&
-      /^-?\d+$/.test(value) &&
+      /^-?\d+(?:\.5)?$/.test(value) &&
       key !== 'name' &&
       key !== 'points_name' &&
       key !== 'life_emoji' &&
@@ -1226,6 +1236,16 @@ export async function parseImportWorkbook(
     }
     payload.event[key] = value;
     eventRows.set(key, r);
+  }
+
+  // Old templates normalise the hearts draw rule with a visible preview warning.
+  const warnings: string[] = [];
+  if ((payload.event['scoring_mode'] ?? context?.event?.['scoring_mode']) === 'LIVES') {
+    const draw = payload.event['points_draw'];
+    if (integer(draw, -999999) || draw === -0.5) {
+      if (draw !== -0.5) warnings.push('import.halfDrawWarning');
+      payload.event['points_draw'] = -0.5;
+    }
   }
 
   // teams
@@ -1432,6 +1452,7 @@ export async function parseImportWorkbook(
   const seen = new Set(errors.map((issue) => `${issue.sheet}:${issue.row}:${issue.column}`));
   return {
     payload,
+    warnings,
     errors: [
       ...errors,
       ...validation.filter((issue) => !seen.has(`${issue.sheet}:${issue.row}:${issue.column}`)),
@@ -1472,6 +1493,11 @@ export function validateImportPayload(
     if (
       numericColumns.has(key) &&
       !(key.endsWith('_cap') && blank(value)) &&
+      !(
+        key === 'points_draw' &&
+        (payload.event['scoring_mode'] ?? context?.event?.['scoring_mode']) === 'LIVES' &&
+        value === -0.5
+      ) &&
       !integer(value, signed ? -999999 : 0)
     )
       add('Event', record, key, 'INVALID_NUMBER');

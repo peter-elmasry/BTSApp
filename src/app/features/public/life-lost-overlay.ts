@@ -7,6 +7,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { DsHeartIcon } from '../../shared/ui/heart-icon';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { EventStore } from '../../core/player/event.store';
 import { costsLife, isLivesMode, lifeEmoji, livesLeft } from '../../core/player/scoring';
@@ -15,7 +16,8 @@ import { TeamViewState } from './team-view-state';
 
 /** Matches whose life loss this device has already shown for one team in one event. */
 export function seenLossesKey(eventId: string, teamCode: string) {
-  return `bts.seenLosses.${eventId}.${teamCode}`;
+  // New draw rules must baseline old results rather than animate historical draws.
+  return `bts.seenLosses.v2.${eventId}.${teamCode}`;
 }
 
 /**
@@ -25,7 +27,7 @@ export function seenLossesKey(eventId: string, teamCode: string) {
  */
 @Component({
   selector: 'app-life-lost-overlay',
-  imports: [TranslocoDirective],
+  imports: [TranslocoDirective, DsHeartIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './life-lost-overlay.html',
   styleUrl: './life-lost-overlay.css',

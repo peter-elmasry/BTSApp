@@ -9,12 +9,20 @@
   >
     <div class="life-card relative w-full max-w-sm space-y-4 rounded-card bg-white p-6 text-center">
       <div class="heart-stage" aria-hidden="true">
-        <span class="heart whole">{{ value.emoji }}</span>
-        <span class="heart half start">{{ value.emoji }}</span>
-        <span class="heart half end">{{ value.emoji }}</span>
+        <span class="heart whole"
+          ><ds-heart-icon [size]="80" [state]="value.change === -0.5 ? 'half' : 'full'"
+        /></span>
+        <span class="heart half start"
+          ><ds-heart-icon [size]="80" [state]="value.change === -0.5 ? 'half' : 'full'"
+        /></span>
+        <span class="heart half end"
+          ><ds-heart-icon [size]="80" [state]="value.change === -0.5 ? 'half' : 'full'"
+        /></span>
         <span class="minus" dir="ltr">−{{ -value.change }}</span>
       </div>
-      <p class="text-2xl font-extrabold">{{ t('scoring.lifeLostTitle') }}</p>
+      <p class="text-2xl font-extrabold">
+        {{ t(value.change === -0.5 ? 'scoring.halfHeartLost' : 'scoring.lifeLostTitle') }}
+      </p>
       <p class="text-lg">
         @if (value.left === null) {
           {{ t('scoring.lifeLostBody') }}

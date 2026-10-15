@@ -31,8 +31,8 @@ Current behaviour to retain:
 - Public broadcasts contain identifiers only; clients refetch through scoped
   RPCs. Hidden result rules remain in force for sounds as well as visual content.
 - Setup workbook v5 accepts v3/v4; avatars and palette are catalog-based.
-  Custom HEX already parses on import, but custom-colour export needs review:
-  `colorName()` maps unknown HEX to a default palette name, losing the colour.
+  Custom HEX parses on import and `colorName()` preserves unknown HEX on export.
+  The implementation review corrected the earlier planning suspicion; add regression coverage.
 - Game image preparation already decodes JPEG/PNG/WebP, limits source size and
   dimensions, and converts to <=1024 px WebP before upload (D034).
 - `ds-lives-meter` displays individual emoji only up to 12 slots, then emoji × N.
@@ -183,8 +183,8 @@ are built-in and do not need duplicate database rows. Deduplicate case-insensiti
 HEX; deleting a custom swatch never changes teams already using that colour.
 Adding/removing swatches is configuration, not a scoring change.
 
-Fix workbook colour round trips: unknown HEX must export as that exact HEX rather
-than a default palette colour. Generated dropdowns include custom swatches and
+Preserve workbook colour round trips: unknown HEX exports as that exact HEX.
+Add regression coverage for this existing behaviour. Generated dropdowns include custom swatches and
 still accept literal HEX; avoid requiring a workbook version change unless its
 layout changes. Preserve accepted v3/v4/v5 files and current validation semantics.
 

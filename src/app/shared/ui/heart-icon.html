@@ -1,0 +1,33 @@
+<svg
+  viewBox="0 0 24 24"
+  [attr.width]="size()"
+  [attr.height]="size()"
+  [attr.data-heart]="state()"
+  focusable="false"
+  aria-hidden="true"
+>
+  @if (state() === 'half') {
+    <path
+      d="M12 21C8 18 2 13 2 7.5C2 2 8 1 12 5L10 9L13 12L10 15Z"
+      fill="#DC2626"
+      stroke="#991B1B"
+      stroke-width="1.2"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M12 5C16 1 22 2 22 7.5C22 13 16 18 12 21L10 15L13 12L10 9Z"
+      fill="#FEE2E2"
+      stroke="#991B1B"
+      stroke-width="1.2"
+      stroke-linejoin="round"
+    />
+  } @else {
+    <path
+      d="M12 21C8 18 2 13 2 7.5C2 2 8 1 12 5C16 1 22 2 22 7.5C22 13 16 18 12 21Z"
+      [attr.fill]="state() === 'full' ? '#DC2626' : '#F1F5F9'"
+      [attr.stroke]="state() === 'full' ? '#991B1B' : '#64748B'"
+      stroke-width="1.2"
+      stroke-linejoin="round"
+    />
+  }
+</svg>

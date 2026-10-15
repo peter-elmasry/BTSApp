@@ -11,7 +11,11 @@
                 @if (view()?.standing; as row) {
                   {{ t('standings.rank', { n: row.rank }) }} ·
                 }
-                {{ b.total }} {{ lives() ? emoji() : pointsName() || t('quick.points') }}
+                @if (lives()) {
+                  <ds-lives-meter [lives]="b.total" [initial]="b.initial_lives ?? 0" />
+                } @else {
+                  {{ b.total }} {{ pointsName() || t('quick.points') }}
+                }
               </p>
             }
           </div>

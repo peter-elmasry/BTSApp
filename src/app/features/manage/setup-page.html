@@ -49,7 +49,7 @@
           ><input class="ds-control w-full" maxlength="120" formControlName="name_en" dir="auto"
         /></label>
         <fieldset
-          class="space-y-3 rounded-xl border border-mist p-3"
+          class="min-w-0 space-y-3 rounded-xl border border-mist p-3"
           data-testid="scoring-settings"
         >
           <legend class="px-1 font-bold">{{ t('scoring.title') }}</legend>
@@ -89,14 +89,6 @@
                   formControlName="initial_lives"
                   data-testid="initial-lives"
               /></label>
-              <label class="space-y-1"
-                ><span>{{ t('scoring.lifeEmoji') }}</span
-                ><input
-                  class="ds-control w-full text-xl"
-                  maxlength="16"
-                  formControlName="life_emoji"
-                  data-testid="life-emoji"
-              /></label>
             </div>
             @if (
               settingsForm.controls.initial_lives.invalid &&
@@ -104,24 +96,6 @@
             ) {
               <p role="alert" class="text-sm text-error">{{ t('scoring.initialLivesError') }}</p>
             }
-            <div class="space-y-2">
-              <p class="text-sm font-semibold">{{ t('scoring.emojiSuggestions') }}</p>
-              <div class="flex flex-wrap gap-2">
-                @for (emoji of LIFE_EMOJI_SUGGESTIONS; track emoji) {
-                  <button
-                    type="button"
-                    class="min-h-11 min-w-11 rounded-xl border bg-white text-xl"
-                    [class.border-teal]="lifeEmojiValue() === emoji"
-                    [class.border-mist]="lifeEmojiValue() !== emoji"
-                    [attr.aria-pressed]="lifeEmojiValue() === emoji"
-                    [attr.aria-label]="t('scoring.useEmoji', { emoji: emoji })"
-                    (click)="chooseLifeEmoji(emoji)"
-                  >
-                    {{ emoji }}
-                  </button>
-                }
-              </div>
-            </div>
             @if (initialLivesValue(); as lives) {
               <div class="flex flex-wrap items-center gap-2 rounded-lg bg-ivory px-3 py-2">
                 <span class="text-sm font-semibold">{{ t('scoring.preview') }}</span>
@@ -138,18 +112,18 @@
                 <button
                   type="button"
                   class="ds-tab"
-                  [attr.aria-pressed]="presetActive(0, 0, -1)"
-                  (click)="setHeartsPreset(0, 0, -1)"
+                  [attr.aria-pressed]="presetActive(0, -0.5, -1)"
+                  (click)="setHeartsPreset(0, -0.5, -1)"
                 >
-                  0 · 0 · −1
+                  0 · −0.5 · −1
                 </button>
                 <button
                   type="button"
                   class="ds-tab"
-                  [attr.aria-pressed]="presetActive(0, -5, -10)"
-                  (click)="setHeartsPreset(0, -5, -10)"
+                  [attr.aria-pressed]="presetActive(0, -0.5, -10)"
+                  (click)="setHeartsPreset(0, -0.5, -10)"
                 >
-                  0 · −5 · −10
+                  0 · −0.5 · −10
                 </button>
               </div>
               <div class="grid grid-cols-3 gap-2">
@@ -170,6 +144,8 @@
                     dir="ltr"
                     formControlName="points_draw"
                     data-testid="gain-draw"
+                    readonly
+                    step="0.5"
                 /></label>
                 <label class="space-y-1"
                   ><span>{{ t('scoring.gainLoss') }}</span
@@ -183,6 +159,9 @@
               </div>
             </div>
             <p class="text-sm text-slate">{{ t('scoring.livesRules') }}</p>
+            <p class="rounded-lg bg-gold-soft p-3 text-sm" role="status">
+              {{ t('scoring.halfDrawNotice') }}
+            </p>
           }
         </fieldset>
         <div
@@ -226,7 +205,7 @@
           /></label>
         </div>
         <details
-          class="space-y-3 rounded-xl border border-mist p-3"
+          class="min-w-0 space-y-3 rounded-xl border border-mist p-3"
           data-testid="advanced-settings"
           [open]="advancedOpen()"
           (toggle)="advancedOpen.set($any($event.target).open)"
@@ -235,7 +214,7 @@
             {{ t('setup.advanced') }}
           </summary>
           <fieldset
-            class="space-y-3 rounded-xl border border-mist p-3"
+            class="min-w-0 space-y-3 rounded-xl border border-mist p-3"
             [hidden]="scoringMode() === 'LIVES'"
           >
             <legend class="px-1 font-bold">{{ t('manage.currency') }}</legend>
@@ -249,7 +228,7 @@
                 data-testid="points-name"
             /></label>
           </fieldset>
-          <fieldset class="space-y-3 rounded-xl border border-mist p-3">
+          <fieldset class="min-w-0 space-y-3 rounded-xl border border-mist p-3">
             <legend class="px-1 font-bold">{{ t('manage.caps') }}</legend>
             <div class="grid gap-3 sm:grid-cols-2">
               <label class="space-y-1"
@@ -366,6 +345,15 @@
               /></label>
             </div>
           </fieldset>
+          <label class="space-y-1"
+            ><span>{{ t('setup.hexColor') }}</span
+            ><input
+              class="ds-control w-full"
+              formControlName="color_hex"
+              dir="ltr"
+              maxlength="7"
+              data-testid="team-hex"
+          /></label>
           <div class="ds-actions sm:col-span-2">
             <button class="ds-button primary" [disabled]="saving()">
               {{ t('common.save') }}

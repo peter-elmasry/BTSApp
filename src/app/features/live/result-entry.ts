@@ -8,6 +8,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { DsHeartIcon } from '../../shared/ui/heart-icon';
 import { DsAvatar } from '../../shared/ui/avatar';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthStore } from '../../core/auth/auth.store';
@@ -48,7 +49,7 @@ export function currentChoice(outcomes: readonly (string | undefined)[]): Regula
  */
 @Component({
   selector: 'app-result-entry',
-  imports: [TranslocoDirective, DsAvatar],
+  imports: [TranslocoDirective, DsAvatar, DsHeartIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './result-entry.html',
 })

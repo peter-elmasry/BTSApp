@@ -2,6 +2,17 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-15 — Half-heart scoring and SVG hearts implementation — HANDOFF
+
+- **Requested by:** Gendy; start implementing MEDIA_AUDIO_PLAN.md. First delivery slice: exact LIVES draw -0.5, server totals/breakdowns/import, SVG heart row and breaking animation, setup/workbook rule, fractional count-up and HEX round-trip repair. Subsequent media/audio slices remain pending.
+- **Preflight:** Clean planning branch at 335c846; fetched origin, master still a774e36. Work on codex/half-heart-scoring, stacked on planning PR #24 without merging it.
+- **Scope:** New migration after 0023, database regression coverage, shared SVG UI, setup/import/standings/life overlay and EN/AR strings. Preserve POINTS integer scoring, whole starting hearts/adjustments and signed totals.
+- **Milestone:** Added migration 0024 for fixed -0.5 DRAW, exact numeric standings/breakdown/tiebreak, legacy input normalisation and historical tie invalidation. Added shared red full/half/depleted SVG artwork and a virtualised non-wrapping row, half-loss overlay, Setup fixed draw rule, template v6/old-version warnings, exact count-up/export coverage and labelled HEX input.
+- **Review correction:** Current colorName() already preserves custom HEX; the earlier planning suspicion was incorrect. Corrected MEDIA_AUDIO_PLAN.md and added round-trip regression coverage instead of changing that behaviour.
+- **Checks so far:** App/spec TypeScript, 982 translation keys and production build pass (429.67 kB initial). Direct Vitest lacked Angular JIT setup; Angular default fork workers timed out before tests. Retrying the official Angular runner with one thread worker. Browser/DB verification pending; local PostgreSQL/Supabase CLI are unavailable.
+- **Verification milestone:** 32 focused pure unit tests pass with Angular compiler setup. Official Angular-runner tests passed 31/32 with one cold XLSX test timing out; moved its execution after the existing 30-second workbook warm-up without changing assertion budgets. Large-row browser checks found and fixed native fieldset minimum-width overflow. Versioned overlay history prevents recalculated historical draws from animating. Final sequential production build and all eight EN/AR browser journeys pass; both screenshots inspected. 32 focused unit tests pass after the final import guard. App/spec TypeScript, translations, formatting and whitespace pass. Bundle 429.71 kB; full frontend/database acceptance awaits cloud CI.
+- **Next:** Complete focused tests/mobile QA, inspect diff, commit/publish this slice and verify real Supabase CI. Team photos, opening attachments, reusable custom swatches and full consent/audio service remain subsequent slices.
+
 ## 2026-10-15 — Explicit sound opt-in and sounds folder — DONE
 
 - **Requested by:** Gendy; ask viewers for sound permission first and add public/sounds/.gitkeep now.
