@@ -136,3 +136,8 @@
     font-size: clamp(2rem, 3vw, 3rem);
   }
 }
+
+.total ds-lives-meter,
+.standings-table ds-lives-meter {
+  max-width: min(20rem, 32vw);
+}

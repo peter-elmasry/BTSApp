@@ -17,10 +17,14 @@
     @for (participant of teams(); track participant.team_id) {
       <li class="flex min-w-0 flex-wrap items-center gap-2">
         @if (participant.team; as team) {
-          <ds-avatar [avatarKey]="team.avatar_key" [color]="team.color_hex" [size]="44" /><span
-            class="min-w-0 flex-1 break-words font-semibold"
-            >{{ name(team, direction.language()) }}</span
-          >
+          <ds-avatar
+            [avatarKey]="team.avatar_key"
+            [imagePath]="team.image_path"
+            [color]="team.color_hex"
+            [size]="44"
+          /><span class="min-w-0 flex-1 break-words font-semibold">{{
+            name(team, direction.language())
+          }}</span>
         }
         @if (participant.outcome) {
           <span class="rounded-lg bg-ivory px-2 py-1 text-sm">{{

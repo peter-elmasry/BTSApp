@@ -49,7 +49,7 @@
           ><input class="ds-control w-full" maxlength="120" formControlName="name_en" dir="auto"
         /></label>
         <fieldset
-          class="space-y-3 rounded-xl border border-mist p-3"
+          class="min-w-0 space-y-3 rounded-xl border border-mist p-3"
           data-testid="scoring-settings"
         >
           <legend class="px-1 font-bold">{{ t('scoring.title') }}</legend>
@@ -89,14 +89,6 @@
                   formControlName="initial_lives"
                   data-testid="initial-lives"
               /></label>
-              <label class="space-y-1"
-                ><span>{{ t('scoring.lifeEmoji') }}</span
-                ><input
-                  class="ds-control w-full text-xl"
-                  maxlength="16"
-                  formControlName="life_emoji"
-                  data-testid="life-emoji"
-              /></label>
             </div>
             @if (
               settingsForm.controls.initial_lives.invalid &&
@@ -104,24 +96,6 @@
             ) {
               <p role="alert" class="text-sm text-error">{{ t('scoring.initialLivesError') }}</p>
             }
-            <div class="space-y-2">
-              <p class="text-sm font-semibold">{{ t('scoring.emojiSuggestions') }}</p>
-              <div class="flex flex-wrap gap-2">
-                @for (emoji of LIFE_EMOJI_SUGGESTIONS; track emoji) {
-                  <button
-                    type="button"
-                    class="min-h-11 min-w-11 rounded-xl border bg-white text-xl"
-                    [class.border-teal]="lifeEmojiValue() === emoji"
-                    [class.border-mist]="lifeEmojiValue() !== emoji"
-                    [attr.aria-pressed]="lifeEmojiValue() === emoji"
-                    [attr.aria-label]="t('scoring.useEmoji', { emoji: emoji })"
-                    (click)="chooseLifeEmoji(emoji)"
-                  >
-                    {{ emoji }}
-                  </button>
-                }
-              </div>
-            </div>
             @if (initialLivesValue(); as lives) {
               <div class="flex flex-wrap items-center gap-2 rounded-lg bg-ivory px-3 py-2">
                 <span class="text-sm font-semibold">{{ t('scoring.preview') }}</span>
@@ -138,18 +112,18 @@
                 <button
                   type="button"
                   class="ds-tab"
-                  [attr.aria-pressed]="presetActive(0, 0, -1)"
-                  (click)="setHeartsPreset(0, 0, -1)"
+                  [attr.aria-pressed]="presetActive(0, -0.5, -1)"
+                  (click)="setHeartsPreset(0, -0.5, -1)"
                 >
-                  0 · 0 · −1
+                  0 · −0.5 · −1
                 </button>
                 <button
                   type="button"
                   class="ds-tab"
-                  [attr.aria-pressed]="presetActive(0, -5, -10)"
-                  (click)="setHeartsPreset(0, -5, -10)"
+                  [attr.aria-pressed]="presetActive(0, -0.5, -10)"
+                  (click)="setHeartsPreset(0, -0.5, -10)"
                 >
-                  0 · −5 · −10
+                  0 · −0.5 · −10
                 </button>
               </div>
               <div class="grid grid-cols-3 gap-2">
@@ -170,6 +144,8 @@
                     dir="ltr"
                     formControlName="points_draw"
                     data-testid="gain-draw"
+                    readonly
+                    step="0.5"
                 /></label>
                 <label class="space-y-1"
                   ><span>{{ t('scoring.gainLoss') }}</span
@@ -183,6 +159,9 @@
               </div>
             </div>
             <p class="text-sm text-slate">{{ t('scoring.livesRules') }}</p>
+            <p class="rounded-lg bg-gold-soft p-3 text-sm" role="status">
+              {{ t('scoring.halfDrawNotice') }}
+            </p>
           }
         </fieldset>
         <div
@@ -226,7 +205,7 @@
           /></label>
         </div>
         <details
-          class="space-y-3 rounded-xl border border-mist p-3"
+          class="min-w-0 space-y-3 rounded-xl border border-mist p-3"
           data-testid="advanced-settings"
           [open]="advancedOpen()"
           (toggle)="advancedOpen.set($any($event.target).open)"
@@ -235,7 +214,7 @@
             {{ t('setup.advanced') }}
           </summary>
           <fieldset
-            class="space-y-3 rounded-xl border border-mist p-3"
+            class="min-w-0 space-y-3 rounded-xl border border-mist p-3"
             [hidden]="scoringMode() === 'LIVES'"
           >
             <legend class="px-1 font-bold">{{ t('manage.currency') }}</legend>
@@ -249,7 +228,7 @@
                 data-testid="points-name"
             /></label>
           </fieldset>
-          <fieldset class="space-y-3 rounded-xl border border-mist p-3">
+          <fieldset class="min-w-0 space-y-3 rounded-xl border border-mist p-3">
             <legend class="px-1 font-bold">{{ t('manage.caps') }}</legend>
             <div class="grid gap-3 sm:grid-cols-2">
               <label class="space-y-1"
@@ -297,6 +276,16 @@
           {{ t('common.save') }}
         </button>
       </form>
+      <app-team-palette-editor
+        [eventId]="eventId"
+        [palette]="setup()?.event?.team_palette"
+        (saved)="reload()"
+      />
+      <app-audio-settings
+        [eventId]="eventId"
+        [initial]="setup()?.event?.audio_config"
+        (saved)="reload()"
+      />
     }
 
     @if (tab() === 'teams') {
@@ -306,76 +295,123 @@
           (ngSubmit)="saveTeam()"
           class="ds-card grid gap-3 sm:grid-cols-2"
         >
-          <h2 class="text-lg font-bold sm:col-span-2">
-            {{ editingTeam() ? t('manage.editTeam') : t('manage.addTeam') }}
-          </h2>
-          <label class="space-y-1"
-            ><span>{{ t('manage.code') }}</span
-            ><input class="ds-control w-full" maxlength="4" formControlName="code"
-          /></label>
-          @if (teamForm.controls.code.invalid && teamForm.controls.code.touched) {
-            <p role="alert" class="text-sm text-error sm:col-span-2">
-              {{ t('manage.invalidTeamCode') }}
-            </p>
-          }
-          <label class="space-y-1"
-            ><span>{{ t('manage.entityName') }}</span
-            ><input class="ds-control w-full" maxlength="80" formControlName="name_en"
-          /></label>
-          <fieldset class="space-y-2 sm:col-span-2">
-            <legend class="font-semibold">{{ t('manage.avatar') }}</legend>
-            <div
-              class="grid grid-cols-6 gap-2 sm:grid-cols-8"
-              role="radiogroup"
-              [attr.aria-label]="t('manage.avatar')"
-            >
-              @for (avatar of TEAM_AVATARS; track avatar) {
+          <fieldset class="contents" [disabled]="teamUploading() || saving()">
+            <h2 class="text-lg font-bold sm:col-span-2">
+              {{ editingTeam() ? t('manage.editTeam') : t('manage.addTeam') }}
+            </h2>
+            <label class="space-y-1"
+              ><span>{{ t('manage.code') }}</span
+              ><input class="ds-control w-full" maxlength="4" formControlName="code"
+            /></label>
+            @if (teamForm.controls.code.invalid && teamForm.controls.code.touched) {
+              <p role="alert" class="text-sm text-error sm:col-span-2">
+                {{ t('manage.invalidTeamCode') }}
+              </p>
+            }
+            <label class="space-y-1"
+              ><span>{{ t('manage.entityName') }}</span
+              ><input class="ds-control w-full" maxlength="80" formControlName="name_en"
+            /></label>
+            <div class="space-y-2 sm:col-span-2">
+              <label class="block space-y-1"
+                ><span>{{ t('manage.teamImage') }}</span>
+                <input
+                  class="ds-control w-full"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  data-testid="team-image-input"
+                  [disabled]="teamUploading() || saving()"
+                  (change)="selectTeamImage($event)"
+                />
+              </label>
+              <p class="text-sm text-slate">{{ t('manage.teamImageHelp') }}</p>
+              @if (teamImageProcessing()) {
+                <p role="status">{{ t('manage.imageProcessing') }}</p>
+              }
+              @if (teamImagePreview(); as preview) {
+                <img
+                  class="max-h-64 max-w-full rounded-xl object-contain"
+                  [src]="preview"
+                  [alt]="t('manage.teamImage')"
+                />
                 <button
                   type="button"
-                  role="radio"
-                  class="flex min-h-11 items-center justify-center rounded-xl border-2 bg-white p-1"
-                  [class.border-teal]="teamForm.controls.avatar_key.value === avatar"
-                  [class.border-mist]="teamForm.controls.avatar_key.value !== avatar"
-                  [attr.aria-checked]="teamForm.controls.avatar_key.value === avatar"
-                  [attr.aria-label]="avatar"
-                  (click)="chooseAvatar(avatar)"
+                  class="ds-button ghost"
+                  [disabled]="teamUploading() || saving()"
+                  (click)="removeTeamImage()"
                 >
-                  <img class="h-8 w-8" [src]="'/avatars/' + avatar + '.svg'" alt="" />
+                  {{ t('manage.removeTeamImage') }}
+                </button>
+              }
+            </div>
+            <fieldset class="space-y-2 sm:col-span-2">
+              <legend class="font-semibold">{{ t('manage.avatar') }}</legend>
+              <div
+                class="grid grid-cols-6 gap-2 sm:grid-cols-8"
+                role="radiogroup"
+                [attr.aria-label]="t('manage.avatar')"
+              >
+                @for (avatar of TEAM_AVATARS; track avatar) {
+                  <button
+                    type="button"
+                    role="radio"
+                    class="flex min-h-11 items-center justify-center rounded-xl border-2 bg-white p-1"
+                    [class.border-teal]="teamForm.controls.avatar_key.value === avatar"
+                    [class.border-mist]="teamForm.controls.avatar_key.value !== avatar"
+                    [attr.aria-checked]="teamForm.controls.avatar_key.value === avatar"
+                    [attr.aria-label]="avatar"
+                    (click)="chooseAvatar(avatar)"
+                  >
+                    <img class="h-8 w-8" [src]="'/avatars/' + avatar + '.svg'" alt="" />
+                  </button>
+                }
+              </div>
+            </fieldset>
+            <fieldset class="space-y-2 sm:col-span-2">
+              <legend class="font-semibold">{{ t('manage.color') }}</legend>
+              <div class="flex flex-wrap items-center gap-2">
+                @for (hex of teamSwatches(); track hex) {
+                  <button
+                    type="button"
+                    class="h-11 w-11 rounded-full border-4"
+                    [style.backgroundColor]="hex"
+                    [class.border-navy]="teamForm.controls.color_hex.value.toUpperCase() === hex"
+                    [class.border-white]="teamForm.controls.color_hex.value.toUpperCase() !== hex"
+                    [attr.aria-pressed]="teamForm.controls.color_hex.value.toUpperCase() === hex"
+                    [attr.aria-label]="swatchLabel(hex)"
+                    [title]="swatchLabel(hex)"
+                    (click)="chooseColor(hex)"
+                  ></button>
+                }
+                <label class="flex items-center gap-2 text-sm"
+                  >{{ t('setup.customColor') }}
+                  <input class="ds-control h-11 w-16" type="color" formControlName="color_hex"
+                /></label>
+              </div>
+            </fieldset>
+            <label class="space-y-1"
+              ><span>{{ t('setup.hexColor') }}</span
+              ><input
+                class="ds-control w-full"
+                formControlName="color_hex"
+                dir="ltr"
+                maxlength="7"
+                data-testid="team-hex"
+            /></label>
+            <div class="ds-actions sm:col-span-2">
+              <button
+                class="ds-button primary"
+                [disabled]="saving() || teamUploading() || teamImageProcessing()"
+              >
+                {{ t('common.save') }}
+              </button>
+              @if (editingTeam()) {
+                <button type="button" class="ds-button ghost" (click)="editTeam()">
+                  {{ t('common.cancel') }}
                 </button>
               }
             </div>
           </fieldset>
-          <fieldset class="space-y-2 sm:col-span-2">
-            <legend class="font-semibold">{{ t('manage.color') }}</legend>
-            <div class="flex flex-wrap items-center gap-2">
-              @for (hex of TEAM_SWATCHES; track hex) {
-                <button
-                  type="button"
-                  class="h-11 w-11 rounded-full border-4"
-                  [style.backgroundColor]="hex"
-                  [class.border-navy]="teamForm.controls.color_hex.value.toUpperCase() === hex"
-                  [class.border-white]="teamForm.controls.color_hex.value.toUpperCase() !== hex"
-                  [attr.aria-pressed]="teamForm.controls.color_hex.value.toUpperCase() === hex"
-                  [attr.aria-label]="hex"
-                  (click)="chooseColor(hex)"
-                ></button>
-              }
-              <label class="flex items-center gap-2 text-sm"
-                >{{ t('setup.customColor') }}
-                <input class="ds-control h-11 w-16" type="color" formControlName="color_hex"
-              /></label>
-            </div>
-          </fieldset>
-          <div class="ds-actions sm:col-span-2">
-            <button class="ds-button primary" [disabled]="saving()">
-              {{ t('common.save') }}
-            </button>
-            @if (editingTeam()) {
-              <button type="button" class="ds-button ghost" (click)="editTeam()">
-                {{ t('common.cancel') }}
-              </button>
-            }
-          </div>
         </form>
         <div class="ds-page-header">
           <h2 class="text-lg font-bold">{{ t('manage.tab.teams') }} ({{ teams().length }})</h2>
@@ -397,11 +433,11 @@
         >
           <ng-template dsCell="team" let-team>
             <span class="flex items-center gap-2">
-              <img
-                class="h-10 w-10 shrink-0 rounded-full border-4"
-                [style.borderColor]="team.color_hex"
-                [src]="'/avatars/' + team.avatar_key + '.svg'"
-                alt=""
+              <ds-avatar
+                [avatarKey]="team.avatar_key"
+                [imagePath]="team.image_path"
+                [color]="team.color_hex"
+                [size]="40"
               />
               <span class="min-w-0 break-words font-bold"
                 >{{ label(team) }}
@@ -547,6 +583,11 @@
 
     @if (tab() === 'rounds') {
       <section class="space-y-4">
+        @for (round of rounds(); track round.id) {
+          @if (round.type === 'OPENING') {
+            <app-opening-attachment-editor [eventId]="eventId" [round]="round" (saved)="reload()" />
+          }
+        }
         <form
           [formGroup]="roundForm"
           (ngSubmit)="saveRound()"

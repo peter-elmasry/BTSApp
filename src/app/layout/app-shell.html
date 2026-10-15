@@ -21,6 +21,7 @@
           >
             <ds-avatar
               [avatarKey]="team.avatar_key"
+              [imagePath]="team.image_path"
               [color]="team.color_hex"
               [label]="teamName()"
               [size]="36"
@@ -98,7 +99,11 @@
       }
     </aside>
   }
+  @if (events.event()) {
+    <app-audio-controls [roundOnly]="displayMode()" />
+  }
   <main id="main" tabindex="-1" [class]="displayMode() ? '' : 'mx-auto max-w-3xl px-4 py-6'">
+    <app-opening-attachment-card [attachment]="openingAttachment()" />
     <app-session-outlet />
   </main>
   @if (!displayMode()) {

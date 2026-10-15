@@ -54,7 +54,7 @@ export const routes: Routes = [
   },
   {
     path: 'display',
-    canActivate: [leaderboardVisibleGuard],
+    // The venue shell also hosts public attachments/audio while standings remain hidden.
     loadComponent: () => import('./features/standings/display-page').then((m) => m.DisplayPage),
   },
   {

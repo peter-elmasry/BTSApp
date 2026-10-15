@@ -168,11 +168,15 @@ describe('XLSX event setup template v4', () => {
       initial_lives: 5,
       life_emoji: '💛',
     });
-    const cleared = await edit(livesBook, (wb) => {
-      const sheet = wb.getWorksheet(SHEETS.event)!;
-      for (const key of ['scoring_mode', 'initial_lives', 'life_emoji'])
-        sheet.getCell(eventRow(key), 2).value = null;
-    });
+    const cleared = await edit(
+      livesBook,
+      (wb) => {
+        const sheet = wb.getWorksheet(SHEETS.event)!;
+        for (const key of ['scoring_mode', 'initial_lives', 'life_emoji'])
+          sheet.getCell(eventRow(key), 2).value = null;
+      },
+      { ...live, event: { ...live.event, scoring_mode: 'LIVES' } },
+    );
     expect(cleared.errors).toEqual([]);
     expect(Object.keys(cleared.payload.event)).not.toContain('scoring_mode');
     expect(Object.keys(cleared.payload.event)).not.toContain('initial_lives');
@@ -393,6 +397,64 @@ describe('XLSX event setup template v4', () => {
 });
 
 describe('server payload validation', () => {
+  it('round trips named HEX swatches and escapes labels in Excel rules', async () => {
+    const context = {
+      ...live,
+      event: { ...live.event, team_palette: [{ name: 'Rose "light"', hex: '#ABCDEF' }] },
+      teams: live.teams!.map((team, index) =>
+        index === 0 ? { ...team, color_hex: '#ABCDEF' } : team,
+      ),
+    };
+    const bytes = await createImportTemplate(context);
+    const book = new Workbook();
+    await book.xlsx.load(arrayBuffer(bytes));
+    expect(book.getWorksheet(SHEETS.teams)!.getCell(TABLE_ROW, 3).value).toBe(
+      'Rose "light" (#ABCDEF)',
+    );
+    const parsed = await parseImportWorkbook(arrayBuffer(bytes), context);
+    expect(parsed.errors).toEqual([]);
+    expect(parsed.payload.teams[0]['color_hex']).toBe('#ABCDEF');
+  });
+  it('preserves a custom HEX colour through the XLSX round trip', async () => {
+    const context = {
+      ...live,
+      teams: live.teams!.map((team, index) =>
+        index === 0 ? { ...team, color_hex: '#ABCDEF' } : team,
+      ),
+    };
+    const bytes = await createImportTemplate(context);
+    const parsed = await parseImportWorkbook(arrayBuffer(bytes), context);
+    expect(parsed.errors).toEqual([]);
+    expect(parsed.payload.teams[0]['color_hex']).toBe('#ABCDEF');
+  });
+  it('warns and normalises an old hearts draw gain before import', async () => {
+    const context = { ...live, event: { ...live.event, scoring_mode: 'LIVES', initial_lives: 3 } };
+    const bytes = await createImportTemplate(context);
+    const parsed = await edit(
+      bytes,
+      (book) => {
+        book.getWorksheet(SHEETS.meta)!.getCell(1, 2).value = '5';
+        book.getWorksheet(SHEETS.event)!.getCell(eventRow('points_draw'), 2).value = -5;
+      },
+      context,
+    );
+    expect(parsed.errors).toEqual([]);
+    expect(parsed.payload.event['points_draw']).toBe(-0.5);
+    expect(parsed.warnings).toEqual(['import.halfDrawWarning']);
+  });
+  it('allows only the fixed half-heart draw exception, with integer POINTS rules', () => {
+    const value = base();
+    value.event['scoring_mode'] = 'LIVES';
+    value.event['initial_lives'] = 3;
+    value.event['points_draw'] = -0.5;
+    expect(validateImportPayload(value)).toEqual([]);
+    value.event['scoring_mode'] = 'POINTS';
+    expect(validateImportPayload(value)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ column: 'points_draw', code: 'INVALID_NUMBER' }),
+      ]),
+    );
+  });
   const base = (): ImportPayload => ({
     event: {
       name_en: 'Day',

@@ -5,6 +5,17 @@ at `a774e36` (PR #23). Requirements live in implementation plan §22;
 this document specifies the proposed implementation and verification.
 No application or database change is delivered by this planning commit.
 
+Implementation follow-up: hearts, photos, opening attachments and named HEX
+palettes and audio are delivered in stacked PRs #25–#29 with cloud checks passing
+(runtime acceptance: 69e7354, run 38719869198). The planning PR #24 CI repair also
+passed. The supplied
+five MP3s use the paths below; clips play for at most four seconds, with round
+announcements prioritized. Result occurrences retain action-time audio switches
+so re-enabling a cue never backlogs an outcome recorded while disabled. Immutable
+uploaded files are conservatively retained after replacement/removal until
+cleanup can account for offline queued metadata retries (D058/D059). Physical
+Android/iOS, venue and hosted-deployment acceptance remain to be recorded.
+
 ## Review of the fetched changes
 
 The previous checkout was `9e32743`, on the owner touch-target branch.
@@ -31,8 +42,8 @@ Current behaviour to retain:
 - Public broadcasts contain identifiers only; clients refetch through scoped
   RPCs. Hidden result rules remain in force for sounds as well as visual content.
 - Setup workbook v5 accepts v3/v4; avatars and palette are catalog-based.
-  Custom HEX already parses on import, but custom-colour export needs review:
-  `colorName()` maps unknown HEX to a default palette name, losing the colour.
+  Custom HEX parses on import and `colorName()` preserves unknown HEX on export.
+  The implementation review corrected the earlier planning suspicion; add regression coverage.
 - Game image preparation already decodes JPEG/PNG/WebP, limits source size and
   dimensions, and converts to <=1024 px WebP before upload (D034).
 - `ds-lives-meter` displays individual emoji only up to 12 slots, then emoji × N.
@@ -183,8 +194,8 @@ are built-in and do not need duplicate database rows. Deduplicate case-insensiti
 HEX; deleting a custom swatch never changes teams already using that colour.
 Adding/removing swatches is configuration, not a scoring change.
 
-Fix workbook colour round trips: unknown HEX must export as that exact HEX rather
-than a default palette colour. Generated dropdowns include custom swatches and
+Preserve workbook colour round trips: unknown HEX exports as that exact HEX.
+Add regression coverage for this existing behaviour. Generated dropdowns include custom swatches and
 still accept literal HEX; avoid requiring a workbook version change unless its
 layout changes. Preserve accepted v3/v4/v5 files and current validation semantics.
 
@@ -291,9 +302,9 @@ target <=1 second after a received cue, separately report network/refetch delay.
 5. EN/AR/mobile/accessibility QA, real Supabase permission tests and device audio
    rehearsal; update runbook and final cloud evidence.
 
-Use separate logical commits and reviewable PR slices. Allocate migrations after
-the latest actual migration at implementation time (currently `0023`); do not
-reserve conflicting numbers now. Run focused unit/Playwright/pgTAP checks plus
+Use separate logical commits and reviewable PR slices. Implementation added
+migrations `0024`–`0028` after the planning baseline `0023`; subsequent work must
+follow the latest migration. Run focused unit/Playwright/pgTAP checks plus
 translation validation, changed-file Prettier, app/spec TypeScript and production
 build. Publish under standing authorization, verify full cloud CI, and leave
 merging for explicit authorization. Documentation-only checks in this session

@@ -1,22 +1,32 @@
 <span
   *transloco="let t"
-  class="inline-flex flex-wrap items-center gap-1"
-  role="img"
+  class="inline-flex w-full min-w-0 max-w-full items-center gap-2"
   [attr.aria-label]="t('scoring.livesLeft', { n: lives() })"
   data-testid="lives-meter"
 >
-  @if (icons(); as slots) {
-    @for (alive of slots; track $index) {
+  <span
+    #viewport
+    class="block min-w-0 max-w-full flex-1 overflow-x-auto"
+    style="max-width: 20rem"
+    dir="ltr"
+    role="region"
+    tabindex="0"
+    [attr.aria-label]="t('scoring.heartRow')"
+    (scroll)="scroll($event)"
+    (click)="$event.stopPropagation()"
+    (keydown)="$event.stopPropagation()"
+  >
+    <span class="relative block h-6" [style.width.px]="count() * 24">
       <span
+        class="absolute top-0 flex h-6 flex-nowrap"
+        [style.left.px]="start() * 24"
         aria-hidden="true"
-        class="text-xl leading-none transition-opacity"
-        [class.opacity-25]="!alive"
-        [class.grayscale]="!alive"
-        >{{ emoji() }}</span
       >
-    }
-  } @else {
-    <span aria-hidden="true" class="text-xl leading-none">{{ emoji() }}</span>
-    <span aria-hidden="true" class="font-extrabold tabular">× {{ lives() }}</span>
-  }
+        @for (icon of icons(); track icon.index) {
+          <ds-heart-icon [state]="icon.state" />
+        }
+      </span>
+    </span>
+  </span>
+  <span class="shrink-0 font-extrabold tabular" dir="ltr">{{ lives() }}</span>
 </span>

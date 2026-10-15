@@ -16,6 +16,7 @@ import type { PublicMatch, PublicRound, PublicTeamView } from '../../core/player
 import { isLivesMode, lifeEmoji } from '../../core/player/scoring';
 import { TeamSelectionStore } from '../../core/player/team-selection.store';
 import { ViewerScope } from '../../core/player/viewer-scope';
+import { DsLivesMeter } from '../../shared/ui/lives-meter';
 import { DsAvatar } from '../../shared/ui/avatar';
 import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
 import { DsOutcome } from '../../shared/ui/outcome';
@@ -37,6 +38,7 @@ interface Contact {
     RouterLink,
     TranslocoDirective,
     DsAvatar,
+    DsLivesMeter,
     DsBottomSheet,
     DsOutcome,
     DsPhoneLink,

@@ -9,7 +9,12 @@
     @if (team(); as item) {
       <section class="space-y-4 rounded-card bg-white p-5 shadow-card">
         <div class="flex flex-wrap items-center gap-4">
-          <ds-avatar [avatarKey]="item.avatar_key" [color]="item.color_hex" [size]="88" />
+          <ds-avatar
+            [avatarKey]="item.avatar_key"
+            [imagePath]="item.image_path"
+            [color]="item.color_hex"
+            [size]="88"
+          />
           <div class="min-w-0 flex-1">
             <h2 class="break-words text-2xl font-extrabold">
               {{ name(item, direction.language()) }}

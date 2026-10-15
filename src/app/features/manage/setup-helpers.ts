@@ -75,7 +75,11 @@ export function nextCodes(existing: readonly string[], prefix: 'T' | 'G', count:
 }
 
 /** Generated teams: unused avatars first (round-robin), distinct colours. */
-export function newTeams(existing: readonly { code: string; avatar_key: string }[], count: number) {
+export function newTeams(
+  existing: readonly { code: string; avatar_key: string }[],
+  count: number,
+  palette: readonly string[] = TEAM_SWATCHES,
+) {
   const used = new Set(existing.map((team) => team.avatar_key));
   const avatars = [...TEAM_AVATARS.filter((key) => !used.has(key)), ...TEAM_AVATARS];
   return nextCodes(
@@ -89,7 +93,9 @@ export function newTeams(existing: readonly { code: string; avatar_key: string }
       name_en: `Team ${number}`,
       name_ar: `فريق ${number}`,
       avatar_key: avatars[index % avatars.length],
-      color_hex: TEAM_SWATCHES[(existing.length + index) % TEAM_SWATCHES.length],
+      color_hex: (palette.length ? palette : TEAM_SWATCHES)[
+        (existing.length + index) % (palette.length || TEAM_SWATCHES.length)
+      ],
     };
   });
 }

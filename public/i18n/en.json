@@ -234,7 +234,11 @@
     "eventName": "Event name",
     "entityName": "Name",
     "location": "Location",
-    "pointsName": "Points name"
+    "pointsName": "Points name",
+    "teamImage": "Team picture (JPEG, PNG or WebP, up to 20 MB)",
+    "teamImageHelp": "Optional public picture. The selected avatar appears when no picture is available.",
+    "removeTeamImage": "Remove picture",
+    "teamImageUploadFailed": "Could not upload the team picture."
   },
   "import": {
     "intro": "Upload an Excel workbook, review its rows, then confirm the import.",
@@ -331,7 +335,8 @@
       "Schedule": "Schedule",
       "Staff": "Staff",
       "Workbook": "Workbook"
-    }
+    },
+    "halfDrawWarning": "Hearts draws in this workbook were changed to the fixed −0.5 rule."
   },
   "app": {
     "title": "Demiana Sports Team"
@@ -652,7 +657,7 @@
     "team": "Team",
     "record": "W-D-L",
     "total": "Total",
-    "livesColumn": "Lives {{emoji}}",
+    "livesColumn": "Hearts",
     "pendingNote": "{{n}} result(s) from ended rounds are still being entered, so totals may change."
   },
   "phase6": {
@@ -777,24 +782,27 @@
     "pointsHint": "Wins, draws and losses earn the points configured below.",
     "lives": "Lives",
     "livesHint": "Every team starts with the same number of hearts; each result adds or removes hearts.",
-    "initialLives": "Starting lives per team (1–99)",
+    "initialLives": "Starting hearts per team (1–9999)",
     "initialLivesError": "Enter a number of hearts from 1 to 9999.",
     "lifeEmoji": "Life symbol (any emoji)",
     "emojiSuggestions": "Suggestions",
     "useEmoji": "Use {{emoji}}",
     "preview": "Each team starts with",
-    "livesRules": "Each team starts with the same hearts. Every result adds or removes the hearts set above (use minus for losses). Hearts can go below zero and teams keep playing. Bonuses and penalties add or remove hearts.",
+    "livesRules": "Wins and losses use your configured gains; draws always remove 0.5 heart. Totals may be negative.",
     "locked": "Scoring mode and starting lives are fixed because a round has already started.",
     "livesLeft": "Lives left: {{n}}",
     "lifeLostTitle": "You lost hearts!",
-    "lifeLostLeft": "Keep going — {{n}} {{emoji}} left.",
+    "lifeLostLeft": "{{n}} hearts remaining",
     "lifeLostNone": "Out of lives, but the game goes on. Play for the spirit! 💪",
     "lifeLostBody": "Shake it off — the next one is yours.",
     "lifeLostOk": "Got it",
     "gainsTitle": "What each result does to the hearts",
     "gainWin": "Win",
     "gainDraw": "Draw",
-    "gainLoss": "Loss / forfeit"
+    "gainLoss": "Loss / forfeit",
+    "halfDrawNotice": "Every hearts draw removes half a heart. Existing draw results are recalculated; points scoring is unchanged.",
+    "halfHeartLost": "Half a heart lost",
+    "heartRow": "Hearts — scroll to see all"
   },
   "errors.SCORING_LOCKED": "Scoring mode and starting lives cannot change after a round has started.",
   "ui": {
@@ -986,7 +994,8 @@
       "teams": "Codes, avatars and colours are filled in automatically. Rename the teams afterwards.",
       "games": "Codes are filled in automatically. Add names, locations and photos afterwards.",
       "rounds": "Rounds are numbered after the last one."
-    }
+    },
+    "hexColor": "HEX colour (#RRGGBB)"
   },
   "review": {
     "noName": "The event has no name.",
@@ -1031,5 +1040,57 @@
     "results": "Results here",
     "openTeam": "Open Team page",
     "openGame": "Open Game page"
-  }
+  },
+  "attachment": {
+    "heading": "Opening round attachment",
+    "file": "Image or PDF",
+    "title": "Title / image description",
+    "visible": "Display for everyone",
+    "publicHelp": "Images: JPEG, PNG or WebP up to 20 MB. PDFs: up to 10 MB. Save to publish changes. Files are public: hiding or removing the card does not revoke a shared file link.",
+    "pdfHelp": "If the PDF preview is unavailable, open the file using the link below.",
+    "unavailable": "The attachment is unavailable. Try opening the file or reconnecting.",
+    "open": "Open file",
+    "remove": "Remove attachment",
+    "invalid": "Choose a valid JPEG, PNG, WebP or PDF within the size limits.",
+    "saveFailed": "Could not save the attachment. Reconnect and retry."
+  },
+  "errors.INVALID_ATTACHMENT": "Choose a valid JPEG, PNG, WebP or PDF within the size limits.",
+  "palette": {
+    "heading": "Custom team colours",
+    "help": "Save up to 32 named HEX colours for team setup and Excel. Renaming or removing a swatch keeps existing team colours.",
+    "name": "Colour name",
+    "add": "Add colour",
+    "remove": "Remove colour",
+    "invalid": "Use unique names (up to 40 characters) and unique #RRGGBB colours."
+  },
+  "errors.INVALID_PALETTE": "Use unique names (up to 40 characters) and unique #RRGGBB colours.",
+  "audio": {
+    "heading": "Event sound",
+    "permission": "Enable event sounds?",
+    "permissionHelp": "Hear round announcements and results for your team on this device. You can mute them at any time.",
+    "enable": "Enable sound",
+    "keepMuted": "Keep muted",
+    "mute": "Mute sound",
+    "volume": "Volume",
+    "preparing": "Preparing sounds…",
+    "unavailable": "Sound is unavailable. Reconnect or try Enable sound again.",
+    "resume": "Tap Enable sound to resume playback.",
+    "otherTab": "Sound is active in another tab.",
+    "enabled": "Sound enabled",
+    "muted": "Sound muted",
+    "missing": "Some sound files could not load; those cues will stay silent.",
+    "organizerMuted": "The organizer has disabled event sounds.",
+    "settings": "Event sound settings",
+    "settingsHelp": "These switches apply to all viewers. Each device must still choose Enable sound. Clips play for up to four seconds; round announcements take priority.",
+    "master": "Enable event sounds",
+    "preview": "Preview sound",
+    "cue": {
+      "round-start": "Round start",
+      "round-end": "Round end",
+      "match-win": "Match win",
+      "match-loss": "Match loss / forfeit",
+      "match-draw": "Match draw"
+    }
+  },
+  "errors.INVALID_AUDIO_CONFIG": "Sound is unavailable. Reconnect or try Enable sound again."
 }

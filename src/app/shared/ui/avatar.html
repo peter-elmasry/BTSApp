@@ -1,12 +1,13 @@
 <span
-  class="inline-flex items-center justify-center rounded-full border-4 bg-white"
+  class="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border-4 bg-white"
   [style.border-color]="color()"
   [style.width.px]="size()"
   [style.height.px]="size()"
   ><img
-    [src]="'/avatars/' + avatarKey() + '.svg'"
+    [src]="photo() || '/avatars/' + avatarKey() + '.svg'"
     [alt]="label()"
-    class="h-3/4 w-3/4"
+    [class]="photo() ? 'h-full w-full object-cover' : 'h-3/4 w-3/4'"
+    (error)="imageFailed($event)"
     width="48"
     height="48"
 /></span>

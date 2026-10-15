@@ -1,9 +1,9 @@
 import { TEAM_AVATARS } from './setup-helpers';
 
-/** Arabic-first event setup workbook (template v3) — fixed layout shared by the generator and parser. */
-export const TEMPLATE_VERSION = '5';
+/** Arabic-first event setup workbook (template v6) — fixed layout shared by the generator and parser. */
+export const TEMPLATE_VERSION = '6';
 /** v3 workbooks lack the scoring rows only; they still import and keep current scoring. */
-export const ACCEPTED_TEMPLATE_VERSIONS = ['3', '4', TEMPLATE_VERSION];
+export const ACCEPTED_TEMPLATE_VERSIONS = ['3', '4', '5', TEMPLATE_VERSION];
 export const MAX_TEAMS = 20;
 export const MAX_GAMES = 12;
 export const MAX_ROUNDS = 20;
@@ -132,7 +132,12 @@ export const EVENT_FIELDS: readonly {
     required: true,
     hint: 'في نظام القلوب: اللي بيتزاد أو بيتشال، مثال 0',
   },
-  { key: 'points_draw', label: 'التعادل (نقط أو قلوب)', required: true, hint: 'مثال قلوب: -5' },
+  {
+    key: 'points_draw',
+    label: 'التعادل (نقط أو قلوب)',
+    required: true,
+    hint: 'في وضع القلوب ثابت: -0.5؛ النقط عدد صحيح',
+  },
   { key: 'points_loss', label: 'الخسارة (نقط أو قلوب)', required: true, hint: 'مثال قلوب: -10' },
   {
     key: 'points_name',
@@ -182,7 +187,12 @@ export const EVENT_FIELDS: readonly {
     required: false,
     hint: 'لنظام القلوب بس: ١ – ٩٩٩٩',
   },
-  { key: 'life_emoji', label: 'رمز القلب', required: false, hint: 'أي إيموجي: ❤️ 💛 💙 🔥 ⭐' },
+  {
+    key: 'life_emoji',
+    label: 'رمز القلب',
+    required: false,
+    hint: 'للتوافق مع النسخ القديمة فقط؛ العرض الجديد SVG أحمر',
+  },
   {
     key: 'opening_game',
     label: 'لعبة الافتتاح',

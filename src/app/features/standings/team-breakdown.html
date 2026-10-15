@@ -6,7 +6,12 @@
   } @else if (view(); as data) {
     @if (summary()) {
       <section class="ds-card flex flex-wrap items-center gap-4">
-        <ds-avatar [avatarKey]="data.team.avatar_key" [color]="data.team.color_hex" [size]="64" />
+        <ds-avatar
+          [avatarKey]="data.team.avatar_key"
+          [imagePath]="data.team.image_path"
+          [color]="data.team.color_hex"
+          [size]="64"
+        />
         <div class="min-w-0 flex-1 space-y-1">
           @if (data.standing; as row) {
             <p class="font-bold tabular">{{ t('standings.rank', { n: row.rank }) }}</p>
@@ -82,7 +87,7 @@
             {{ t('breakdown.adjustments') }}
             {{ b.adjustment_points < 0 ? -b.adjustment_points : b.adjustment_points }} =
             <span class="text-gold"><app-count-up [value]="b.total" [fromZero]="true" /></span>
-            {{ emoji() }}
+            <ds-heart-icon />
           </p>
           <p class="text-sm">{{ t('breakdown.livesFloor') }}</p>
         } @else {

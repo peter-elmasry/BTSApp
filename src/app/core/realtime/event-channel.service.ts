@@ -1,5 +1,36 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { Subject } from 'rxjs';
+import type { RoundAudioCue } from '../audio/audio-types';
+
+export function thinRoundAudioSignal(
+  event: string,
+  payload: unknown,
+): payload is RoundAudioCue & { type: 'round_audio' } {
+  if (
+    (event !== 'round_audio' && event !== '*') ||
+    !payload ||
+    typeof payload !== 'object' ||
+    Array.isArray(payload)
+  )
+    return false;
+  const value = payload as Record<string, unknown>;
+  const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+  return (
+    value['type'] === 'round_audio' &&
+    (value['cue'] === 'round-start' || value['cue'] === 'round-end') &&
+    typeof value['cueId'] === 'string' &&
+    uuid.test(value['cueId']) &&
+    typeof value['roundId'] === 'string' &&
+    uuid.test(value['roundId']) &&
+    typeof value['occurredAt'] === 'string' &&
+    Number.isFinite(Date.parse(value['occurredAt'])) &&
+    Object.keys(value).length === 5 &&
+    Object.keys(value).every((key) =>
+      ['type', 'cueId', 'roundId', 'cue', 'occurredAt'].includes(key),
+    )
+  );
+}
 
 const changes = new Set([
   'match_changed',
@@ -59,6 +90,15 @@ interface WatchedChannel {
 
 @Injectable({ providedIn: 'root' })
 export class EventChannelService {
+  private readonly immediateMessages = new Subject<{
+    eventId: string;
+    event: string;
+    payload: unknown;
+  }>();
+  readonly immediate = this.immediateMessages.asObservable();
+  isSubscribed(eventId: string) {
+    return this.channels.get(eventId)?.subscribed ?? false;
+  }
   private readonly transport = inject(EventChannelTransport);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
@@ -100,6 +140,7 @@ export class EventChannelService {
       if (this.hiddenTimer) clearTimeout(this.hiddenTimer);
       this.channels.forEach((channel) => this.disconnect(channel));
       this.channels.clear();
+      this.immediateMessages.complete();
       this.document.removeEventListener('visibilitychange', visibility);
       this.document.defaultView?.removeEventListener('online', online);
     });
@@ -157,7 +198,14 @@ export class EventChannelService {
       .connect(
         eventId,
         (event, payload) => {
-          if (generation !== channel.generation || !thinEventSignal(event, payload)) return;
+          if (generation !== channel.generation) return;
+          if (thinRoundAudioSignal(event, payload)) {
+            this.immediateMessages.next({ eventId, event: 'round_audio', payload });
+            return;
+          }
+          if (!thinEventSignal(event, payload)) return;
+          const type = (payload as { type?: string }).type ?? event;
+          this.immediateMessages.next({ eventId, event: type, payload });
           if (channel.debounce) clearTimeout(channel.debounce);
           channel.debounce = setTimeout(() => this.revision.update((value) => value + 1), 500);
         },

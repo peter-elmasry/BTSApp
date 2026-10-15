@@ -20,13 +20,14 @@ import type { StandingRow } from '../../core/standings/standings-types';
 import { DsAvatar } from '../../shared/ui/avatar';
 import { localizedName } from '../public/public-helpers';
 import { currencyLabel, rankChanges } from './rank-motion';
+import { DsLivesMeter } from '../../shared/ui/lives-meter';
 import { CountUp } from '../../shared/ui/count-up';
 import { matchesSearch, SEARCH_THRESHOLD } from '../../shared/ui/data-table';
 import { isLivesMode, lifeEmoji } from '../../core/player/scoring';
 
 @Component({
   selector: 'app-standings-list',
-  imports: [TranslocoDirective, RouterLink, DsAvatar, CountUp],
+  imports: [TranslocoDirective, RouterLink, DsAvatar, CountUp, DsLivesMeter],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './standings-list.html',
   styleUrl: './standings-list.css',

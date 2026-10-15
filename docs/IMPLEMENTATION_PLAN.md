@@ -886,7 +886,8 @@ The agreed UX plan and its implementation prompt live in `Claude outputs/BTSApp_
 Gendy requests the following changes. Detailed delivery design and checks are in
 [MEDIA_AUDIO_PLAN.md](MEDIA_AUDIO_PLAN.md). This section supersedes earlier
 catalog-only team images, emoji presentation and integer hearts draw rules.
-This session plans the implementation; it does not claim these features shipped.
+Implementation proceeds in separately checked slices; current acceptance and
+remaining work are recorded in PROGRESS_LOG.md.
 
 | Area | Requirement | Acceptance |
 | --- | --- | --- |
