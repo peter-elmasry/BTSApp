@@ -5,6 +5,16 @@ at `a774e36` (PR #23). Requirements live in implementation plan §22;
 this document specifies the proposed implementation and verification.
 No application or database change is delivered by this planning commit.
 
+Implementation follow-up: hearts, photos, opening attachments and named HEX
+palettes are delivered in stacked PRs #25–#28 with cloud checks passing. Audio is
+implemented on codex/event-audio and undergoing final verification. The supplied
+five MP3s use the paths below; clips play for at most four seconds, with round
+announcements prioritized. Result occurrences retain action-time audio switches
+so re-enabling a cue never backlogs an outcome recorded while disabled. Immutable
+uploaded files are conservatively retained after replacement/removal until
+cleanup can account for offline queued metadata retries (D058/D059). Physical
+Android/iOS, venue and hosted-deployment acceptance remain to be recorded.
+
 ## Review of the fetched changes
 
 The previous checkout was `9e32743`, on the owner touch-target branch.

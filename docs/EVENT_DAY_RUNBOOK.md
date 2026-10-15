@@ -121,11 +121,16 @@ Reconciliation is an operator procedure until an owner recovery UI is implemente
 
 ## Acceptance record before release
 
-The hearts/media/audio extensions in implementation plan §22 are planned, not
-deployed. Once implemented, add rehearsal checks for exact half-heart draws,
+The hearts/media/audio extensions in implementation plan §22 are implemented in
+stacked PRs; deployment and physical-device rehearsal remain pending. Rehearse exact half-heart draws,
 public opening image/PDF access without login/team selection, team photos and
-custom HEX workbook round trips. Put the five clips listed in MEDIA_AUDIO_PLAN.md
-under `public/sounds/`; enable sound and test each cue on the venue display and
+custom HEX workbook round trips. The supplied clips live in `public/sounds/`:
+`round-start.mp3`, `round-end.mp3`, `match-win.mp3`, `match-loss.mp3` and `match-draw.mp3`.
+Replace those files and rebuild/redeploy to change audio. Each clip plays for up
+to four seconds; announcements take priority over team results. In Setup -> Settings,
+set the event master/per-cue switches. Each device first chooses Enable sound or
+Keep muted; a saved preference never bypasses browser activation after reload.
+Enable sound and test each cue on the venue display and
 actual Android/iPhone devices before play. Verify winning, losing and drawing
 team devices separately, mute, reconnect and duplicate suppression. Browser
 activation is required and network/background restrictions limit immediacy.

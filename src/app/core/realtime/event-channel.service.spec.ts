@@ -4,9 +4,25 @@ import {
   EventChannelTransport,
   pollingDelay,
   thinEventSignal,
+  thinRoundAudioSignal,
 } from './event-channel.service';
 
 describe('thin realtime signals', () => {
+  it('allows only fresh-cue identifiers, with no result data', () => {
+    const cue = {
+      type: 'round_audio',
+      cue: 'round-start',
+      cueId: '11000000-0000-0000-0000-000000000001',
+      roundId: '66000000-0000-0000-0000-000000000001',
+      occurredAt: new Date().toISOString(),
+    };
+    expect(thinRoundAudioSignal('round_audio', cue)).toBe(true);
+    expect(thinRoundAudioSignal('*', cue)).toBe(true);
+    expect(thinRoundAudioSignal('round_audio', { ...cue, outcome: 'WIN' })).toBe(false);
+    expect(thinRoundAudioSignal('round_audio', { ...cue, cue: 'match-win' })).toBe(false);
+    expect(thinRoundAudioSignal('match_changed', cue)).toBe(false);
+    expect(thinRoundAudioSignal('round_audio', { ...cue, cueId: 'invalid' })).toBe(false);
+  });
   it('accepts only allowed event names and identifier-only payloads', () => {
     expect(
       thinEventSignal('match_changed', { type: 'match_changed', matchId: 'm1', roundId: 'r1' }),
@@ -44,6 +60,22 @@ describe('realtime fallback and channel lifecycle', () => {
     TestBed.resetTestingModule();
     vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+  it('delivers each round cue immediately before refetch debounce', () => {
+    const service = TestBed.inject(EventChannelService);
+    const seen: string[] = [];
+    service.immediate.subscribe((message) => seen.push((message.payload as { cue: string }).cue));
+    service.watch('e1');
+    const cue = {
+      type: 'round_audio',
+      cueId: '11000000-0000-0000-0000-000000000001',
+      roundId: '66000000-0000-0000-0000-000000000001',
+      occurredAt: new Date().toISOString(),
+    };
+    receive('round_audio', { ...cue, cue: 'round-end' });
+    receive('round_audio', { ...cue, cue: 'round-start' });
+    expect(seen).toEqual(['round-end', 'round-start']);
+    expect(service.revision()).toBe(0);
   });
 
   it('polls after ten seconds without WebSocket subscription, then stops polling when subscribed', async () => {

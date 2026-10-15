@@ -21,7 +21,21 @@ Gendy confirms an explicit permission prompt first: Enable sound / Keep muted.
 Sound defaults off; decline/dismiss never blocks browsing or repeatedly prompts.
 Only the explicit sound action activates playback; retain a later enable/mute
 control. This is app consent, not a native browser permission request.
-Implementation and device acceptance remain pending; see MEDIA_AUDIO_PLAN.md.
+Migration 0028 records enabled round transitions at action time, including backdated
+starts, and exposes only fresh occurrences for verification/polling. Match reads
+retain only the followed team's outcome through the existing visibility builder.
+The immediate stream precedes ordinary refetch debounce; it never carries results.
+Device consent unlocks and preloads Web Audio; Web Locks (verified lease fallback)
+select one audible tab per event. Initial/reconnected/context-changed snapshots
+are silent, corrections sound only for changed outcomes, and foreground mute
+cancels all queued/current playback. Clips play at most 4 seconds, with ordered
+round cues ahead of results and a 10-second freshness limit. Production and
+physical-device rehearsal remain pending; see MEDIA_AUDIO_PLAN.md.
+Result occurrences record action time and the then-current sound switches,
+independently of the transaction-start audit timestamp; later enablement cannot
+replay an outcome recorded while disabled. The venue route remains accessible
+when standings are hidden, with its existing reader/template visibility gates
+retained, so public attachments and round-only sound do not depend on standings.
 
 ## D060 — Custom HEX colours and reusable event swatches
 

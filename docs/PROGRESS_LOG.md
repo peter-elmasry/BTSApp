@@ -2,23 +2,35 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-15 — Named HEX team palette — STARTED
+## 2026-10-15 — Consent-based event audio — STARTED
+
+- **Requested by:** Gendy; explicit Enable sound / Keep muted permission first, immediate committed round cues and selected-team result sounds, including half-heart draws.
+- **Preflight:** Palette committed/pushed as 8b92e64, PR #28; branch codex/event-audio stacked on it. Preserved supplied five MP3 clips; .gitkeep removal remains a concurrent workspace change. Attachments frontend is green; database startup still pending.
+- **Scope:** Event sound switches, fresh round occurrence records/thin realtime path and polling reader, fresh selected-team result reader, device opt-in/unlock/preload/mute/volume and single audible tab, stale/duplicate/history suppression, lazy sound caching and meaningful tests.
+- **Milestone:** Added migration 0028 for boolean event switches, fresh round occurrences/thin broadcasts, polling reader and visibility-aware selected-team result reader. Explicit device consent creates/resumes Web Audio before preloading the supplied clips; mute/volume, foreground-only playback, Web Lock/lease leadership, bounded priority queue and server-time freshness/history/duplicate suppression are integrated. Venue display is round-only. Sound clips are capped at 4 seconds to keep consecutive announcements fresh; service-worker audio caching is lazy.
+- **Review fixes:** Record result action-time/config snapshots so blocked transactions and off/on toggles cannot misclassify fresh or disabled outcomes. Keep separate retry status for round/result reads and verify fallback lease ownership before playback. Venue testing exposed an existing display-route redirect under hidden standings; the shell now stays accessible while reader/template result gates remain enforced. Pending team-change responses are discarded by generation checks.
+- **Checks:** Production build, app/spec TypeScript, 1034-key translation parity and all 20 focused audio/realtime tests passed, including pending-response cancellation. Seven initial real-browser journeys passed using actual MP3s. Expanded route/privacy checks passed 16/17 with one intermittent third-result playback assertion; its fresh response was verified in the trace and six focused repeat runs passed. Venue round-only/master-off checks now pass; full cloud browser acceptance is still required. Mocked desktop cue-to-playback latency assertion passed below 1 second. Physical Android/iOS, venue speakers and production latency have not been tested. New pgTAP suite awaits cloud.
+- **Next:** Finish expanded checks and SQL/cloud verification, publish the audio PR and update the runbook with clip paths and remaining rehearsal requirements.
+
+## 2026-10-15 — Named HEX team palette — DONE
 
 - **Requested by:** Gendy's configuration/HEX implementation plan.
 - **Preflight:** Attachment slice committed/pushed as 939ba97, PR #27; cloud pending. Branch codex/team-colour-palette is stacked on it. Team-picture PR #26 is cloud-verified; sound assets remain preserved.
 - **Scope:** Audited/idempotent event palette RPC, validated named HEX entries, Settings editor, reusable single/bulk team swatches and exact named-colour XLSX round trip with earlier template compatibility.
 - **Milestone:** Migration 0027 and Settings editor support up to 32 unique name/HEX entries, with normalization and scoped/idempotent audit. Single/bulk setup reuse configured swatches. Workbook dropdown/list and conditional formatting include escaped custom labels and parse back to HEX; layout/version remains v6.
 - **Checks:** Production build, app/spec TypeScript and 1007-key translation parity passed; both EN/AR save/reuse/duplicate browser journeys and all 27 focused palette/bulk/workbook unit tests passed. New pgTAP coverage awaits cloud.
-- **Next:** Finish local checks, publish a stacked PR and verify cloud; then consent-based audio using the supplied clips. Attachment PR #27 frontend has passed; database job remains in progress.
+- **Cloud:** PR #28 frontend passed on 8b92e64. Its tie-baseline assertion failed because roster insertion clears initial tie values; fixture corrected in 18e196d and pushed without rewriting history. Run 38715646473 passed frontend and database (993 pgTAP assertions). No merge performed.
+- **Next:** Consent-based audio using the supplied clips.
 
-## 2026-10-15 — Public opening attachments — STARTED
+## 2026-10-15 — Public opening attachments — DONE
 
 - **Requested by:** Gendy's approved image/PDF implementation plan.
 - **Preflight:** Team-picture feature committed/pushed as 87a3a96, PR #26; cloud run 38711368712 is in progress. Branch codex/opening-attachments is stacked on it. Concurrent sound assets remain untouched.
 - **Scope:** Migration 0026, event-scoped public image/PDF storage, audited attachment RPC and visible-only public projection, independent opening editor and shared public card before team/login gates.
 - **Milestone:** Added attachment editor for existing OPENING rounds (including active/closed rounds), shared public card above the route outlet, MIME/path/size/signature validation, safe PDF preview/open fallback and public-file warning. Migration scopes storage to a matching OPENING round and excludes hidden metadata from bootstrap. Old files use D059's conservative retention pending safe queued-write-aware cleanup.
 - **Checks:** Production build, spec TypeScript and 999-key translation check passed. Four EN/AR browser journeys passed (no team/login, display mode, PDF upload/publish/hide/remove, invalid PDF). Visually inspected mobile EN/AR. All 3 attachment unit tests passed after correcting the fake File.slice implementation. New pgTAP suite awaits cloud execution.
-- **Next:** Finish focused tests, publish the stacked attachment PR and verify cloud CI; then reusable palette and consent-based audio.
+- **Cloud:** PR #27 at 939ba97 passed both jobs in run 38712842027, including 975 pgTAP assertions. Supabase container startup took longer than usual before checks ran. No merge performed.
+- **Next:** Palette and audio slices continue above.
 
 ## 2026-10-15 — Uploadable team pictures — DONE
 

@@ -46,7 +46,9 @@ for (const lang of ['en', 'ar'] as const) {
     await expect(page.getByTestId('opening-attachment').getByRole('img')).toBeVisible();
     await page.screenshot({ path: `artifacts/opening-public-${lang}.png`, fullPage: true });
     await page.goto('/display');
+    await expect(page).toHaveURL(/\/display$/);
     await expect(page.getByTestId('opening-attachment')).toBeVisible();
+    await expect(page.locator('app-display-page [data-team-id]')).toHaveCount(0);
     attachment = {
       path: `${eventId}/${roundId}/${assetId}.pdf`,
       mime: 'application/pdf',

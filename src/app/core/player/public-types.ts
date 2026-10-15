@@ -23,6 +23,7 @@ export interface PublicEvent extends LocalizedName {
   scoring_mode?: 'POINTS' | 'LIVES';
   initial_lives?: number | null;
   life_emoji?: string;
+  audio_config?: import('../audio/audio-types').AudioConfig;
 }
 export interface PublicGuide {
   name_en: string;
