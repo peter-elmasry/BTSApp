@@ -2,7 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-15 — Uploadable team pictures — STARTED
+## 2026-10-15 — Public opening attachments — STARTED
+
+- **Requested by:** Gendy's approved image/PDF implementation plan.
+- **Preflight:** Team-picture feature committed/pushed as 87a3a96, PR #26; cloud run 38711368712 is in progress. Branch codex/opening-attachments is stacked on it. Concurrent sound assets remain untouched.
+- **Scope:** Migration 0026, event-scoped public image/PDF storage, audited attachment RPC and visible-only public projection, independent opening editor and shared public card before team/login gates.
+- **Milestone:** Added attachment editor for existing OPENING rounds (including active/closed rounds), shared public card above the route outlet, MIME/path/size/signature validation, safe PDF preview/open fallback and public-file warning. Migration scopes storage to a matching OPENING round and excludes hidden metadata from bootstrap. Old files use D059's conservative retention pending safe queued-write-aware cleanup.
+- **Checks:** Production build, spec TypeScript and 999-key translation check passed. Four EN/AR browser journeys passed (no team/login, display mode, PDF upload/publish/hide/remove, invalid PDF). Visually inspected mobile EN/AR. All 3 attachment unit tests passed after correcting the fake File.slice implementation. New pgTAP suite awaits cloud execution.
+- **Next:** Finish focused tests, publish the stacked attachment PR and verify cloud CI; then reusable palette and consent-based audio.
+
+## 2026-10-15 — Uploadable team pictures — DONE
 
 - **Requested by:** Gendy's implementation instruction; next MEDIA_AUDIO_PLAN slice after PR #25 cloud acceptance.
 - **Preflight:** Clean cloud-verified hearts branch 76c18c5; fetched origin. Branch codex/team-pictures is stacked on codex/half-heart-scoring; no merge performed.
@@ -10,6 +19,7 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Milestone:** Migration 0025 adds scoped WebP Storage policies, validated optional metadata and public projection; preserves friendly duplicate errors and omitted pictures. Shared avatar supports safe URL/error fallback across team views. Setup prepares/resizes uploads, previews/removes and prevents conversion/upload races; shared image preparation retains the old game helper export.
 - **Checks:** Production build passed (430.54 kB); app/spec TypeScript and 986-key translation check passed; all four EN/AR picture upload/removal/anonymous/fallback browser cases passed. Default Angular fork workers timed out before running tests; established single-thread runner passed all 8 focused image tests. New pgTAP suite includes real workbook UPSERT; database execution awaits cloud CI.
 - **Concurrent workspace change:** Five correctly named MP3 files appeared in public/sounds and .gitkeep was removed outside this implementation. Preserved and excluded from the team-picture commit; use these assets in the audio slice.
+- **Cloud follow-up:** PR #26 frontend passed on 87a3a96; pgTAP found the added workbook fixture omitted required event scoring/currency fields. Corrected the fixture in 081a5a8 (pushed to PR #26 without rewriting history); cloud run 38712033268 passed both frontend and database, including all 957 pgTAP assertions. No merge performed.
 - **Next:** Finish checks, inspect and publish stacked PR. Public opening attachment, reusable palette and consent-based audio remain subsequent slices. Old immutable picture objects are retained conservatively; cleanup must not delete a file during queued metadata replay.
 
 ## 2026-10-15 — Half-heart scoring and SVG hearts implementation — HANDOFF
