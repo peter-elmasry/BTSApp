@@ -97,8 +97,8 @@ begin
   if p_op_id is null then perform public.phase2_fail('INVALID_OP_ID'); end if;
   v_hash:=public.registration_device_hash(p_secret);
   -- Event lock also serializes link revocation, pause, transfer and duplicate joins.
-  perform public.phase2_event_lock(p_event);
   perform pg_advisory_xact_lock(hashtextextended(p_op_id::text,0));
+  perform public.phase2_event_lock(p_event);
   select * into v_op from public.registration_join_ops where op_id=p_op_id;
   if found and (v_op.event_id<>p_event or v_op.device_hash<>v_hash) then perform public.phase2_fail('OP_ID_CONFLICT'); end if;
   select * into v_registration from public.player_registrations where event_id=p_event and device_hash=v_hash;
@@ -150,6 +150,7 @@ begin
   v_previous:=public.op_result(p_op_id,'manage_team_invite:'||p_event||':'||p_team);
   if v_previous is not null then return v_previous; end if;
   perform public.phase2_event_lock(p_event);
+  if not public.can_manage_team_players(p_event,p_team) then perform public.phase2_fail('FORBIDDEN'); end if;
   if p_action is null or p_action not in ('CREATE','REPLACE','DISABLE') then perform public.phase2_fail('INVALID_ACTION'); end if;
   select * into v_invite from public.team_invites where team_id=p_team and enabled;
   if p_action='CREATE' and v_invite.id is not null and v_invite.expires_at>now() then
@@ -172,6 +173,7 @@ begin
   v_previous:=public.op_result(p_op_id,'set_player_registration_open:'||p_event);
   if v_previous is not null then return v_previous; end if;
   perform public.phase2_event_lock(p_event);
+  if not public.is_event_admin(p_event) then perform public.phase2_fail('FORBIDDEN'); end if;
   if p_open is null then perform public.phase2_fail('INVALID_SETTINGS'); end if;
   select registration_open into v_before from public.events where id=p_event;
   if not found then perform public.phase2_fail('NOT_FOUND'); end if;
@@ -235,6 +237,7 @@ begin
   v_previous:=public.op_result(p_op_id,'rollback_invite_registrations:'||p_event);
   if v_previous is not null then return v_previous; end if;
   perform public.phase2_event_lock(p_event);
+  if not public.is_event_admin(p_event) then perform public.phase2_fail('FORBIDDEN'); end if;
   if nullif(btrim(p_reason),'') is null or char_length(p_reason)>300 then perform public.phase2_fail('REASON_REQUIRED'); end if;
   v_snapshot:=public.preview_invite_rollback(p_event,p_invite);
   if v_snapshot is distinct from p_expected then perform public.phase2_fail('REGISTRATION_CHANGED'); end if;
@@ -255,6 +258,7 @@ begin
   v_previous:=public.op_result(p_op_id,'restore_registration_batch:'||p_event);
   if v_previous is not null then return v_previous; end if;
   perform public.phase2_event_lock(p_event);
+  if not public.is_event_admin(p_event) then perform public.phase2_fail('FORBIDDEN'); end if;
   if nullif(btrim(p_reason),'') is null or char_length(p_reason)>300 then perform public.phase2_fail('REASON_REQUIRED'); end if;
   update public.player_registrations set status='ACTIVE',removed_batch=null,version=version+1,updated_at=clock_timestamp()
     where event_id=p_event and removed_batch=p_batch and status='REMOVED';
@@ -278,4 +282,3 @@ grant execute on function public.get_team_players(uuid,uuid),public.manage_team_
   public.set_player_registration_open(uuid,uuid,boolean),public.correct_player_registration(uuid,uuid,uuid,integer,text,text,text,uuid,text),
   public.preview_invite_rollback(uuid,uuid),public.rollback_invite_registrations(uuid,uuid,uuid,jsonb,text),
   public.restore_registration_batch(uuid,uuid,uuid,text) to authenticated,service_role;
-
