@@ -45,7 +45,7 @@ export class ChooseTeamPage {
   readonly filteredTeams = computed(() => {
     const search = this.searchText().trim().toLocaleLowerCase();
     // After the lock a guide of several teams picks only among their own teams (D044).
-    const guided = this.selection.locked() ? this.selection.guidedTeamCodes() : [];
+    const guided = !this.selection.exempt() ? this.selection.guidedTeamCodes() : [];
     return this.store
       .teams()
       .filter((team) => !guided.length || guided.includes(team.code))
@@ -76,7 +76,10 @@ export class ChooseTeamPage {
       this.processedLink = link;
       const team = this.store.teams().find((team) => team.code === code);
       if (!team) this.notice.set('player.invalidTeamLink');
-      else if (!this.selection.canChoose(team.code)) this.notice.set('player.teamLockedLink');
+      else if (!this.selection.canChoose(team.code))
+        this.notice.set(
+          this.selection.registration.receipt() ? 'registration.locked' : 'player.teamLockedLink',
+        );
       else this.pendingCode.set(team.code);
     });
   }

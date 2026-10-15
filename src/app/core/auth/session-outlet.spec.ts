@@ -44,6 +44,7 @@ describe('staff session outlet lifecycle', () => {
           { path: 'owner/members', component: StaffScreen },
           { path: 'manage/:eventId/setup', component: StaffScreen },
           { path: 'ref', component: StaffScreen },
+          { path: 'players/:eventId', component: StaffScreen },
           { path: 'home', component: StaffScreen },
         ]),
       ],
@@ -57,7 +58,7 @@ describe('staff session outlet lifecycle', () => {
     destroyed = 0; // Observe changes after the initial route has settled.
     return fixture;
   }
-  for (const url of ['/owner/members', '/manage/event/setup', '/ref']) {
+  for (const url of ['/owner/members', '/manage/event/setup', '/ref', '/players/event']) {
     it(`destroys ${url} on logout and prevents late reads restoring its DOM`, async () => {
       const fixture = await open(url);
       expect(fixture.nativeElement.textContent).toContain('private data');
@@ -130,5 +131,17 @@ describe('staff session outlet lifecycle', () => {
     fixture.detectChanges();
     expect(destroyed).toBe(0);
     expect(fixture.nativeElement.querySelector('input')).not.toBeNull();
+  });
+  it('destroys private roster drafts when a guide assignment is removed', async () => {
+    profile.set({
+      ...owner,
+      system_role: 'MEMBER',
+      roles: [{ event_id: 'event', role: 'GUIDE', team_id: 'team' }],
+    });
+    const fixture = await open('/players/event');
+    profile.set({ ...profile()!, roles: [] });
+    fixture.detectChanges();
+    expect(destroyed).toBe(1);
+    expect(fixture.nativeElement.querySelector('input')).toBeNull();
   });
 });

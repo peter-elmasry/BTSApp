@@ -1,0 +1,230 @@
+<section *transloco="let t" class="space-y-5">
+  <header class="space-y-2">
+    <h1 class="text-2xl font-extrabold">{{ t('registration.playersTitle') }}</h1>
+    <p>{{ t('registration.manageHint') }}</p>
+  </header>
+  <label class="block space-y-1"
+    ><span class="font-bold">{{ t('registration.team') }}</span>
+    <select
+      class="ds-control w-full"
+      [value]="team()"
+      (change)="changeTeam($any($event.target).value)"
+      [disabled]="busy()"
+      data-testid="roster-team"
+    >
+      @for (item of teams(); track item.id) {
+        <option [value]="item.id">{{ name(item, direction.language()) }}</option>
+      }
+    </select>
+  </label>
+  <button class="ds-button ghost" (click)="load()" [disabled]="busy() || loading() || !team()">
+    {{ t('registration.refresh') }}
+  </button>
+  @if (loading()) {
+    <p role="status">{{ t('registration.loading') }}</p>
+  }
+  @if (notice()) {
+    <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
+  }
+  @if (error() && !confirmation()) {
+    <p role="alert" class="text-error">{{ t('registration.error.' + error()) }}</p>
+  }
+  @if (roster(); as data) {
+    @if (data.admin) {
+      <div class="ds-card flex flex-wrap items-center justify-between gap-3">
+        <p>{{ t(data.registration_open ? 'registration.open' : 'registration.paused') }}</p>
+        <button
+          class="ds-button ghost"
+          (click)="prepare(data.registration_open ? 'PAUSE' : 'RESUME')"
+          [disabled]="busy()"
+        >
+          {{
+            t(data.registration_open ? 'registration.action.PAUSE' : 'registration.action.RESUME')
+          }}
+        </button>
+      </div>
+    } @else if (!data.registration_open) {
+      <p role="status">{{ t('registration.paused') }}</p>
+    }
+    <section class="ds-card space-y-4">
+      <h2 class="text-xl font-bold">{{ t('registration.inviteTitle') }}</h2>
+      @if (activeInvite(); as invite) {
+        <label class="block space-y-1"
+          ><span>{{ t('registration.link') }}</span>
+          <input
+            class="ds-control w-full text-sm"
+            dir="ltr"
+            readonly
+            [value]="inviteUrl(invite)"
+            (focus)="$any($event.target).select()"
+            data-testid="invite-url"
+          />
+        </label>
+        <p class="break-words text-sm">
+          {{ t('registration.expires') }} {{ invite.expires_at.slice(0, 10) }}
+        </p>
+        <div class="ds-actions">
+          <button class="ds-button primary" (click)="share(invite)" [disabled]="busy()">
+            {{ t('registration.share') }}
+          </button>
+          <button class="ds-button ghost" (click)="prepare('REPLACE')" [disabled]="busy()">
+            {{ t('registration.action.REPLACE') }}
+          </button>
+          <button class="ds-button danger" (click)="prepare('DISABLE')" [disabled]="busy()">
+            {{ t('registration.action.DISABLE') }}
+          </button>
+        </div>
+      } @else {
+        <button class="ds-button primary" (click)="prepare('CREATE')" [disabled]="busy()">
+          {{ t('registration.action.CREATE') }}
+        </button>
+      }
+    </section>
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold">{{ t('registration.roster', { count: activeCount() }) }}</h2>
+      @if (!data.players.length) {
+        <p>{{ t('registration.empty') }}</p>
+      }
+      @for (player of data.players; track player.id) {
+        <article class="ds-card space-y-3" [attr.data-testid]="'player-' + player.id">
+          <ds-phone-link [name]="player.name" [phone]="player.phone" />
+          <p class="text-sm font-bold">{{ t('registration.status.' + player.status) }}</p>
+          @if (player.possible_duplicate) {
+            <p class="text-sm text-slate">{{ t('registration.duplicate') }}</p>
+          }
+          <div class="ds-actions">
+            <button class="ds-button ghost" (click)="prepare('EDIT', player)" [disabled]="busy()">
+              {{ t('registration.action.EDIT') }}
+            </button>
+            @if (player.status === 'ACTIVE') {
+              <button
+                class="ds-button danger"
+                (click)="prepare('REMOVE', player)"
+                [disabled]="busy()"
+              >
+                {{ t('registration.action.REMOVE') }}
+              </button>
+            } @else {
+              <button
+                class="ds-button primary"
+                (click)="prepare('RESTORE', player)"
+                [disabled]="busy()"
+              >
+                {{ t('registration.action.RESTORE') }}
+              </button>
+            }
+            @if (data.admin) {
+              <button
+                class="ds-button ghost"
+                (click)="prepare('TRANSFER', player)"
+                [disabled]="busy()"
+              >
+                {{ t('registration.action.TRANSFER') }}
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </section>
+    @if (data.admin && (data.invites.length || batches().length)) {
+      <section class="ds-card space-y-3">
+        <h2 class="text-xl font-bold">{{ t('registration.batchTitle') }}</h2>
+        <p class="text-sm">{{ t('registration.batchHint') }}</p>
+        @for (invite of data.invites; track invite.id) {
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-mist py-2">
+            <p class="text-sm">
+              {{ invite.created_at.slice(0, 10) }} ·
+              {{ t(invite.enabled ? 'registration.linkEnabled' : 'registration.linkDisabled') }}
+            </p>
+            <button class="ds-button ghost" (click)="preview(invite)" [disabled]="busy()">
+              {{ t('registration.preview') }}
+            </button>
+          </div>
+        }
+        @for (batch of batches(); track batch) {
+          <button
+            class="ds-button ghost w-full break-all"
+            (click)="prepare('RESTORE_BATCH', undefined, undefined, batch)"
+            [disabled]="busy()"
+          >
+            {{ t('registration.action.RESTORE_BATCH') }} · {{ batch.slice(0, 8) }}
+          </button>
+        }
+      </section>
+    }
+  }
+  @if (confirmation(); as pending) {
+    <ds-bottom-sheet [title]="t('registration.action.' + pending.action)" (close)="close()">
+      <form class="space-y-4" [formGroup]="form" (ngSubmit)="apply()">
+        @if (pending.player) {
+          <p class="break-words font-bold">{{ pending.player.name }}</p>
+        }
+        <p>{{ t('registration.confirmation.' + pending.action) }}</p>
+        @if (pending.action === 'EDIT') {
+          <label class="block space-y-1"
+            ><span>{{ t('registration.name') }}</span
+            ><input class="ds-control w-full" formControlName="name" maxlength="100" required
+          /></label>
+          <label class="block space-y-1"
+            ><span>{{ t('registration.phone') }}</span
+            ><input
+              class="ds-control w-full"
+              formControlName="phone"
+              type="tel"
+              dir="ltr"
+              maxlength="32"
+          /></label>
+        }
+        @if (pending.action === 'TRANSFER') {
+          <label class="block space-y-1"
+            ><span>{{ t('registration.team') }}</span>
+            <select class="ds-control w-full" formControlName="target" required>
+              <option value="">{{ t('registration.selectTeam') }}</option>
+              @for (item of teams(); track item.id) {
+                @if (item.id !== team()) {
+                  <option [value]="item.id">{{ name(item, direction.language()) }}</option>
+                }
+              }
+            </select>
+          </label>
+        }
+        @if (pending.snapshot) {
+          <p class="font-bold">
+            {{ t('registration.affected', { count: pending.snapshot.length }) }}
+          </p>
+          <ul class="max-h-48 list-inside list-disc overflow-auto">
+            @for (player of pending.snapshot; track player.id) {
+              <li class="break-words">{{ player.name }}</li>
+            }
+          </ul>
+        }
+        @if (
+          ['EDIT', 'REMOVE', 'RESTORE', 'TRANSFER', 'ROLLBACK', 'RESTORE_BATCH'].includes(
+            pending.action
+          )
+        ) {
+          <label class="block space-y-1"
+            ><span>{{ t('registration.reason') }}</span
+            ><input class="ds-control w-full" formControlName="reason" maxlength="300" required
+          /></label>
+        }
+        @if (error()) {
+          <p role="alert" class="text-error">{{ t('registration.error.' + error()) }}</p>
+        }
+        <div class="ds-actions">
+          <button type="button" class="ds-button ghost" (click)="close()" [disabled]="busy()">
+            {{ t('common.cancel') }}
+          </button>
+          <button
+            type="submit"
+            class="ds-button primary"
+            [disabled]="busy() || !validConfirmation()"
+            data-testid="confirm-registration-action"
+          >
+            {{ t(busy() ? 'registration.saving' : 'registration.confirm') }}
+          </button>
+        </div>
+      </form>
+    </ds-bottom-sheet>
+  }
+</section>

@@ -158,7 +158,9 @@
           {{ t('team.switch') }}
         </button>
       } @else {
-        <p class="mb-5" role="status" data-testid="team-locked">{{ t('player.teamLocked') }}</p>
+        <p class="mb-5" role="status" data-testid="team-locked">
+          {{ t(selection.registration.receipt() ? 'registration.locked' : 'player.teamLocked') }}
+        </p>
         <button class="ds-button ghost w-full" (click)="switchSheet.set(false)">
           {{ t('common.close') }}
         </button>
