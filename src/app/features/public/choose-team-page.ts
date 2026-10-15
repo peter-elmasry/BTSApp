@@ -76,7 +76,10 @@ export class ChooseTeamPage {
       this.processedLink = link;
       const team = this.store.teams().find((team) => team.code === code);
       if (!team) this.notice.set('player.invalidTeamLink');
-      else if (!this.selection.canChoose(team.code)) this.notice.set('player.teamLockedLink');
+      else if (!this.selection.canChoose(team.code))
+        this.notice.set(
+          this.selection.registration.receipt() ? 'registration.locked' : 'player.teamLockedLink',
+        );
       else this.pendingCode.set(team.code);
     });
   }
