@@ -73,7 +73,12 @@
             @for (participant of match.participants; track participant.team_id) {
               <li class="flex min-w-0 items-center gap-2">
                 @if (team(participant.team_id); as item) {
-                  <ds-avatar [avatarKey]="item.avatar_key" [color]="item.color_hex" [size]="40" />
+                  <ds-avatar
+                    [avatarKey]="item.avatar_key"
+                    [imagePath]="item.image_path"
+                    [color]="item.color_hex"
+                    [size]="40"
+                  />
                 }
                 <span class="min-w-0 flex-1 break-words font-semibold">{{
                   teamName(participant.team_id) || participant.team_code

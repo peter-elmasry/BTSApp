@@ -43,7 +43,12 @@
     }
     @if (selection.selectedTeam(); as team) {
       <section class="flex flex-wrap items-center gap-4 rounded-card bg-navy p-5 text-white">
-        <ds-avatar [avatarKey]="team.avatar_key" [color]="team.color_hex" [size]="88" />
+        <ds-avatar
+          [avatarKey]="team.avatar_key"
+          [imagePath]="team.image_path"
+          [color]="team.color_hex"
+          [size]="88"
+        />
         <div class="min-w-0 flex-1">
           <p class="text-sm">{{ t('player.myTeam') }}</p>
           <h2 class="break-words text-2xl font-extrabold">
@@ -117,6 +122,7 @@
                   @if (opponent.team; as rival) {
                     <ds-avatar
                       [avatarKey]="rival.avatar_key"
+                      [imagePath]="rival.image_path"
                       [color]="rival.color_hex"
                       [size]="44"
                     />

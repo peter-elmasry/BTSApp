@@ -234,7 +234,11 @@
     "eventName": "Event name",
     "entityName": "Name",
     "location": "Location",
-    "pointsName": "Points name"
+    "pointsName": "Points name",
+    "teamImage": "Team picture (JPEG, PNG or WebP, up to 20 MB)",
+    "teamImageHelp": "Optional public picture. The selected avatar appears when no picture is available.",
+    "removeTeamImage": "Remove picture",
+    "teamImageUploadFailed": "Could not upload the team picture."
   },
   "import": {
     "intro": "Upload an Excel workbook, review its rows, then confirm the import.",

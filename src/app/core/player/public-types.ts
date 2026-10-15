@@ -33,6 +33,7 @@ export interface PublicTeam extends LocalizedName {
   id: string;
   code: string;
   avatar_key: string;
+  image_path?: string | null;
   color_hex: string;
   sort_order: number;
   guide: PublicGuide | null;

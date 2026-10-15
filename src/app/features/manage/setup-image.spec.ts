@@ -68,4 +68,28 @@ describe('pending game photo selection', () => {
     await pending;
     expect(page.gameImage()).toBeNull();
   });
+  it('discards team conversion when switching teams', async () => {
+    const pending = page.selectTeamImage(selection());
+    expect(page.teamImageProcessing()).toBe(true);
+    page.editTeam({
+      id: 'other',
+      code: 'T02',
+      name_en: 'Other',
+      avatar_key: 'lion',
+      color_hex: '#123456',
+    });
+    resolve();
+    await pending;
+    expect(page.teamImage()).toBeNull();
+    expect(page.teamImageProcessing()).toBe(false);
+  });
+  it('removing a team image cancels pending conversion', async () => {
+    const pending = page.selectTeamImage(selection());
+    page.removeTeamImage();
+    resolve();
+    await pending;
+    expect(page.teamImage()).toBeNull();
+    expect(page.teamImagePath()).toBeNull();
+    expect(page.teamImagePreview()).toBeNull();
+  });
 });

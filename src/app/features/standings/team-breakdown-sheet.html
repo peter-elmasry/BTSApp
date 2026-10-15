@@ -11,7 +11,12 @@
       <p role="alert">{{ t('player.resultsError') }}</p>
     } @else if (view(); as data) {
       <section class="ds-card flex flex-wrap items-center gap-4">
-        <ds-avatar [avatarKey]="data.team.avatar_key" [color]="data.team.color_hex" [size]="64" />
+        <ds-avatar
+          [avatarKey]="data.team.avatar_key"
+          [imagePath]="data.team.image_path"
+          [color]="data.team.color_hex"
+          [size]="64"
+        />
         <div class="min-w-0 flex-1 space-y-1">
           @if (data.standing; as row) {
             <p class="font-bold tabular">{{ t('standings.rank', { n: row.rank }) }}</p>
