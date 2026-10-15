@@ -33,6 +33,13 @@ accepted. Phase 0 hosted acceptance remains separate.
 
 ## Vercel author-access blocks
 
+**Recovery verified 2026-10-15:** PR #30 preview and production deployment of master
+9b4d75e succeeded. The public site is https://dst-scoring.vercel.app; anonymous
+home/display routes and all five sound files are reachable there. Deployment-specific
+URLs can still require Vercel sign-in, so use the public domain for player checks.
+Production Supabase workflow 38765043986 applied migrations 0024–0028 and deployed
+login/members. The earlier diagnosis below is retained for future access incidents.
+
 On 2026-10-15, PRs #24–#29 have green frontend/database checks but failed Vercel
 deployment statuses. Vercel identifies commit author `Gendyadel` as lacking access
 to the `peter-elmasry's projects` team that owns `bts-app`. PR #27 provides only
