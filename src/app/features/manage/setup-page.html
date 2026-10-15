@@ -281,6 +281,11 @@
         [palette]="setup()?.event?.team_palette"
         (saved)="reload()"
       />
+      <app-audio-settings
+        [eventId]="eventId"
+        [initial]="setup()?.event?.audio_config"
+        (saved)="reload()"
+      />
     }
 
     @if (tab() === 'teams') {

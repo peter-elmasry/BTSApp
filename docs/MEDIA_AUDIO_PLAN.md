@@ -5,6 +5,17 @@ at `a774e36` (PR #23). Requirements live in implementation plan §22;
 this document specifies the proposed implementation and verification.
 No application or database change is delivered by this planning commit.
 
+Implementation follow-up: hearts, photos, opening attachments and named HEX
+palettes and audio are delivered in stacked PRs #25–#29 with cloud checks passing
+(runtime acceptance: 69e7354, run 38719869198). The planning PR #24 CI repair also
+passed. The supplied
+five MP3s use the paths below; clips play for at most four seconds, with round
+announcements prioritized. Result occurrences retain action-time audio switches
+so re-enabling a cue never backlogs an outcome recorded while disabled. Immutable
+uploaded files are conservatively retained after replacement/removal until
+cleanup can account for offline queued metadata retries (D058/D059). Physical
+Android/iOS, venue and hosted-deployment acceptance remain to be recorded.
+
 ## Review of the fetched changes
 
 The previous checkout was `9e32743`, on the owner touch-target branch.
@@ -291,9 +302,9 @@ target <=1 second after a received cue, separately report network/refetch delay.
 5. EN/AR/mobile/accessibility QA, real Supabase permission tests and device audio
    rehearsal; update runbook and final cloud evidence.
 
-Use separate logical commits and reviewable PR slices. Allocate migrations after
-the latest actual migration at implementation time (currently `0023`); do not
-reserve conflicting numbers now. Run focused unit/Playwright/pgTAP checks plus
+Use separate logical commits and reviewable PR slices. Implementation added
+migrations `0024`–`0028` after the planning baseline `0023`; subsequent work must
+follow the latest migration. Run focused unit/Playwright/pgTAP checks plus
 translation validation, changed-file Prettier, app/spec TypeScript and production
 build. Publish under standing authorization, verify full cloud CI, and leave
 merging for explicit authorization. Documentation-only checks in this session

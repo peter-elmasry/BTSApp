@@ -2,23 +2,54 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-15 — Named HEX team palette — STARTED
+## 2026-10-15 — Retry Vercel after approved access — HANDOFF
+
+- **Requested by:** Gendy confirms the Vercel access request was approved and asks to retry.
+- **Preflight/scope:** Clean codex/event-audio; refreshing origin and the current deployment statuses. Existing blocked statuses do not automatically prove whether approval has taken effect. Trigger a fresh PR #29 preview through this progress commit, then retry the remaining preview branches if access is recognized. No merge or production deployment.
+- **Retry/result:** Progress commit 77481bd was pushed to PR #29 and created fresh Vercel deployment GQziXhBV7sK9joUTgrPgXpHBEY7N. It failed at 2026-10-15 10:49:22 UTC with only Deployment was blocked exposed by GitHub. The older membership comment still references 7e3eb7b; it is not evidence that the new attempt has the same specific cause. Remaining five branches were not retriggered while this common access question remains unresolved.
+- **Checks/access:** Changed-document Prettier and whitespace checks passed. GitHub CI run 38722970262 is in progress; hosted acceptance is not passed. No local Vercel CLI session or accessible authenticated dashboard is available. Requested the new deployment's detailed reason from Gendy; next resolve that reason and retry previews. No merge or production deployment occurred.
+
+## 2026-10-15 — Diagnose blocked Vercel previews — HANDOFF
+
+- **Requested by:** Gendy; investigate and fix the failing Vercel deployment checks across PRs #24–#29 where possible.
+- **Preflight:** Clean codex/event-audio at 7e3eb7b; fetched origin and read the coordination/design records. Scope is deployment status/access diagnosis and maintainer instructions; no merge or production deployment.
+- **Finding:** All six current PR heads pass frontend/database CI. Vercel rejects author Gendyadel's access to the owning peter-elmasry's projects team; explicit author-access failures appear on #24/#26 and Vercel's bot explains the same missing membership on #24/#25/#26/#28/#29. #27 reports the generic blocked status, consistent with the same author/team, without its own detailed membership comment.
+- **Documentation:** Added account-level remedies and preview verification steps to EVENT_DAY_RUNBOOK.md, verified against Vercel's current official collaboration guide. No application-code fix is indicated by these statuses.
+- **Checks/publication:** Changed-document Prettier and git diff --check passed. Documentation-only diagnosis is being committed/pushed to existing PR #29; its new cloud run may still be pending at handoff. Runtime suites were not rerun locally for this documentation change.
+- **Access/next:** Vercel membership/plan cannot be verified or repaired with the available GitHub credential; browser inspection initialization also failed. The project owner must choose/complete the membership or deployment-ownership remedy, then redeploy previews and inspect their build logs. No billing, visibility, identity, merge or deployment changes made.
+
+## 2026-10-15 — Consent-based event audio — DONE
+
+- **Requested by:** Gendy; explicit Enable sound / Keep muted permission first, immediate committed round cues and selected-team result sounds, including half-heart draws.
+- **Preflight:** Palette committed/pushed as 8b92e64, PR #28; branch codex/event-audio stacked on it. Preserved supplied five MP3 clips; .gitkeep removal remains a concurrent workspace change. Attachments frontend is green; database startup still pending.
+- **Scope:** Event sound switches, fresh round occurrence records/thin realtime path and polling reader, fresh selected-team result reader, device opt-in/unlock/preload/mute/volume and single audible tab, stale/duplicate/history suppression, lazy sound caching and meaningful tests.
+- **Milestone:** Added migration 0028 for boolean event switches, fresh round occurrences/thin broadcasts, polling reader and visibility-aware selected-team result reader. Explicit device consent creates/resumes Web Audio before preloading the supplied clips; mute/volume, foreground-only playback, Web Lock/lease leadership, bounded priority queue and server-time freshness/history/duplicate suppression are integrated. Venue display is round-only. Sound clips are capped at 4 seconds to keep consecutive announcements fresh; service-worker audio caching is lazy.
+- **Review fixes:** Record result action-time/config snapshots so blocked transactions and off/on toggles cannot misclassify fresh or disabled outcomes. Keep separate retry status for round/result reads and verify fallback lease ownership before playback. Venue testing exposed an existing display-route redirect under hidden standings; the shell now stays accessible while reader/template result gates remain enforced. Pending team-change responses are discarded by generation checks.
+- **Checks:** Production build, app/spec TypeScript, 1034-key translation parity and all 20 focused audio/realtime tests passed, including pending-response cancellation. Seven initial real-browser journeys passed using actual MP3s. Expanded route/privacy checks passed 16/17 with one intermittent third-result playback assertion; its fresh response was verified in the trace and six focused repeat runs passed. Venue round-only/master-off checks now pass; full cloud browser acceptance is still required. Mocked desktop cue-to-playback latency assertion passed below 1 second. Physical Android/iOS, venue speakers and production latency have not been tested. New pgTAP suite awaits cloud.
+- **Publication/acceptance:** PR #29 on codex/event-audio, runtime head 69e7354, passed both jobs in run 38719869198: 237 unit tests, 109 browser tests and 1,037 pgTAP assertions across 20 files, plus migrations/reset, owner/Auth integration, Edge regressions, translations, formatting, build and Lighthouse. Initial production bundle is 452.24 kB (<500 kB). The full browser suite passed twice, including the earlier intermittent result case.
+- **Planning-chain repair:** Audited all six PR checks. PR #24's placeholder had no Prettier parser; isolated repair 97fccba ignores the placeholder/ignore file and applies the existing D062 artifact policy. Run 38720018288 passed both jobs. PRs #25–#28 remain green. No merges or production deployment were performed.
+- **Assets/next:** Supplied clips are committed under public/sounds: round-start.mp3, round-end.mp3, match-win.mp3, match-loss.mp3, match-draw.mp3; their supplied placeholder removal is preserved. Final documentation commit records this acceptance. Next: explicit merge/deployment authorization and real Android/iOS/venue rehearsal from EVENT_DAY_RUNBOOK.md; public asset retention/cleanup limitations remain documented in D058/D059.
+- **Cloud milestone:** PR #29 at 97877c9 passed the full frontend job, including all browser tests. All new audio SQL assertions passed; the sole database failure was the older public-event allowlist missing the intentional audio_config field. Updating that contract regression and rerunning CI. Mobile EN consent and AR active controls were visually inspected; an EN screenshot-only helper exceeded its capture timeout, while the production browser suite passed.
+
+## 2026-10-15 — Named HEX team palette — DONE
 
 - **Requested by:** Gendy's configuration/HEX implementation plan.
 - **Preflight:** Attachment slice committed/pushed as 939ba97, PR #27; cloud pending. Branch codex/team-colour-palette is stacked on it. Team-picture PR #26 is cloud-verified; sound assets remain preserved.
 - **Scope:** Audited/idempotent event palette RPC, validated named HEX entries, Settings editor, reusable single/bulk team swatches and exact named-colour XLSX round trip with earlier template compatibility.
 - **Milestone:** Migration 0027 and Settings editor support up to 32 unique name/HEX entries, with normalization and scoped/idempotent audit. Single/bulk setup reuse configured swatches. Workbook dropdown/list and conditional formatting include escaped custom labels and parse back to HEX; layout/version remains v6.
 - **Checks:** Production build, app/spec TypeScript and 1007-key translation parity passed; both EN/AR save/reuse/duplicate browser journeys and all 27 focused palette/bulk/workbook unit tests passed. New pgTAP coverage awaits cloud.
-- **Next:** Finish local checks, publish a stacked PR and verify cloud; then consent-based audio using the supplied clips. Attachment PR #27 frontend has passed; database job remains in progress.
+- **Cloud:** PR #28 frontend passed on 8b92e64. Its tie-baseline assertion failed because roster insertion clears initial tie values; fixture corrected in 18e196d and pushed without rewriting history. Run 38715646473 passed frontend and database (993 pgTAP assertions). No merge performed.
+- **Next:** Consent-based audio using the supplied clips.
 
-## 2026-10-15 — Public opening attachments — STARTED
+## 2026-10-15 — Public opening attachments — DONE
 
 - **Requested by:** Gendy's approved image/PDF implementation plan.
 - **Preflight:** Team-picture feature committed/pushed as 87a3a96, PR #26; cloud run 38711368712 is in progress. Branch codex/opening-attachments is stacked on it. Concurrent sound assets remain untouched.
 - **Scope:** Migration 0026, event-scoped public image/PDF storage, audited attachment RPC and visible-only public projection, independent opening editor and shared public card before team/login gates.
 - **Milestone:** Added attachment editor for existing OPENING rounds (including active/closed rounds), shared public card above the route outlet, MIME/path/size/signature validation, safe PDF preview/open fallback and public-file warning. Migration scopes storage to a matching OPENING round and excludes hidden metadata from bootstrap. Old files use D059's conservative retention pending safe queued-write-aware cleanup.
 - **Checks:** Production build, spec TypeScript and 999-key translation check passed. Four EN/AR browser journeys passed (no team/login, display mode, PDF upload/publish/hide/remove, invalid PDF). Visually inspected mobile EN/AR. All 3 attachment unit tests passed after correcting the fake File.slice implementation. New pgTAP suite awaits cloud execution.
-- **Next:** Finish focused tests, publish the stacked attachment PR and verify cloud CI; then reusable palette and consent-based audio.
+- **Cloud:** PR #27 at 939ba97 passed both jobs in run 38712842027, including 975 pgTAP assertions. Supabase container startup took longer than usual before checks ran. No merge performed.
+- **Next:** Palette and audio slices continue above.
 
 ## 2026-10-15 — Uploadable team pictures — DONE
 

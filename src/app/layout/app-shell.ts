@@ -32,6 +32,7 @@ import { StaffMenu } from './staff-menu';
 import { QuickLook } from '../features/quick-look/quick-look.service';
 import { QuickLookSheet } from '../features/quick-look/quick-look-sheet';
 import { OpeningAttachmentCard } from '../shared/ui/opening-attachment-card';
+import { AudioControls } from '../shared/ui/audio-controls';
 @Component({
   selector: 'app-shell',
   imports: [
@@ -46,6 +47,7 @@ import { OpeningAttachmentCard } from '../shared/ui/opening-attachment-card';
     RoundBanner,
     StaffMenu,
     OpeningAttachmentCard,
+    AudioControls,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app-shell.html',

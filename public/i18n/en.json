@@ -1063,5 +1063,34 @@
     "remove": "Remove colour",
     "invalid": "Use unique names (up to 40 characters) and unique #RRGGBB colours."
   },
-  "errors.INVALID_PALETTE": "Use unique names (up to 40 characters) and unique #RRGGBB colours."
+  "errors.INVALID_PALETTE": "Use unique names (up to 40 characters) and unique #RRGGBB colours.",
+  "audio": {
+    "heading": "Event sound",
+    "permission": "Enable event sounds?",
+    "permissionHelp": "Hear round announcements and results for your team on this device. You can mute them at any time.",
+    "enable": "Enable sound",
+    "keepMuted": "Keep muted",
+    "mute": "Mute sound",
+    "volume": "Volume",
+    "preparing": "Preparing sounds…",
+    "unavailable": "Sound is unavailable. Reconnect or try Enable sound again.",
+    "resume": "Tap Enable sound to resume playback.",
+    "otherTab": "Sound is active in another tab.",
+    "enabled": "Sound enabled",
+    "muted": "Sound muted",
+    "missing": "Some sound files could not load; those cues will stay silent.",
+    "organizerMuted": "The organizer has disabled event sounds.",
+    "settings": "Event sound settings",
+    "settingsHelp": "These switches apply to all viewers. Each device must still choose Enable sound. Clips play for up to four seconds; round announcements take priority.",
+    "master": "Enable event sounds",
+    "preview": "Preview sound",
+    "cue": {
+      "round-start": "Round start",
+      "round-end": "Round end",
+      "match-win": "Match win",
+      "match-loss": "Match loss / forfeit",
+      "match-draw": "Match draw"
+    }
+  },
+  "errors.INVALID_AUDIO_CONFIG": "Sound is unavailable. Reconnect or try Enable sound again."
 }

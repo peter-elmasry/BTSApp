@@ -42,6 +42,7 @@ import { DsAvatar } from '../../shared/ui/avatar';
 import { teamImageUrl } from '../../shared/ui/team-image';
 import { OpeningAttachmentEditor } from './opening-attachment-editor';
 import { TeamPaletteEditor } from './team-palette-editor';
+import { AudioSettings } from './audio-settings';
 import { normalizeTeamPalette } from '../../shared/team-palette';
 
 type Row = any;
@@ -92,6 +93,7 @@ export function singleNames(args: Record<string, unknown>): Record<string, unkno
     DsAvatar,
     OpeningAttachmentEditor,
     TeamPaletteEditor,
+    AudioSettings,
     DsBottomSheet,
     DsDataTable,
     DsCellDef,
