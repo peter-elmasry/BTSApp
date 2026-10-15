@@ -16,6 +16,16 @@ import {
 
 export const routes: Routes = [
   {
+    path: 'join/:eventId',
+    loadComponent: () => import('./features/registration/join-page').then((m) => m.JoinPage),
+  },
+  {
+    path: 'players/:eventId',
+    canActivate: [authGuard, eventRoleGuard],
+    data: { roles: ['GUIDE', 'EVENT_ADMIN'] },
+    loadComponent: () => import('./features/registration/players-page').then((m) => m.PlayersPage),
+  },
+  {
     path: '',
     pathMatch: 'full',
     canActivate: [landingGuard, teamChosenGuard],

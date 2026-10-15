@@ -1,5 +1,44 @@
 # Implementation decisions
 
+## D064 — Team invites register guests once per event and support audited undo
+
+Gendy approved name-required/phone-optional registration through guide-shared team
+links, without guest accounts or OTP. Each event/browser uses a random 256-bit
+device receipt; only its SHA-256 hash is stored server-side. The database enforces
+one registration per event/receipt, including removed registrations. Retries
+return the current membership and cannot undo a removal/transfer. Browser storage
+is required before submitting; clearing it, staff logout (D047), private browsing
+or another device can lose recognition. This is modest abuse prevention, not
+verified identity. Same names/phones are allowed and flagged for staff review.
+
+Assigned authenticated guides manage their teams' private rosters and invite
+links. Owners/event admins manage all teams; only they pause registration, move
+players or preview/remove/restore a link's batch. Guides without login continue
+to have links managed by an admin. Signed-in guides select only assigned teams
+even before rounds start. Existing ordinary guest selection remains available;
+registered guests keep one team and follow server corrections while online.
+Membership does not strengthen existing anonymous result-visibility guarantees.
+
+Links use random 256-bit tokens, expire after 30 days and can be replaced/disabled
+without removing players. Share URLs put tokens in the fragment to avoid sending
+them in navigation/referrer paths. Tokens are accessible only to assigned guides
+and event admins through online private RPCs. New joins require a current DRAFT/LIVE
+event and open registration; a 30-new-joins-per-link/minute burst limit bounds casual
+spam. All writes use RPCs, audits and identifier-only roster signals. No private
+roster/token/phone reads or mutations use the offline cache/queue; receipt storage
+contains only its secret and non-personal membership metadata. Phones and device
+secrets are omitted from audit snapshots and public projections.
+
+Corrections require a reason and an expected version. Soft removal/restoration
+preserves history; moves can be corrected with another move. Batch undo previews
+exact IDs/versions/names across teams and refuses a changed preview. Batch restore
+only affects registrations still removed by that batch, preserving later individual
+corrections. Setup team deletion/REPLACE cannot erase invite/registration history
+(restricting foreign keys); team edits and UPSERT remain available. Foreground
+receipt verification runs on event refresh, online/visibility and every 15 seconds;
+offline devices retain their last confirmed state. Physical-device checks remain
+separate from automated acceptance.
+
 ## D063 — Round cues recover independently of broadcast delivery; explicit Home is public
 
 Gendy reports missing round start/end sounds and silent Home taps for anonymous

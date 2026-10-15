@@ -1,5 +1,28 @@
 # Event-day runbook
 
+### Player invite registration (D064)
+
+- In the account menu, open **Players & invite links**. Guides see assigned teams;
+  owners/event admins see the current event's teams. Guide records without login
+  need an admin to manage/share their links.
+- Create a team link and use Share / copy. Players enter a name and optional phone;
+  their browser remembers one registration for the event. Another browser/device,
+  cleared storage or staff logout can lose recognition; matching names/phones are
+  only review hints, not verified identities.
+- Replace/disable an exposed link to stop its future use. This preserves registered
+  players. Event admins can pause all new joins. Links expire after 30 days and
+  join only the current DRAFT/LIVE event.
+- Correct names/phones, Remove or Restore in the roster; admins can Move to team.
+  Enter a reason. After a conflict, refresh before retrying. Devices follow confirmed
+  corrections online (foreground verification within about 15 seconds).
+- For a mistakenly shared link, admins use Preview undo, inspect affected players
+  (including transfers), enter a reason and confirm. Disable the link separately
+  if needed. Restore removed batch reverses that removal while preserving later
+  individual corrections. All operations require an online server confirmation.
+- Existing invites/registrations prevent destructive team deletion/setup REPLACE.
+  Use edits/UPSERT for established teams. Rehearse name-only join, link replacement,
+  correction and restoration on a spare device before sharing event links.
+
 Readiness is pending until the hosted checks below pass. Phase 7 is in progress;
 celebrations, printable team QR sheets and the measured 3G load target are not yet
 accepted. Phase 0 hosted acceptance remains separate.

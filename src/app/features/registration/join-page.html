@@ -1,0 +1,84 @@
+<section *transloco="let t" class="mx-auto max-w-md space-y-5">
+  <h1 class="text-2xl font-extrabold">{{ t('registration.joinTitle') }}</h1>
+  @if (loading()) {
+    <p role="status">{{ t('registration.loading') }}</p>
+  } @else if (auth.session()) {
+    <p>{{ t('registration.staffHint') }}</p>
+    <a class="ds-button primary" routerLink="/home">{{ t('nav.home') }}</a>
+  } @else if (registration.receipt(); as receipt) {
+    <div class="ds-card space-y-4" data-testid="existing-registration">
+      <p>
+        {{
+          t(receipt.status === 'ACTIVE' ? 'registration.alreadyJoined' : 'registration.removed', {
+            team: selection.selectedTeam()
+              ? name(selection.selectedTeam(), direction.language())
+              : receipt.team_code,
+          })
+        }}
+      </p>
+      @if (receipt.status === 'ACTIVE') {
+        <a class="ds-button primary" routerLink="/home">{{ t('registration.returnTeam') }}</a>
+      }
+    </div>
+  } @else if (invite(); as invitation) {
+    <div class="ds-card space-y-3 text-center">
+      <p>
+        {{
+          direction.language() === 'ar'
+            ? invitation.event_name_ar || invitation.event_name
+            : invitation.event_name
+        }}
+      </p>
+      <ds-avatar
+        [avatarKey]="invitation.team.avatar_key"
+        [imagePath]="invitation.team.image_path"
+        [color]="invitation.team.color_hex"
+        [size]="80"
+      />
+      <h2 class="text-xl font-bold">{{ name(invitation.team, direction.language()) }}</h2>
+      @for (guide of invitation.guides; track $index) {
+        <p>{{ t('team.guide') }}: {{ name(guide, direction.language()) }}</p>
+      }
+    </div>
+    <form [formGroup]="form" (ngSubmit)="join()" class="ds-card space-y-4" data-testid="join-form">
+      <label class="block space-y-1"
+        ><span class="font-bold">{{ t('registration.name') }}</span>
+        <input
+          class="ds-control w-full"
+          formControlName="name"
+          autocomplete="name"
+          maxlength="100"
+          required
+        />
+      </label>
+      <label class="block space-y-1"
+        ><span class="font-bold">{{ t('registration.phone') }}</span>
+        <input
+          class="ds-control w-full"
+          type="tel"
+          dir="ltr"
+          formControlName="phone"
+          autocomplete="tel"
+          maxlength="32"
+        />
+      </label>
+      <p class="text-sm text-slate">{{ t('registration.privacy') }}</p>
+      <button
+        class="ds-button primary w-full"
+        type="submit"
+        [disabled]="busy() || form.invalid"
+        data-testid="join-submit"
+      >
+        {{ t(busy() ? 'registration.saving' : 'registration.join') }}
+      </button>
+    </form>
+  }
+  @if (error()) {
+    <p role="alert" class="rounded-xl bg-white p-4 text-error">
+      {{ t('registration.error.' + error()) }}
+    </p>
+    @if (!invite()) {
+      <button class="ds-button ghost" (click)="retry()">{{ t('registration.retry') }}</button>
+    }
+  }
+</section>

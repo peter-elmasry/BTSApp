@@ -906,3 +906,26 @@ Audio assets: `public/sounds/round-start.mp3`, `round-end.mp3`, `match-win.mp3`,
 block autoplay; simultaneous sound on every device cannot be guaranteed when
 muted, backgrounded, locked, offline or delayed by the network. Cue delivery must
 start promptly after a fresh committed event is received.
+
+## 23. Team invites and reversible player registration — approved 2026-10-15
+
+Guides share an event/team invite link. Guests enter only a required name and an
+optional phone, submit once and land on their team Home. No account/password/OTP
+or approval step. Keep ordinary unregistered team selection. Recognized registered
+guests cannot switch through another invite or picker; signed-in guides select
+only assigned teams. Preserve existing staff sessions and logout privacy.
+
+Add private player registrations, separate from staff accounts, with one membership
+per event/device receipt. Assigned guides may edit/remove/restore their players and
+create/share/replace/disable team links. Owners/event admins may also pause new
+registration, move players, and preview/undo/restore registrations from a link.
+Corrections require reasons and version checks; all writes are audited/idempotent.
+Batch undo must reject changed previews and restoration must preserve later edits.
+No names/phones/tokens in public broadcasts or shared caches. D064 records defaults
+and the accepted cross-device/cleared-storage identity limitation.
+
+Acceptance: name-only and optional-phone join, repeated taps/retries/reload, another
+team's link, expired/disabled/replaced/closed-event links, private guide/event scope,
+reassignment, corrections after round lock, individual/batch undo/restore, online-only
+confirmation and EN/AR mobile accessibility. Existing scoring/results/public browsing
+must retain their behavior. Verify SQL in cloud CI when local Supabase is unavailable.

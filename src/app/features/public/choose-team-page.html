@@ -5,7 +5,15 @@
   </header>
   @if (!selection.canSwitch()) {
     <p role="status" class="rounded-xl bg-gold-soft p-4 font-semibold" data-testid="team-locked">
-      {{ t('player.teamLocked') }}
+      {{
+        t(
+          selection.registration.receipt()?.status === 'REMOVED'
+            ? 'registration.removed'
+            : selection.registration.receipt()
+              ? 'registration.locked'
+              : 'player.teamLocked'
+        )
+      }}
     </p>
   }
   @if (notice() && notice() !== 'player.teamLocked') {

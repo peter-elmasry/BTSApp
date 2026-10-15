@@ -4,12 +4,15 @@ import { AuthStore } from '../auth/auth.store';
 import { EventStore } from './event.store';
 import { TeamSelectionStore } from './team-selection.store';
 import type { PublicEvent, PublicRound, PublicTeam } from './public-types';
+import { RegistrationStore } from './registration.store';
+import type { RegistrationReceipt } from './registration-api';
 
 describe('event-scoped player team choice', () => {
   const event = signal<PublicEvent | null>(null);
   const teams = signal<PublicTeam[]>([]);
   const rounds = signal<PublicRound[]>([]);
   const profile = signal<unknown>(null);
+  const receipt = signal<RegistrationReceipt | null>(null);
   const roster = [
     { id: 't1', code: 'T01' },
     { id: 't2', code: 'T02' },
@@ -20,10 +23,12 @@ describe('event-scoped player team choice', () => {
     teams.set(roster);
     rounds.set([]);
     profile.set(null);
+    receipt.set(null);
     TestBed.configureTestingModule({
       providers: [
         { provide: EventStore, useValue: { event, teams, rounds } },
         { provide: AuthStore, useValue: { profile } },
+        { provide: RegistrationStore, useValue: { receipt } },
       ],
     });
   });
@@ -154,6 +159,39 @@ describe('event-scoped player team choice', () => {
     const store = TestBed.inject(TeamSelectionStore);
     store.choose('T01');
     expect(store.guidedTeamCodes()).toEqual([]);
+    expect(store.canSwitch()).toBe(false);
+    expect(store.choose('T02')).toBe(false);
+  });
+
+  it('locks registered players before rounds and follows admin corrections after rounds', () => {
+    const store = TestBed.inject(TeamSelectionStore);
+    receipt.set({
+      id: 'p',
+      event_id: 'one',
+      team_id: 't1',
+      team_code: 'T01',
+      status: 'ACTIVE',
+      version: 1,
+    });
+    expect(store.selectedCode()).toBe('T01');
+    expect(store.canSwitch()).toBe(false);
+    expect(store.choose('T02')).toBe(false);
+    rounds.set([{ started_at: '2026-10-15T10:00:00Z' } as PublicRound]);
+    receipt.set({ ...receipt()!, team_code: 'T02', team_id: 't2', version: 2 });
+    expect(store.selectedCode()).toBe('T02');
+    receipt.set({ ...receipt()!, status: 'REMOVED', version: 3 });
+    expect(store.selectedCode()).toBeNull();
+    expect(store.choose('T01')).toBe(false);
+  });
+
+  it('restricts signed-in guides to assigned teams even before the first round', () => {
+    profile.set({
+      system_role: 'MEMBER',
+      roles: [{ event_id: 'one', role: 'GUIDE', team_id: 't1' }],
+    });
+    const store = TestBed.inject(TeamSelectionStore);
+    TestBed.tick();
+    expect(store.selectedCode()).toBe('T01');
     expect(store.canSwitch()).toBe(false);
     expect(store.choose('T02')).toBe(false);
   });

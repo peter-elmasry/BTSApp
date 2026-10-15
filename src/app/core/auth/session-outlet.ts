@@ -23,16 +23,22 @@ export class SessionOutlet {
     ),
   );
   private readonly area = computed(() => this.url()?.split(/[/?#]/)[1]);
-  private readonly staff = computed(() => ['owner', 'manage', 'ref'].includes(this.area() ?? ''));
+  private readonly staff = computed(() =>
+    ['owner', 'manage', 'ref', 'players'].includes(this.area() ?? ''),
+  );
   readonly allowed = computed(() => {
     if (!this.staff()) return true;
     const profile = this.auth.profile();
     if (!this.auth.session() || !profile) return false;
     if (profile.system_role === 'OWNER') return true;
     if (this.area() === 'owner') return false;
-    if (this.area() === 'manage') {
+    if (this.area() === 'manage' || this.area() === 'players') {
       const eventId = this.url()?.split(/[/?#]/)[2];
-      return profile.roles.some((role) => role.event_id === eventId && role.role === 'EVENT_ADMIN');
+      return profile.roles.some(
+        (role) =>
+          role.event_id === eventId &&
+          (role.role === 'EVENT_ADMIN' || (this.area() === 'players' && role.role === 'GUIDE')),
+      );
     }
     return profile.roles.some((role) => ['EVENT_ADMIN', 'REFEREE'].includes(role.role));
   });

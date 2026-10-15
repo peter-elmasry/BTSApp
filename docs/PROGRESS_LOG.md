@@ -2,6 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-15 — Team invites and reversible player registration — STARTED
+
+- **Requested by:** Gendy; implement the approved name-required/phone-optional invite flow, remembered one-team membership, guide-scoped rosters and reversible corrections without player accounts or OTP.
+- **Preflight:** Clean workspace; fetched origin and branched `codex/team-invite-registration` from current master `76b4af5` (includes PR #32). No existing changes overwritten.
+- **Scope:** Private registration/invite schema and RPC permissions, persistent device receipts, public join form, guide/admin roster/link controls, edit/remove/restore/admin transfer and previewed batch rollback/restore, EN/AR and focused SQL/unit/browser tests. Preserve ordinary unregistered team selection and existing staff authentication/logout conventions.
+- **Next:** Implement audited server mutations and online-only private reads, then integrate UI and verify local/cloud checks. No merge or production event writes authorized.
+- **Milestone:** Added migration 0029/private receipt and roster RPCs, EN/AR join and guide/admin screens, restricted guide choices, 15-second foreground receipt reconciliation and preview/version-safe individual/batch corrections. Browser storage holds no name/phone. D064 and plan §23 record agreed behavior and cleared-storage limitations; runbook covers recovery.
+- **Checks so far:** Production build passed (456.68 kB initial); app/spec TypeScript and 1,113-key EN/AR parity passed. Thirty focused receipt/selection/session unit tests passed. Initial browser run passed guest/receipt/guide cases; longer multi-step roster tests reached transfer before the 30-second test budget expired, now being rerun with a scoped 60-second budget and role-based select locator. SQL runtime and full regression checks remain pending.
+- **Verification milestone:** All 21 registration/existing-player/privacy browser journeys passed (including EN/AR accessibility, phone retry, online recovery, link controls, guide scope, transfer and individual/batch undo); EN/AR mobile screenshots inspected. Full unit run passed 256/257; unchanged XLSX export cold-load test hit its existing 30-second limit and its separate rerun passed all five assertions. Edge checks passed (22 login + 34 member). Local SQL is blocked by absent Supabase on 127.0.0.1:54322 (after a telemetry-permission retry); added 64+ pgTAP checks for cloud execution. Final build/format/diff inspection precede commit/publication; full cloud acceptance remains required.
+
 ## 2026-10-15 — Resolve latest fix PR conflicts — HANDOFF
 
 - **Requested by:** Gendy; resolve the latest PR conflict.

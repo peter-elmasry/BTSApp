@@ -45,7 +45,7 @@ export class ChooseTeamPage {
   readonly filteredTeams = computed(() => {
     const search = this.searchText().trim().toLocaleLowerCase();
     // After the lock a guide of several teams picks only among their own teams (D044).
-    const guided = this.selection.locked() ? this.selection.guidedTeamCodes() : [];
+    const guided = !this.selection.exempt() ? this.selection.guidedTeamCodes() : [];
     return this.store
       .teams()
       .filter((team) => !guided.length || guided.includes(team.code))

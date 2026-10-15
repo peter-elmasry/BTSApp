@@ -1,15 +1,23 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { AuthStore } from '../auth/auth.store';
 import { EventStore } from './event.store';
+import { RegistrationStore } from './registration.store';
 
 @Injectable({ providedIn: 'root' })
 export class TeamSelectionStore {
   private readonly events = inject(EventStore);
   private readonly auth = inject(AuthStore);
+  readonly registration = inject(RegistrationStore);
   private readonly choices = signal<ReadonlyMap<string, string | null>>(new Map());
   readonly selectedCode = computed(() => {
     const eventId = this.events.event()?.id;
     if (!eventId) return null;
+    const receipt = this.registration.receipt();
+    if (receipt)
+      return receipt.status === 'ACTIVE' &&
+        this.events.teams().some((t) => t.code === receipt.team_code)
+        ? receipt.team_code
+        : null;
     const choices = this.choices();
     const code = choices.has(eventId) ? choices.get(eventId) : this.restore(eventId);
     return this.events.teams().some((team) => team.code === code) ? (code ?? null) : null;
@@ -35,7 +43,11 @@ export class TeamSelectionStore {
     () => !this.exempt() && this.events.rounds().some((round) => !!round.started_at),
   );
   /** A player who never picked a team may still pick once after the lock. */
-  readonly canChange = computed(() => !this.locked() || !this.selectedCode());
+  readonly canChange = computed(() => {
+    if (this.registration.receipt()) return false;
+    if (!this.exempt() && this.guidedTeamCodes().length) return this.guidedTeamCodes().length > 1;
+    return !this.locked() || !this.selectedCode();
+  });
   /** Codes of the teams the signed-in member guides in the current event (D044). */
   readonly guidedTeamCodes = computed(() => {
     const eventId = this.events.event()?.id;
@@ -60,6 +72,10 @@ export class TeamSelectionStore {
   readonly canSwitch = computed(() => this.canChange() || this.guidedTeamCodes().length > 1);
 
   canChoose(code: string): boolean {
+    const receipt = this.registration.receipt();
+    if (receipt) return receipt.status === 'ACTIVE' && receipt.team_code === code;
+    if (!this.exempt() && this.guidedTeamCodes().length)
+      return this.guidedTeamCodes().includes(code);
     return (
       this.canChange() || this.selectedCode() === code || this.guidedTeamCodes().includes(code)
     );
