@@ -69,7 +69,7 @@ reset role;
 update public.events set is_current=true where id='34000000-0000-0000-0000-000000000001';
 set local role anon;
 select is(public.get_current_event()->>'code','P4-EVENT','anonymous receives current event');
-select ok(not exists(select 1 from jsonb_object_keys(public.get_current_event()) k where k not in ('id','code','name_en','name_ar','status','starts_on','leaderboard_public','show_guide_phone','points_win','points_draw','points_loss','currency_en_one','currency_en_other','currency_ar_one','currency_ar_two','currency_ar_plural','scoring_mode','initial_lives','life_emoji')),'event response uses the public field allowlist');
+select ok(not exists(select 1 from jsonb_object_keys(public.get_current_event()) k where k not in ('id','code','name_en','name_ar','status','starts_on','leaderboard_public','show_guide_phone','points_win','points_draw','points_loss','currency_en_one','currency_en_other','currency_ar_one','currency_ar_two','currency_ar_plural','scoring_mode','initial_lives','life_emoji','audio_config')),'event response uses the public field allowlist');
 select ok(not (public.get_current_event() ?| array['created_by','created_at','updated_at','match_bonus_cap','event_penalty_cap']),'event excludes internal metadata and adjustment caps');
 select is(jsonb_array_length(public.get_bootstrap('34000000-0000-0000-0000-000000000001')->'teams'),3,'bootstrap contains only requested event teams');
 select is(public.get_bootstrap('34000000-0000-0000-0000-000000000001')->'teams'->0->>'code','T02','teams follow manual ordering');
