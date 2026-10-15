@@ -196,6 +196,7 @@ begin
   perform public.phase2_event_lock(p_event);
   select * into v_row from public.player_registrations where id=p_registration for update;
   if not public.can_manage_team_players(p_event,v_row.team_id) then perform public.phase2_fail('FORBIDDEN'); end if;
+  if p_action='TRANSFER' and not public.is_event_admin(p_event) then perform public.phase2_fail('FORBIDDEN'); end if;
   if p_version is distinct from v_row.version then perform public.phase2_fail('REGISTRATION_CHANGED'); end if;
   if p_action is null or p_action not in ('EDIT','REMOVE','RESTORE','TRANSFER') then perform public.phase2_fail('INVALID_ACTION'); end if;
   if nullif(btrim(p_reason),'') is null or char_length(p_reason)>300 then perform public.phase2_fail('REASON_REQUIRED'); end if;
