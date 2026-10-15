@@ -1054,5 +1054,14 @@
     "invalid": "Choose a valid JPEG, PNG, WebP or PDF within the size limits.",
     "saveFailed": "Could not save the attachment. Reconnect and retry."
   },
-  "errors.INVALID_ATTACHMENT": "Choose a valid JPEG, PNG, WebP or PDF within the size limits."
+  "errors.INVALID_ATTACHMENT": "Choose a valid JPEG, PNG, WebP or PDF within the size limits.",
+  "palette": {
+    "heading": "Custom team colours",
+    "help": "Save up to 32 named HEX colours for team setup and Excel. Renaming or removing a swatch keeps existing team colours.",
+    "name": "Colour name",
+    "add": "Add colour",
+    "remove": "Remove colour",
+    "invalid": "Use unique names (up to 40 characters) and unique #RRGGBB colours."
+  },
+  "errors.INVALID_PALETTE": "Use unique names (up to 40 characters) and unique #RRGGBB colours."
 }

@@ -397,6 +397,24 @@ describe('XLSX event setup template v4', () => {
 });
 
 describe('server payload validation', () => {
+  it('round trips named HEX swatches and escapes labels in Excel rules', async () => {
+    const context = {
+      ...live,
+      event: { ...live.event, team_palette: [{ name: 'Rose "light"', hex: '#ABCDEF' }] },
+      teams: live.teams!.map((team, index) =>
+        index === 0 ? { ...team, color_hex: '#ABCDEF' } : team,
+      ),
+    };
+    const bytes = await createImportTemplate(context);
+    const book = new Workbook();
+    await book.xlsx.load(arrayBuffer(bytes));
+    expect(book.getWorksheet(SHEETS.teams)!.getCell(TABLE_ROW, 3).value).toBe(
+      'Rose "light" (#ABCDEF)',
+    );
+    const parsed = await parseImportWorkbook(arrayBuffer(bytes), context);
+    expect(parsed.errors).toEqual([]);
+    expect(parsed.payload.teams[0]['color_hex']).toBe('#ABCDEF');
+  });
   it('preserves a custom HEX colour through the XLSX round trip', async () => {
     const context = {
       ...live,

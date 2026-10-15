@@ -7,6 +7,7 @@ import type {
   ParsedImport,
 } from './import-types';
 import { TEAM_AVATARS } from './setup-helpers';
+import { normalizeTeamPalette } from '../../shared/team-palette';
 import {
   AVATAR_LABELS,
   DEFAULT_TEAM_NAMES,
@@ -33,6 +34,15 @@ import {
   YES,
   eventRow,
 } from './template-catalog';
+
+const workbookPalette = (event?: Record<string, unknown>) => [
+  ...TEAM_PALETTE,
+  ...(normalizeTeamPalette(event?.['team_palette']) ?? []).map((entry) => ({
+    ...entry,
+    name: entry.name + ' (' + entry.hex + ')',
+  })),
+];
+const formulaLabel = (name: string) => name.replaceAll('"', '""');
 
 export interface ImportValidationContext {
   teams?: ImportRecord[];
@@ -304,8 +314,8 @@ function computed(sheet: Worksheet, r: number, c: number, formula: string, resul
 // ------------------------------------------------------------------ prefill from the live event
 const pickName = (record: Record<string, unknown> | undefined, base = 'name') =>
   text(record?.[`${base}_ar`]) || text(record?.[`${base}_en`]);
-const colorName = (hex: unknown) =>
-  TEAM_PALETTE.find((entry) => entry.hex.toLowerCase() === text(hex).toLowerCase())?.name ??
+const colorName = (hex: unknown, palette = TEAM_PALETTE) =>
+  palette.find((entry) => entry.hex.toLowerCase() === text(hex).toLowerCase())?.name ??
   (text(hex) || '');
 const avatarLabel = (key: unknown) =>
   AVATAR_LABELS.find((entry) => entry.key === text(key))?.label ?? '';
@@ -344,7 +354,7 @@ function prefill(setup: ImportValidationContext): Prefill {
     ? dbTeams.map((team) => ({
         code: text(team['code']),
         name: pickName(team),
-        color: colorName(team['color_hex']),
+        color: colorName(team['color_hex'], workbookPalette(setup.event)),
         avatar: avatarLabel(team['avatar_key']),
       }))
     : DEFAULT_TEAM_NAMES.slice(0, MAX_TEAMS).map((name, index) => ({
@@ -458,6 +468,7 @@ export async function createImportTemplate(
   book.calcProperties.fullCalcOnLoad = true;
   priority = 1;
   const data = prefill(setup);
+  const palette = workbookPalette(setup.event);
   const stamp = new Intl.DateTimeFormat('ar-EG', {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -760,11 +771,11 @@ export async function createImportTemplate(
   );
   rule(tm, `A${TABLE_ROW}:F${teamEnd}`, `$B${TABLE_ROW}=""`, 'F2F2F2', 'BDBDBD', false);
   rule(tm, `E${TABLE_ROW}:E${teamEnd}`, `AND($B${TABLE_ROW}<>"",E${TABLE_ROW}=0)`, 'F57C00');
-  for (const entry of TEAM_PALETTE)
+  for (const entry of palette)
     rule(
       tm,
       `B${TABLE_ROW}:C${teamEnd}`,
-      `$C${TABLE_ROW}="${entry.name}"`,
+      `$C${TABLE_ROW}="${formulaLabel(entry.name)}"`,
       entry.hex,
       textOn(entry.hex),
     );
@@ -933,11 +944,11 @@ export async function createImportTemplate(
     BREAK,
     MUTED,
   );
-  for (const entry of TEAM_PALETTE)
+  for (const entry of palette)
     rule(
       sc,
       grid,
-      `INDEX(TeamColors,MATCH(${g0},TeamNames,0))="${entry.name}"`,
+      `INDEX(TeamColors,MATCH(${g0},TeamNames,0))="${formulaLabel(entry.name)}"`,
       entry.hex,
       textOn(entry.hex),
     );
@@ -1035,7 +1046,7 @@ export async function createImportTemplate(
     '7A5B00',
   );
   header(ls, 3, ['اللون', 'الكود', '', 'الشعار', 'المفتاح'], '7A5B00');
-  TEAM_PALETTE.forEach((entry, index) => {
+  palette.forEach((entry, index) => {
     const name = ls.getCell(TABLE_ROW + index, 1);
     name.value = entry.name;
     name.fill = solid(entry.hex);
@@ -1074,7 +1085,7 @@ export async function createImportTemplate(
   book.definedNames.add(`${S.members}!$B$${TABLE_ROW}:$B$${memberEnd}`, 'MemberNames');
   book.definedNames.add(`${S.members}!$C$${TABLE_ROW}:$C$${memberEnd}`, 'MemberUsernames');
   book.definedNames.add(
-    `${S.lists}!$A$${TABLE_ROW}:$A$${TABLE_ROW + TEAM_PALETTE.length - 1}`,
+    `${S.lists}!$A$${TABLE_ROW}:$A$${TABLE_ROW + palette.length - 1}`,
     'ColorNames',
   );
   book.definedNames.add(
@@ -1248,6 +1259,17 @@ export async function parseImportWorkbook(
     }
   }
 
+  // Read named custom swatches from the generated list; team payloads still contain HEX only.
+  const listColours = new Map(TEAM_PALETTE.map((entry) => [entry.name, entry.hex]));
+  const lists = book.getWorksheet(SHEETS.lists);
+  if (lists)
+    for (let row = TABLE_ROW; row < TABLE_ROW + TEAM_PALETTE.length + 32; row++) {
+      const name = text(scalar(lists.getCell(row, 1).value, 'Workbook', row, 'A', errors));
+      const hex = text(
+        scalar(lists.getCell(row, 2).value, 'Workbook', row, 'B', errors),
+      ).toUpperCase();
+      if (name && /^#[0-9A-F]{6}$/.test(hex) && !listColours.has(name)) listColours.set(name, hex);
+    }
   // teams
   const teamCodeByName = new Map<string, string>();
   const tm = sheets.teams!;
@@ -1259,7 +1281,7 @@ export async function parseImportWorkbook(
       const code = text(tm.getCell(r, 1).value).toUpperCase();
       const colorText = text(scalar(tm.getCell(r, 3).value, 'Teams', r, 'C', errors));
       const color =
-        TEAM_PALETTE.find((entry) => entry.name === colorText)?.hex ??
+        listColours.get(colorText) ??
         (/^#[0-9a-f]{6}$/i.test(colorText) ? colorText.toUpperCase() : '');
       const avatarText = text(scalar(tm.getCell(r, 4).value, 'Teams', r, 'D', errors));
       const avatar =

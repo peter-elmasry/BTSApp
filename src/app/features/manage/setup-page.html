@@ -276,6 +276,11 @@
           {{ t('common.save') }}
         </button>
       </form>
+      <app-team-palette-editor
+        [eventId]="eventId"
+        [palette]="setup()?.event?.team_palette"
+        (saved)="reload()"
+      />
     }
 
     @if (tab() === 'teams') {
@@ -360,7 +365,7 @@
             <fieldset class="space-y-2 sm:col-span-2">
               <legend class="font-semibold">{{ t('manage.color') }}</legend>
               <div class="flex flex-wrap items-center gap-2">
-                @for (hex of TEAM_SWATCHES; track hex) {
+                @for (hex of teamSwatches(); track hex) {
                   <button
                     type="button"
                     class="h-11 w-11 rounded-full border-4"
@@ -368,7 +373,8 @@
                     [class.border-navy]="teamForm.controls.color_hex.value.toUpperCase() === hex"
                     [class.border-white]="teamForm.controls.color_hex.value.toUpperCase() !== hex"
                     [attr.aria-pressed]="teamForm.controls.color_hex.value.toUpperCase() === hex"
-                    [attr.aria-label]="hex"
+                    [attr.aria-label]="swatchLabel(hex)"
+                    [title]="swatchLabel(hex)"
                     (click)="chooseColor(hex)"
                   ></button>
                 }
