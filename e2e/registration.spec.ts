@@ -19,10 +19,18 @@ const headers = {
 const labels = (lang: string) =>
   JSON.parse(readFileSync(`public/i18n/${lang}.json`, 'utf8')).registration;
 
-async function mockJoins(page: Page, lang = 'en') {
+interface JoinState {
+  receipt: RegistrationReceipt | null;
+  secret: string;
+  calls: Record<string, any>[];
+  error: string;
+  unavailable: boolean;
+  delay?: number;
+}
+async function mockJoins(page: Page, lang = 'en', shared?: JoinState) {
   await page.addInitScript((lang) => localStorage.setItem('bts.lang', lang), lang);
   await mockPublicEvent(page, { beforeStart: true });
-  const state = {
+  const state: JoinState = shared ?? {
     receipt: null as RegistrationReceipt | null,
     secret: '',
     calls: [] as Record<string, any>[],
@@ -51,6 +59,7 @@ async function mockJoins(page: Page, lang = 'en') {
       data = args.p_secret === state.secret ? state.receipt : null;
     else {
       state.calls.push(args);
+      if (state.delay) await new Promise((resolve) => setTimeout(resolve, state.delay));
       if (state.error) return fail(state.error);
       state.secret = args.p_secret;
       state.receipt ??= {
@@ -378,4 +387,30 @@ test('an offline join never reports success and can resume online', async ({ pag
   await page.unroute('**/rest/v1/rpc/join_team_invite');
   await page.getByTestId('join-submit').click();
   await expect(page).toHaveURL(/\/home$/);
+});
+
+test('two tabs registering together use the same event device receipt', async ({
+  page,
+  context,
+}) => {
+  const state = await mockJoins(page);
+  state.delay = 200;
+  const other = await context.newPage();
+  await mockJoins(other, 'en', state);
+  await Promise.all([
+    page.goto(`/join/${eventId}#${token}`),
+    other.goto(`/join/${eventId}#${token}`),
+  ]);
+  await page.getByLabel(labels('en').name, { exact: true }).fill('Guest');
+  await other.getByLabel(labels('en').name, { exact: true }).fill('Guest');
+  await Promise.all([
+    page.getByTestId('join-submit').click(),
+    other.getByTestId('join-submit').click(),
+  ]);
+  await expect.poll(() => state.calls.length).toBeGreaterThanOrEqual(1);
+  const secrets = new Set(state.calls.map((args) => args.p_secret));
+  expect(secrets.size).toBe(1);
+  await expect(page).toHaveURL(/\/home$/);
+  await expect(other).toHaveURL(/\/home$/);
+  await other.close();
 });

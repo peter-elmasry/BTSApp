@@ -122,6 +122,20 @@ export class RegistrationStore {
   }
 
   async join(event: string, token: string, name: string, phone: string, opId: string) {
+    const run = () => this.submitJoin(event, token, name, phone, opId);
+    const locks = this.document.defaultView?.navigator.locks;
+    return locks ? locks.request(this.key(event), run) : run();
+  }
+
+  private async submitJoin(
+    event: string,
+    token: string,
+    name: string,
+    phone: string,
+    opId: string,
+  ) {
+    // Another tab may have initialized the device while this tab waited for the lock.
+    this.memory.delete(event);
     const device = this.device(event);
     const receipt = await this.api.rpc<RegistrationReceipt>('join_team_invite', {
       p_op_id: opId,

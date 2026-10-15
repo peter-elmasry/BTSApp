@@ -18,6 +18,8 @@ to have links managed by an admin. Signed-in guides select only assigned teams
 even before rounds start. Existing ordinary guest selection remains available;
 registered guests keep one team and follow server corrections while online.
 Membership does not strengthen existing anonymous result-visibility guarantees.
+Where available, a browser Web Lock serializes joins across tabs and re-reads the
+shared device receipt before submission, avoiding simultaneous fresh identities.
 
 Links use random 256-bit tokens, expire after 30 days and can be replaced/disabled
 without removing players. Share URLs put tokens in the fragment to avoid sending
