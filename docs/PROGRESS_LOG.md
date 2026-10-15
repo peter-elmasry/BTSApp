@@ -2,6 +2,15 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-15 — Diagnose blocked Vercel previews — HANDOFF
+
+- **Requested by:** Gendy; investigate and fix the failing Vercel deployment checks across PRs #24–#29 where possible.
+- **Preflight:** Clean codex/event-audio at 7e3eb7b; fetched origin and read the coordination/design records. Scope is deployment status/access diagnosis and maintainer instructions; no merge or production deployment.
+- **Finding:** All six current PR heads pass frontend/database CI. Vercel rejects author Gendyadel's access to the owning peter-elmasry's projects team; explicit author-access failures appear on #24/#26 and Vercel's bot explains the same missing membership on #24/#25/#26/#28/#29. #27 reports the generic blocked status, consistent with the same author/team, without its own detailed membership comment.
+- **Documentation:** Added account-level remedies and preview verification steps to EVENT_DAY_RUNBOOK.md, verified against Vercel's current official collaboration guide. No application-code fix is indicated by these statuses.
+- **Checks/publication:** Changed-document Prettier and git diff --check passed. Documentation-only diagnosis is being committed/pushed to existing PR #29; its new cloud run may still be pending at handoff. Runtime suites were not rerun locally for this documentation change.
+- **Access/next:** Vercel membership/plan cannot be verified or repaired with the available GitHub credential; browser inspection initialization also failed. The project owner must choose/complete the membership or deployment-ownership remedy, then redeploy previews and inspect their build logs. No billing, visibility, identity, merge or deployment changes made.
+
 ## 2026-10-15 — Consent-based event audio — DONE
 
 - **Requested by:** Gendy; explicit Enable sound / Keep muted permission first, immediate committed round cues and selected-team result sounds, including half-heart draws.

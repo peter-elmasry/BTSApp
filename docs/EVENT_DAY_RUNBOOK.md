@@ -31,6 +31,33 @@ accepted. Phase 0 hosted acceptance remains separate.
    passwords; email recovery is disabled. Keep credentials and secret values out
    of screenshots, exports, chat and repository documents.
 
+## Vercel author-access blocks
+
+On 2026-10-15, PRs #24–#29 have green frontend/database checks but failed Vercel
+deployment statuses. Vercel identifies commit author `Gendyadel` as lacking access
+to the `peter-elmasry's projects` team that owns `bts-app`. PR #27 provides only
+the generic blocked status; the common author/team makes the same cause likely.
+This is an account-level blocker; a passing GitHub build does not verify hosting.
+
+The project owner should verify the team's actual plan and membership in Vercel:
+
+1. For private-repository collaboration, use a Pro team, add/approve Gendyadel
+   with deployment access, and ensure their Vercel account's Login Connections
+   links the correct GitHub account. If already a member, repair that connection.
+2. Hobby private repositories require the commit author to be the owning account.
+   A sole-deployer workflow must use the owner's genuine commits; changing another
+   contributor's attribution is not a membership fix. Public-repository
+   collaboration is another option, but changing visibility requires an explicit
+   repository-owner decision.
+3. After correcting access, redeploy the affected preview commits and check each
+   Vercel status and build log. Existing blocked checks are not proof of a fresh
+   build. Confirm Preview uses the separate Supabase project before rehearsal.
+
+Do not change billing, repository visibility, commit identity or required checks
+as an incidental deployment workaround. See Vercel's
+[project collaboration troubleshooting](https://vercel.com/docs/deployments/troubleshoot-project-collaboration).
+The team plan/membership and a successful hosted build remain unverified.
+
 ## Before the first round
 
 - Charge staff devices and backup power. Open the correct staff account and event
