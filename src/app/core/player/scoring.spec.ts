@@ -28,7 +28,7 @@ describe('lives scoring (D038)', () => {
     expect(livesLeft({})).toBeNull();
   });
 
-  it('labels totals with the life symbol in lives mode only', () => {
+  it('labels hearts totals without the retired emoji currency', () => {
     const currency = {
       currency_en_one: 'Point',
       currency_en_other: 'Points',
@@ -36,8 +36,8 @@ describe('lives scoring (D038)', () => {
       currency_ar_two: 'نقطتين',
       currency_ar_plural: 'نقط',
     };
-    expect(currencyLabel(2, { ...currency, ...lives }, 'en')).toBe('💛');
-    expect(currencyLabel(2, { ...currency, ...lives }, 'ar')).toBe('💛');
+    expect(currencyLabel(2, { ...currency, ...lives }, 'en')).toBe('Hearts');
+    expect(currencyLabel(2, { ...currency, ...lives }, 'ar')).toBe('قلوب');
     expect(currencyLabel(2, currency, 'en')).toBe('Points');
     expect(isLivesMode(null)).toBe(false);
     expect(lifeEmoji({ life_emoji: '  ' })).toBe('❤️');
