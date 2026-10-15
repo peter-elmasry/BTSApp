@@ -31,6 +31,8 @@ import { StaffMenu } from './staff-menu';
 
 import { QuickLook } from '../features/quick-look/quick-look.service';
 import { QuickLookSheet } from '../features/quick-look/quick-look-sheet';
+import { OpeningAttachmentCard } from '../shared/ui/opening-attachment-card';
+import { AudioControls } from '../shared/ui/audio-controls';
 @Component({
   selector: 'app-shell',
   imports: [
@@ -44,11 +46,16 @@ import { QuickLookSheet } from '../features/quick-look/quick-look-sheet';
     DsBottomSheet,
     RoundBanner,
     StaffMenu,
+    OpeningAttachmentCard,
+    AudioControls,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app-shell.html',
 })
 export class AppShell {
+  readonly openingAttachment = computed(
+    () => this.events.rounds().find((round) => round.type === 'OPENING')?.attachment,
+  );
   private readonly install = inject(InstallService);
   readonly direction = inject(DirectionService);
   readonly auth = inject(AuthStore);

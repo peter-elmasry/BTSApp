@@ -18,6 +18,12 @@
           "/media/*.woff2"
         ]
       }
+    },
+    {
+      "name": "event-audio",
+      "installMode": "lazy",
+      "updateMode": "lazy",
+      "resources": { "files": ["/sounds/**"] }
     }
   ]
 }

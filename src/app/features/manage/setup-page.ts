@@ -30,7 +30,7 @@ import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
 import { DsCellDef, DsDataTable, type DsColumn } from '../../shared/ui/data-table';
 import { DsSearchSelect } from '../../shared/ui/search-select';
 import { currencyLabel } from '../standings/rank-motion';
-import { prepareGameImage } from './game-image';
+import { preparePublicImage } from '../../shared/media/prepare-public-image';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { entityLabel } from '../../core/i18n/entity-label';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -38,6 +38,12 @@ import { startWith } from 'rxjs';
 import { LIFE_EMOJI_SUGGESTIONS } from '../../core/player/scoring';
 import { DsLivesMeter } from '../../shared/ui/lives-meter';
 import { ManageContext } from './manage-context';
+import { DsAvatar } from '../../shared/ui/avatar';
+import { teamImageUrl } from '../../shared/ui/team-image';
+import { OpeningAttachmentEditor } from './opening-attachment-editor';
+import { TeamPaletteEditor } from './team-palette-editor';
+import { AudioSettings } from './audio-settings';
+import { normalizeTeamPalette } from '../../shared/team-palette';
 
 type Row = any;
 type SetupData = {
@@ -84,6 +90,10 @@ export function singleNames(args: Record<string, unknown>): Record<string, unkno
     RouterLink,
     TranslocoDirective,
     DsLivesMeter,
+    DsAvatar,
+    OpeningAttachmentEditor,
+    TeamPaletteEditor,
+    AudioSettings,
     DsBottomSheet,
     DsDataTable,
     DsCellDef,
@@ -93,6 +103,16 @@ export function singleNames(args: Record<string, unknown>): Record<string, unkno
   templateUrl: './setup-page.html',
 })
 export class EventSetupPage {
+  readonly customPalette = computed(
+    () => normalizeTeamPalette(this.setup()?.event?.team_palette) ?? [],
+  );
+  readonly teamSwatches = computed(() => [
+    ...new Set([...TEAM_SWATCHES, ...this.customPalette().map((entry) => entry.hex)]),
+  ]);
+  swatchLabel(hex: string) {
+    const name = this.customPalette().find((entry) => entry.hex === hex)?.name;
+    return name ? `${name} (${hex})` : hex;
+  }
   private readonly direction = inject(DirectionService);
   label(row: Row, field = 'name') {
     return entityLabel(row, this.direction.language(), field);
@@ -306,18 +326,27 @@ export class EventSetupPage {
   readonly gameImagePreview = signal<string | null>(null);
   readonly imageProcessing = signal(false);
   private imageRequest = 0;
+  readonly teamImage = signal<File | null>(null);
+  readonly teamImagePath = signal<string | null>(null);
+  readonly teamImagePreview = signal<string | null>(null);
+  readonly teamImageProcessing = signal(false);
+  readonly teamUploading = signal(false);
+  private teamImageRequest = 0;
 
   constructor() {
     const context = inject(ManageContext);
-    // Switching to hearts by hand starts from Win 0 · Draw 0 · Loss -1 (D053).
+    // D057 fixes every hearts draw at -0.5; POINTS remains editable.
     const modeChanges = this.settingsForm.controls.scoring_mode.valueChanges.subscribe((mode) => {
       const value = this.settingsForm.getRawValue();
+      this.settingsForm.controls.points_draw.setValue(mode === 'LIVES' ? -0.5 : 1, {
+        emitEvent: false,
+      });
       if (
         mode === 'LIVES' &&
         value.points_loss >= 0 &&
         this.settingsForm.controls.scoring_mode.dirty
       )
-        this.setHeartsPreset(0, 0, -1);
+        this.setHeartsPreset(0, -0.5, -1);
     });
     inject(DestroyRef).onDestroy(() => modeChanges.unsubscribe());
     // The layout shows the name of the event this screen loaded (it may not be the current one).
@@ -329,6 +358,8 @@ export class EventSetupPage {
       context.eventLabel.set('');
       this.imageRequest++;
       this.releaseImagePreview();
+      this.teamImageRequest++;
+      this.releaseTeamPreview();
     });
     this.updateStaffValidators();
     void this.reload();
@@ -382,7 +413,13 @@ export class EventSetupPage {
       ...(value.event as any),
       scoring_mode: value.event.scoring_mode ?? 'POINTS',
       life_emoji: value.event.life_emoji ?? '❤️',
+      points_draw: value.event.scoring_mode === 'LIVES' ? -0.5 : value.event.points_draw,
     });
+    // A mode-change callback can run after points_draw while patching the event.
+    // Restore the server's POINTS value rather than silently replacing it with 1.
+    this.settingsForm.controls.points_draw.setValue(
+      value.event.scoring_mode === 'LIVES' ? -0.5 : value.event.points_draw,
+    );
     for (const name of ['scoring_mode', 'initial_lives'] as const) {
       const control = this.settingsForm.controls[name];
       if (rounds.some((round) => !!round.started_at)) control.disable({ emitEvent: false });
@@ -420,7 +457,7 @@ export class EventSetupPage {
 
   /** Hearts presets: what Win / Draw / Loss add or remove (D053). */
   setHeartsPreset(win: number, draw: number, loss: number) {
-    this.settingsForm.patchValue({ points_win: win, points_draw: draw, points_loss: loss });
+    this.settingsForm.patchValue({ points_win: win, points_draw: -0.5, points_loss: loss });
     this.settingsForm.markAsDirty();
   }
   chooseLifeEmoji(emoji: string) {
@@ -441,10 +478,18 @@ export class EventSetupPage {
       p_settings: {
         ...this.settingsForm.getRawValue(),
         life_emoji: this.settingsForm.controls.life_emoji.value.trim(),
+        points_draw: value.scoring_mode === 'LIVES' ? -0.5 : value.points_draw,
       },
     });
   }
   editTeam(row?: Row) {
+    if (this.teamUploading()) return;
+    this.teamImageRequest++;
+    this.teamImageProcessing.set(false);
+    this.releaseTeamPreview();
+    this.teamImage.set(null);
+    this.teamImagePath.set(row?.image_path ?? null);
+    this.teamImagePreview.set(teamImageUrl(row?.image_path) || null);
     this.editingTeam.set(row?.id ?? null);
     this.teamForm.reset(
       row
@@ -459,18 +504,85 @@ export class EventSetupPage {
     );
   }
   async saveTeam() {
+    if (this.saving() || this.teamUploading() || this.teamImageProcessing()) return;
+    const hex = this.teamForm.controls.color_hex;
+    hex.setValue(hex.value.trim().toUpperCase());
     if (this.teamForm.invalid) {
       this.teamForm.markAllAsTouched();
       return;
     }
+    const request = this.teamImageRequest;
+    const team = {
+      ...(this.editingTeam() ? { id: this.editingTeam() } : {}),
+      ...this.teamForm.getRawValue(),
+    };
+    let imagePath = this.teamImagePath();
+    const image = this.teamImage();
+    if (image) {
+      this.teamUploading.set(true);
+      try {
+        const path = `${this.eventId}/${crypto.randomUUID()}.webp`;
+        const { error } = await supabase.storage.from('team-images').upload(path, image, {
+          contentType: 'image/webp',
+          upsert: false,
+        });
+        if (error) throw error;
+        if (request !== this.teamImageRequest) return;
+        imagePath = path;
+        // Keep this successful upload for retry if the metadata acknowledgement is lost.
+        this.teamImagePath.set(path);
+        this.teamImage.set(null);
+      } catch {
+        this.notice.set('manage.teamImageUploadFailed');
+        return;
+      } finally {
+        this.teamUploading.set(false);
+      }
+    }
+    if (request !== this.teamImageRequest) return;
     const saved = await this.mutate('upsert_team', {
       p_event: this.eventId,
       p_team: {
-        ...(this.editingTeam() ? { id: this.editingTeam() } : {}),
-        ...this.teamForm.getRawValue(),
+        ...team,
+        image_path: imagePath,
       },
     });
-    if (saved) this.editTeam();
+    if (saved && request === this.teamImageRequest) this.editTeam();
+  }
+  async selectTeamImage(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file || this.teamUploading() || this.saving()) return;
+    const request = ++this.teamImageRequest;
+    this.releaseTeamPreview();
+    this.teamImage.set(null);
+    this.teamImagePreview.set(teamImageUrl(this.teamImagePath()) || null);
+    this.teamImageProcessing.set(true);
+    this.notice.set('');
+    try {
+      const image = await preparePublicImage(file);
+      if (request !== this.teamImageRequest) return;
+      this.teamImage.set(image);
+      this.teamImagePreview.set(URL.createObjectURL(image));
+    } catch {
+      if (request === this.teamImageRequest) this.notice.set('manage.invalidImage');
+    } finally {
+      if (request === this.teamImageRequest) this.teamImageProcessing.set(false);
+    }
+  }
+  removeTeamImage() {
+    if (this.teamUploading() || this.saving()) return;
+    this.teamImageRequest++;
+    this.releaseTeamPreview();
+    this.teamImage.set(null);
+    this.teamImagePath.set(null);
+    this.teamImagePreview.set(null);
+    this.teamImageProcessing.set(false);
+  }
+  private releaseTeamPreview() {
+    const preview = this.teamImagePreview();
+    if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
   }
   async deleteTeam(row: Row) {
     await this.mutate('delete_team', { p_team: row.id });
@@ -744,7 +856,7 @@ export class EventSetupPage {
     const count = this.bulkCount.value;
     const calls: [string, Record<string, unknown>][] =
       kind === 'teams'
-        ? newTeams(this.teams(), count).map((team) => [
+        ? newTeams(this.teams(), count, this.teamSwatches()).map((team) => [
             'upsert_team',
             { p_event: this.eventId, p_team: team },
           ])
@@ -963,7 +1075,7 @@ export class EventSetupPage {
     this.notice.set('');
     this.imageProcessing.set(true);
     try {
-      const image = await prepareGameImage(file);
+      const image = await preparePublicImage(file);
       if (request !== this.imageRequest) return;
       this.gameImage.set(image);
       this.gameImagePreview.set(URL.createObjectURL(image));

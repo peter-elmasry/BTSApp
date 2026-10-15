@@ -57,6 +57,7 @@
                 <span class="flex min-w-0 items-center gap-2">
                   <ds-avatar
                     [avatarKey]="row.team.avatar_key"
+                    [imagePath]="row.team.image_path"
                     [color]="row.team.color_hex"
                     [size]="36"
                   />
@@ -96,6 +97,9 @@
                   class="total-number text-lg font-extrabold tabular"
                   [value]="row.total"
                 />
+                @if (lives()) {
+                  <ds-lives-meter [lives]="row.total" [initial]="event().initial_lives ?? 0" />
+                }
               </td>
               <td class="text-end tabular hidden sm:table-cell">{{ row.forfeits }}</td>
               <td class="text-end tabular hidden sm:table-cell" dir="ltr">
@@ -129,6 +133,7 @@
           }}</span>
           <ds-avatar
             [avatarKey]="row.team.avatar_key"
+            [imagePath]="row.team.image_path"
             [color]="row.team.color_hex"
             [size]="display() ? 64 : 44"
           />
@@ -187,8 +192,12 @@
             </div>
           </dl>
           <div class="total">
-            <app-count-up class="total-number tabular" [value]="row.total" />
-            <span class="currency">{{ currency(row.total, event(), direction.language()) }}</span>
+            @if (lives()) {
+              <ds-lives-meter [lives]="row.total" [initial]="event().initial_lives ?? 0" />
+            } @else {
+              <app-count-up class="total-number tabular" [value]="row.total" />
+              <span class="currency">{{ currency(row.total, event(), direction.language()) }}</span>
+            }
           </div>
         </li>
       }

@@ -1,5 +1,6 @@
-import { isLivesMode, lifeEmoji } from '../../core/player/scoring';
+import { isLivesMode } from '../../core/player/scoring';
 import type { PublicEvent, PublicMatch, PublicRound } from '../../core/player/public-types';
+import { countUpValue } from '../../shared/ui/count-up';
 import type { StandingRow } from '../../core/standings/standings-types';
 
 export function rankChanges(previous: readonly StandingRow[], current: readonly StandingRow[]) {
@@ -23,7 +24,7 @@ export function currencyLabel(
   language: 'en' | 'ar',
 ): string {
   // LIVES mode shows the event's life symbol instead of a currency word (D038).
-  if (isLivesMode(event)) return lifeEmoji(event);
+  if (isLivesMode(event)) return language === 'ar' ? 'قلوب' : 'Hearts';
   const category = new Intl.PluralRules(language).select(Math.abs(count));
   if (language === 'en')
     return category === 'one' ? event.currency_en_one : event.currency_en_other;
@@ -60,5 +61,5 @@ export function latestVisibleResults(
 }
 
 export function interpolateTotal(from: number, to: number, progress: number): number {
-  return Math.round(from + (to - from) * (1 - Math.pow(1 - Math.min(1, Math.max(0, progress)), 3)));
+  return countUpValue(from, to, progress);
 }

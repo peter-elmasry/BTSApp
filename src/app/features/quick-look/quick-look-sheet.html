@@ -3,7 +3,12 @@
     <ds-bottom-sheet [title]="name(item, direction.language())" (close)="look.close()">
       <div class="space-y-4" data-testid="quick-look-team">
         <div class="flex items-center gap-3">
-          <ds-avatar [avatarKey]="item.avatar_key" [color]="item.color_hex" [size]="56" />
+          <ds-avatar
+            [avatarKey]="item.avatar_key"
+            [imagePath]="item.image_path"
+            [color]="item.color_hex"
+            [size]="56"
+          />
           <div class="min-w-0">
             <p class="text-sm text-slate">{{ t('quick.team') }} · {{ item.code }}</p>
             @if (showScore() && view()?.breakdown; as b) {
@@ -11,7 +16,11 @@
                 @if (view()?.standing; as row) {
                   {{ t('standings.rank', { n: row.rank }) }} ·
                 }
-                {{ b.total }} {{ lives() ? emoji() : pointsName() || t('quick.points') }}
+                @if (lives()) {
+                  <ds-lives-meter [lives]="b.total" [initial]="b.initial_lives ?? 0" />
+                } @else {
+                  {{ b.total }} {{ pointsName() || t('quick.points') }}
+                }
               </p>
             }
           </div>

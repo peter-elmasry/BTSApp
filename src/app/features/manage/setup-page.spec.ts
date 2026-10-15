@@ -35,6 +35,10 @@ describe('setup checklist helpers (U7)', () => {
     expect(new Set(teams.map((team) => team.color_hex)).size).toBe(3);
     expect(teams[0].name_ar).toBe('فريق 2');
   });
+  it('reuses configured colours for bulk teams and keeps a default fallback', () => {
+    expect(newTeams([], 1, ['#ABCDEF'])[0].color_hex).toBe('#ABCDEF');
+    expect(newTeams([], 1, [])[0].color_hex).toBe('#087F8C');
+  });
   it('flags rematches from earlier rounds only', () => {
     const rounds = [
       { id: 'r1', number: 1 },

@@ -1,10 +1,12 @@
 import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
 
-/** Ease-out cubic interpolation, rounded to whole numbers. */
+/** Ease-out cubic interpolation, preserving half units for fractional endpoints. */
 export function countUpValue(from: number, to: number, progress: number): number {
   const clamped = Math.min(1, Math.max(0, progress));
-  return Math.round(from + (to - from) * (1 - Math.pow(1 - clamped, 3)));
+  if (clamped === 1) return to;
+  const units = Number.isInteger(from) && Number.isInteger(to) ? 1 : 2;
+  return Math.round((from + (to - from) * (1 - Math.pow(1 - clamped, 3))) * units) / units;
 }
 
 /** Animates a number from its previous value; instant under reduced motion. */

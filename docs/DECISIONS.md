@@ -21,31 +21,56 @@ Gendy confirms an explicit permission prompt first: Enable sound / Keep muted.
 Sound defaults off; decline/dismiss never blocks browsing or repeatedly prompts.
 Only the explicit sound action activates playback; retain a later enable/mute
 control. This is app consent, not a native browser permission request.
-Implementation and device acceptance remain pending; see MEDIA_AUDIO_PLAN.md.
+Migration 0028 records enabled round transitions at action time, including backdated
+starts, and exposes only fresh occurrences for verification/polling. Match reads
+retain only the followed team's outcome through the existing visibility builder.
+The immediate stream precedes ordinary refetch debounce; it never carries results.
+Device consent unlocks and preloads Web Audio; Web Locks (verified lease fallback)
+select one audible tab per event. Initial/reconnected/context-changed snapshots
+are silent, corrections sound only for changed outcomes, and foreground mute
+cancels all queued/current playback. Clips play at most 4 seconds, with ordered
+round cues ahead of results and a 10-second freshness limit. Production and
+physical-device rehearsal remain pending; see MEDIA_AUDIO_PLAN.md.
+Result occurrences record action time and the then-current sound switches,
+independently of the transaction-start audit timestamp; later enablement cannot
+replay an outcome recorded while disabled. The venue route remains accessible
+when standings are hidden, with its existing reader/template visibility gates
+retained, so public attachments and round-only sound do not depend on standings.
 
 ## D060 — Custom HEX colours and reusable event swatches
 
 Keep default swatches and add explicit #RRGGBB entry plus named event custom
 swatches. Validate/normalise consistently and preserve unknown custom HEX in
 XLSX export/import instead of substituting a default palette colour. Removing a
-swatch never changes a team's saved colour. Planned, not implemented.
+swatch never changes a team's saved colour. Migration 0027 stores up to 32 custom
+name/HEX pairs, normalizes input and rejects duplicate names/colours. Configuration
+uses a separate audited/idempotent RPC, so palette edits never recalculate scores
+or ties. Workbook custom labels include HEX to avoid built-in name ambiguity;
+parsing resolves the list back to HEX. The layout/version stays v6, accepting
+earlier supported files. Defaults remain built in.
 
 ## D059 — Team photos supplement catalog avatars
 
 Gendy authorizes uploadable team pictures, superseding plan §19's exclusion.
-Plan optional image_path, public event-scoped Storage, owner/admin writes,
-D034 image preparation and shared-avatar fallback across all team presentations.
-Workbook UPSERT preserves omitted pictures; binary workbook media is excluded.
-Planned, not implemented.
+Migration 0025 adds optional image_path, public event-scoped Storage and owner/admin
+writes. Shared D034 image preparation produces WebP, and the shared avatar falls
+back to the catalog when a picture cannot load. Workbook UPSERT preserves omitted
+pictures; binary workbook media is excluded. Picture paths are immutable and
+retained after replacement/removal: automatic deletion is deferred until cleanup
+can account for offline queued metadata retries and avoid deleting referenced
+assets. Removing the displayed picture does not revoke a previously shared URL.
 
 ## D058 — Opening attachment is public without login or team selection
 
-Gendy confirms images and PDFs. Plan one optional published attachment per
+Gendy confirms images and PDFs. Migration 0026 adds one optional published attachment per
 OPENING round, managed by the event owner/admin and projected through public
 RPCs. It is available despite hidden standings and without selecting a team;
 this is a specific exception to D046's visitor screen scope. Public Storage links
 remain readable when merely hidden; deletion is needed to revoke future reads.
-Planned, not implemented.
+The shared shell card sits before route/team-choice/standings gates. Images are
+prepared as WebP; PDFs require a PDF header and are capped at 10 MiB. The editor
+shows the public-link warning. Immutable objects are retained conservatively as
+in D059, including after removing metadata; automatic cleanup remains deferred.
 
 ## D057 — SVG hearts and a fixed half-heart draw
 
@@ -57,7 +82,12 @@ numeric contracts end-to-end, including standings/ties and XLSX; computed histor
 hearts draws will recalculate and affected manual tie orders must be invalidated.
 Use red full SVGs in a single row and half-broken SVG for the half remainder/draw;
 large counts need a bounded scrollable/virtualised row, not emoji × N.
-This is agreed requirement and proposed design, not a delivered migration.
+Implementation started on codex/half-heart-scoring: migration 0024 changes draw
+settings, standings, breakdown and tie totals to exact numeric values, and the
+shared meter/overlay use SVGs. Template v6 retains v3/v4/v5 compatibility and
+normalises old hearts draw gains with a preview warning. Whole starting hearts,
+win/loss gains and adjustments stay integers. Runtime acceptance remains pending
+cloud verification; audio is a subsequent delivery slice.
 
 ## D056 — English terms, staff never pick a team, compact phone rows
 

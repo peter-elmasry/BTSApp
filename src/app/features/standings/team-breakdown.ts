@@ -16,6 +16,7 @@ import type { PublicAdjustment, PublicMatch } from '../../core/player/public-typ
 import { DsAvatar } from '../../shared/ui/avatar';
 import { CountUp } from '../../shared/ui/count-up';
 import { DsCellDef, DsDataTable, type DsColumn } from '../../shared/ui/data-table';
+import { DsHeartIcon } from '../../shared/ui/heart-icon';
 import { DsLivesMeter } from '../../shared/ui/lives-meter';
 import { DsOutcome } from '../../shared/ui/outcome';
 import { DsPhoneLink } from '../../shared/ui/phone-link';
@@ -44,6 +45,7 @@ export function ownOutcome(match: Pick<PublicMatch, 'participants'>, code: strin
     DsDataTable,
     DsCellDef,
     DsLivesMeter,
+    DsHeartIcon,
     DsOutcome,
     DsPhoneLink,
   ],

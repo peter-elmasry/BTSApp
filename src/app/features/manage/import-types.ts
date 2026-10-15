@@ -27,6 +27,7 @@ export interface ImportReport {
   queued?: boolean;
 }
 export interface ParsedImport {
+  warnings?: string[];
   payload: ImportPayload;
   errors: ImportIssue[];
 }

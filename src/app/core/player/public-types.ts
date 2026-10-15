@@ -23,6 +23,7 @@ export interface PublicEvent extends LocalizedName {
   scoring_mode?: 'POINTS' | 'LIVES';
   initial_lives?: number | null;
   life_emoji?: string;
+  audio_config?: import('../audio/audio-types').AudioConfig;
 }
 export interface PublicGuide {
   name_en: string;
@@ -33,6 +34,7 @@ export interface PublicTeam extends LocalizedName {
   id: string;
   code: string;
   avatar_key: string;
+  image_path?: string | null;
   color_hex: string;
   sort_order: number;
   guide: PublicGuide | null;
@@ -62,6 +64,7 @@ export interface PublicRound {
   is_overtime: boolean;
   /** Matches still without a result after the round ended (D041). */
   late_count?: number;
+  attachment?: import('../../shared/media/opening-attachment').OpeningAttachment | null;
 }
 export type Outcome = 'PENDING' | 'WIN' | 'LOSS' | 'DRAW' | 'FORFEIT';
 export interface PublicParticipant {

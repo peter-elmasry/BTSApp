@@ -7,6 +7,7 @@ import type {
   ParsedImport,
 } from './import-types';
 import { TEAM_AVATARS } from './setup-helpers';
+import { normalizeTeamPalette } from '../../shared/team-palette';
 import {
   AVATAR_LABELS,
   DEFAULT_TEAM_NAMES,
@@ -33,6 +34,15 @@ import {
   YES,
   eventRow,
 } from './template-catalog';
+
+const workbookPalette = (event?: Record<string, unknown>) => [
+  ...TEAM_PALETTE,
+  ...(normalizeTeamPalette(event?.['team_palette']) ?? []).map((entry) => ({
+    ...entry,
+    name: entry.name + ' (' + entry.hex + ')',
+  })),
+];
+const formulaLabel = (name: string) => name.replaceAll('"', '""');
 
 export interface ImportValidationContext {
   teams?: ImportRecord[];
@@ -304,8 +314,8 @@ function computed(sheet: Worksheet, r: number, c: number, formula: string, resul
 // ------------------------------------------------------------------ prefill from the live event
 const pickName = (record: Record<string, unknown> | undefined, base = 'name') =>
   text(record?.[`${base}_ar`]) || text(record?.[`${base}_en`]);
-const colorName = (hex: unknown) =>
-  TEAM_PALETTE.find((entry) => entry.hex.toLowerCase() === text(hex).toLowerCase())?.name ??
+const colorName = (hex: unknown, palette = TEAM_PALETTE) =>
+  palette.find((entry) => entry.hex.toLowerCase() === text(hex).toLowerCase())?.name ??
   (text(hex) || '');
 const avatarLabel = (key: unknown) =>
   AVATAR_LABELS.find((entry) => entry.key === text(key))?.label ?? '';
@@ -344,7 +354,7 @@ function prefill(setup: ImportValidationContext): Prefill {
     ? dbTeams.map((team) => ({
         code: text(team['code']),
         name: pickName(team),
-        color: colorName(team['color_hex']),
+        color: colorName(team['color_hex'], workbookPalette(setup.event)),
         avatar: avatarLabel(team['avatar_key']),
       }))
     : DEFAULT_TEAM_NAMES.slice(0, MAX_TEAMS).map((name, index) => ({
@@ -422,7 +432,7 @@ function prefill(setup: ImportValidationContext): Prefill {
     event: {
       name: pickName(event) || 'يوم DST',
       points_win: event['points_win'] ?? 2,
-      points_draw: event['points_draw'] ?? 1,
+      points_draw: event['scoring_mode'] === 'LIVES' ? -0.5 : (event['points_draw'] ?? 1),
       points_loss: event['points_loss'] ?? 0,
       points_name: event['currency_ar_plural'] ?? event['currency_en_other'] ?? 'نقط',
       match_bonus_cap: event['match_bonus_cap'] ?? null,
@@ -458,6 +468,7 @@ export async function createImportTemplate(
   book.calcProperties.fullCalcOnLoad = true;
   priority = 1;
   const data = prefill(setup);
+  const palette = workbookPalette(setup.event);
   const stamp = new Intl.DateTimeFormat('ar-EG', {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -652,9 +663,19 @@ export async function createImportTemplate(
     ev.getRow(r).height = 24;
   });
   ev.getColumn(4).hidden = true;
+  ev.getRow(eventRow('life_emoji')).hidden = true; // Legacy field, fixed SVG presentation.
   // Win/Draw/Loss may be negative: hearts mode removes hearts (D053).
-  for (const key of ['points_win', 'points_draw', 'points_loss'])
+  for (const key of ['points_win', 'points_loss'])
     whole(ev, eventRow(key), eventRow(key), 2, -999999, 999999);
+  ev.getCell(eventRow('points_draw'), 2).dataValidation = {
+    type: 'custom',
+    allowBlank: false,
+    showErrorMessage: true,
+    error: 'التعادل في القلوب ثابت -0.5؛ النقط عدد صحيح',
+    formulae: [
+      `IF(B${eventRow('scoring_mode')}="${SCORING_LABELS.LIVES}",B${eventRow('points_draw')}=-0.5,AND(ISNUMBER(B${eventRow('points_draw')}),MOD(B${eventRow('points_draw')},1)=0,ABS(B${eventRow('points_draw')})<=999999))`,
+    ],
+  };
   for (const key of [
     'match_bonus_cap',
     'match_penalty_cap',
@@ -750,11 +771,11 @@ export async function createImportTemplate(
   );
   rule(tm, `A${TABLE_ROW}:F${teamEnd}`, `$B${TABLE_ROW}=""`, 'F2F2F2', 'BDBDBD', false);
   rule(tm, `E${TABLE_ROW}:E${teamEnd}`, `AND($B${TABLE_ROW}<>"",E${TABLE_ROW}=0)`, 'F57C00');
-  for (const entry of TEAM_PALETTE)
+  for (const entry of palette)
     rule(
       tm,
       `B${TABLE_ROW}:C${teamEnd}`,
-      `$C${TABLE_ROW}="${entry.name}"`,
+      `$C${TABLE_ROW}="${formulaLabel(entry.name)}"`,
       entry.hex,
       textOn(entry.hex),
     );
@@ -923,11 +944,11 @@ export async function createImportTemplate(
     BREAK,
     MUTED,
   );
-  for (const entry of TEAM_PALETTE)
+  for (const entry of palette)
     rule(
       sc,
       grid,
-      `INDEX(TeamColors,MATCH(${g0},TeamNames,0))="${entry.name}"`,
+      `INDEX(TeamColors,MATCH(${g0},TeamNames,0))="${formulaLabel(entry.name)}"`,
       entry.hex,
       textOn(entry.hex),
     );
@@ -1025,7 +1046,7 @@ export async function createImportTemplate(
     '7A5B00',
   );
   header(ls, 3, ['اللون', 'الكود', '', 'الشعار', 'المفتاح'], '7A5B00');
-  TEAM_PALETTE.forEach((entry, index) => {
+  palette.forEach((entry, index) => {
     const name = ls.getCell(TABLE_ROW + index, 1);
     name.value = entry.name;
     name.fill = solid(entry.hex);
@@ -1064,7 +1085,7 @@ export async function createImportTemplate(
   book.definedNames.add(`${S.members}!$B$${TABLE_ROW}:$B$${memberEnd}`, 'MemberNames');
   book.definedNames.add(`${S.members}!$C$${TABLE_ROW}:$C$${memberEnd}`, 'MemberUsernames');
   book.definedNames.add(
-    `${S.lists}!$A$${TABLE_ROW}:$A$${TABLE_ROW + TEAM_PALETTE.length - 1}`,
+    `${S.lists}!$A$${TABLE_ROW}:$A$${TABLE_ROW + palette.length - 1}`,
     'ColorNames',
   );
   book.definedNames.add(
@@ -1183,7 +1204,7 @@ export async function parseImportWorkbook(
     let value: unknown = blank(raw) ? null : raw;
     if (
       typeof value === 'string' &&
-      /^-?\d+$/.test(value) &&
+      /^-?\d+(?:\.5)?$/.test(value) &&
       key !== 'name' &&
       key !== 'points_name' &&
       key !== 'life_emoji' &&
@@ -1228,6 +1249,27 @@ export async function parseImportWorkbook(
     eventRows.set(key, r);
   }
 
+  // Old templates normalise the hearts draw rule with a visible preview warning.
+  const warnings: string[] = [];
+  if ((payload.event['scoring_mode'] ?? context?.event?.['scoring_mode']) === 'LIVES') {
+    const draw = payload.event['points_draw'];
+    if (integer(draw, -999999) || draw === -0.5) {
+      if (draw !== -0.5) warnings.push('import.halfDrawWarning');
+      payload.event['points_draw'] = -0.5;
+    }
+  }
+
+  // Read named custom swatches from the generated list; team payloads still contain HEX only.
+  const listColours = new Map(TEAM_PALETTE.map((entry) => [entry.name, entry.hex]));
+  const lists = book.getWorksheet(SHEETS.lists);
+  if (lists)
+    for (let row = TABLE_ROW; row < TABLE_ROW + TEAM_PALETTE.length + 32; row++) {
+      const name = text(scalar(lists.getCell(row, 1).value, 'Workbook', row, 'A', errors));
+      const hex = text(
+        scalar(lists.getCell(row, 2).value, 'Workbook', row, 'B', errors),
+      ).toUpperCase();
+      if (name && /^#[0-9A-F]{6}$/.test(hex) && !listColours.has(name)) listColours.set(name, hex);
+    }
   // teams
   const teamCodeByName = new Map<string, string>();
   const tm = sheets.teams!;
@@ -1239,7 +1281,7 @@ export async function parseImportWorkbook(
       const code = text(tm.getCell(r, 1).value).toUpperCase();
       const colorText = text(scalar(tm.getCell(r, 3).value, 'Teams', r, 'C', errors));
       const color =
-        TEAM_PALETTE.find((entry) => entry.name === colorText)?.hex ??
+        listColours.get(colorText) ??
         (/^#[0-9a-f]{6}$/i.test(colorText) ? colorText.toUpperCase() : '');
       const avatarText = text(scalar(tm.getCell(r, 4).value, 'Teams', r, 'D', errors));
       const avatar =
@@ -1432,6 +1474,7 @@ export async function parseImportWorkbook(
   const seen = new Set(errors.map((issue) => `${issue.sheet}:${issue.row}:${issue.column}`));
   return {
     payload,
+    warnings,
     errors: [
       ...errors,
       ...validation.filter((issue) => !seen.has(`${issue.sheet}:${issue.row}:${issue.column}`)),
@@ -1472,6 +1515,11 @@ export function validateImportPayload(
     if (
       numericColumns.has(key) &&
       !(key.endsWith('_cap') && blank(value)) &&
+      !(
+        key === 'points_draw' &&
+        (payload.event['scoring_mode'] ?? context?.event?.['scoring_mode']) === 'LIVES' &&
+        value === -0.5
+      ) &&
       !integer(value, signed ? -999999 : 0)
     )
       add('Event', record, key, 'INVALID_NUMBER');
