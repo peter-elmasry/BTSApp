@@ -234,7 +234,11 @@
     "eventName": "اسم الـ Event",
     "entityName": "الاسم",
     "location": "المكان",
-    "pointsName": "اسم النقط"
+    "pointsName": "اسم النقط",
+    "teamImage": "صورة الفريق (JPEG أو PNG أو WebP، بحد أقصى 20 ميجابايت)",
+    "teamImageHelp": "صورة عامة اختيارية. يظهر الرمز المختار عند عدم توفر الصورة.",
+    "removeTeamImage": "إزالة الصورة",
+    "teamImageUploadFailed": "تعذر رفع صورة الفريق."
   },
   "import": {
     "intro": "ارفع ملف Excel، وراجع الصفوف، ثم أكّد الاستيراد.",

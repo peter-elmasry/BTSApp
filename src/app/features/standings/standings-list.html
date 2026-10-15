@@ -57,6 +57,7 @@
                 <span class="flex min-w-0 items-center gap-2">
                   <ds-avatar
                     [avatarKey]="row.team.avatar_key"
+                    [imagePath]="row.team.image_path"
                     [color]="row.team.color_hex"
                     [size]="36"
                   />
@@ -132,6 +133,7 @@
           }}</span>
           <ds-avatar
             [avatarKey]="row.team.avatar_key"
+            [imagePath]="row.team.image_path"
             [color]="row.team.color_hex"
             [size]="display() ? 64 : 44"
           />

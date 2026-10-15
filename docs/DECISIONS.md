@@ -33,10 +33,13 @@ swatch never changes a team's saved colour. Planned, not implemented.
 ## D059 — Team photos supplement catalog avatars
 
 Gendy authorizes uploadable team pictures, superseding plan §19's exclusion.
-Plan optional image_path, public event-scoped Storage, owner/admin writes,
-D034 image preparation and shared-avatar fallback across all team presentations.
-Workbook UPSERT preserves omitted pictures; binary workbook media is excluded.
-Planned, not implemented.
+Migration 0025 adds optional image_path, public event-scoped Storage and owner/admin
+writes. Shared D034 image preparation produces WebP, and the shared avatar falls
+back to the catalog when a picture cannot load. Workbook UPSERT preserves omitted
+pictures; binary workbook media is excluded. Picture paths are immutable and
+retained after replacement/removal: automatic deletion is deferred until cleanup
+can account for offline queued metadata retries and avoid deleting referenced
+assets. Removing the displayed picture does not revoke a previously shared URL.
 
 ## D058 — Opening attachment is public without login or team selection
 

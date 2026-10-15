@@ -30,7 +30,7 @@ import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
 import { DsCellDef, DsDataTable, type DsColumn } from '../../shared/ui/data-table';
 import { DsSearchSelect } from '../../shared/ui/search-select';
 import { currencyLabel } from '../standings/rank-motion';
-import { prepareGameImage } from './game-image';
+import { preparePublicImage } from '../../shared/media/prepare-public-image';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { entityLabel } from '../../core/i18n/entity-label';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -38,6 +38,8 @@ import { startWith } from 'rxjs';
 import { LIFE_EMOJI_SUGGESTIONS } from '../../core/player/scoring';
 import { DsLivesMeter } from '../../shared/ui/lives-meter';
 import { ManageContext } from './manage-context';
+import { DsAvatar } from '../../shared/ui/avatar';
+import { teamImageUrl } from '../../shared/ui/team-image';
 
 type Row = any;
 type SetupData = {
@@ -84,6 +86,7 @@ export function singleNames(args: Record<string, unknown>): Record<string, unkno
     RouterLink,
     TranslocoDirective,
     DsLivesMeter,
+    DsAvatar,
     DsBottomSheet,
     DsDataTable,
     DsCellDef,
@@ -306,6 +309,12 @@ export class EventSetupPage {
   readonly gameImagePreview = signal<string | null>(null);
   readonly imageProcessing = signal(false);
   private imageRequest = 0;
+  readonly teamImage = signal<File | null>(null);
+  readonly teamImagePath = signal<string | null>(null);
+  readonly teamImagePreview = signal<string | null>(null);
+  readonly teamImageProcessing = signal(false);
+  readonly teamUploading = signal(false);
+  private teamImageRequest = 0;
 
   constructor() {
     const context = inject(ManageContext);
@@ -332,6 +341,8 @@ export class EventSetupPage {
       context.eventLabel.set('');
       this.imageRequest++;
       this.releaseImagePreview();
+      this.teamImageRequest++;
+      this.releaseTeamPreview();
     });
     this.updateStaffValidators();
     void this.reload();
@@ -455,6 +466,13 @@ export class EventSetupPage {
     });
   }
   editTeam(row?: Row) {
+    if (this.teamUploading()) return;
+    this.teamImageRequest++;
+    this.teamImageProcessing.set(false);
+    this.releaseTeamPreview();
+    this.teamImage.set(null);
+    this.teamImagePath.set(row?.image_path ?? null);
+    this.teamImagePreview.set(teamImageUrl(row?.image_path) || null);
     this.editingTeam.set(row?.id ?? null);
     this.teamForm.reset(
       row
@@ -469,20 +487,85 @@ export class EventSetupPage {
     );
   }
   async saveTeam() {
+    if (this.saving() || this.teamUploading() || this.teamImageProcessing()) return;
     const hex = this.teamForm.controls.color_hex;
     hex.setValue(hex.value.trim().toUpperCase());
     if (this.teamForm.invalid) {
       this.teamForm.markAllAsTouched();
       return;
     }
+    const request = this.teamImageRequest;
+    const team = {
+      ...(this.editingTeam() ? { id: this.editingTeam() } : {}),
+      ...this.teamForm.getRawValue(),
+    };
+    let imagePath = this.teamImagePath();
+    const image = this.teamImage();
+    if (image) {
+      this.teamUploading.set(true);
+      try {
+        const path = `${this.eventId}/${crypto.randomUUID()}.webp`;
+        const { error } = await supabase.storage.from('team-images').upload(path, image, {
+          contentType: 'image/webp',
+          upsert: false,
+        });
+        if (error) throw error;
+        if (request !== this.teamImageRequest) return;
+        imagePath = path;
+        // Keep this successful upload for retry if the metadata acknowledgement is lost.
+        this.teamImagePath.set(path);
+        this.teamImage.set(null);
+      } catch {
+        this.notice.set('manage.teamImageUploadFailed');
+        return;
+      } finally {
+        this.teamUploading.set(false);
+      }
+    }
+    if (request !== this.teamImageRequest) return;
     const saved = await this.mutate('upsert_team', {
       p_event: this.eventId,
       p_team: {
-        ...(this.editingTeam() ? { id: this.editingTeam() } : {}),
-        ...this.teamForm.getRawValue(),
+        ...team,
+        image_path: imagePath,
       },
     });
-    if (saved) this.editTeam();
+    if (saved && request === this.teamImageRequest) this.editTeam();
+  }
+  async selectTeamImage(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file || this.teamUploading() || this.saving()) return;
+    const request = ++this.teamImageRequest;
+    this.releaseTeamPreview();
+    this.teamImage.set(null);
+    this.teamImagePreview.set(teamImageUrl(this.teamImagePath()) || null);
+    this.teamImageProcessing.set(true);
+    this.notice.set('');
+    try {
+      const image = await preparePublicImage(file);
+      if (request !== this.teamImageRequest) return;
+      this.teamImage.set(image);
+      this.teamImagePreview.set(URL.createObjectURL(image));
+    } catch {
+      if (request === this.teamImageRequest) this.notice.set('manage.invalidImage');
+    } finally {
+      if (request === this.teamImageRequest) this.teamImageProcessing.set(false);
+    }
+  }
+  removeTeamImage() {
+    if (this.teamUploading() || this.saving()) return;
+    this.teamImageRequest++;
+    this.releaseTeamPreview();
+    this.teamImage.set(null);
+    this.teamImagePath.set(null);
+    this.teamImagePreview.set(null);
+    this.teamImageProcessing.set(false);
+  }
+  private releaseTeamPreview() {
+    const preview = this.teamImagePreview();
+    if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
   }
   async deleteTeam(row: Row) {
     await this.mutate('delete_team', { p_team: row.id });
@@ -975,7 +1058,7 @@ export class EventSetupPage {
     this.notice.set('');
     this.imageProcessing.set(true);
     try {
-      const image = await prepareGameImage(file);
+      const image = await preparePublicImage(file);
       if (request !== this.imageRequest) return;
       this.gameImage.set(image);
       this.gameImagePreview.set(URL.createObjectURL(image));
