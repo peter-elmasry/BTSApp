@@ -80,7 +80,11 @@
                 (change)="select(choice)"
               />
               @if (choice === 'draw') {
-                <span class="ds-choice-mark" aria-hidden="true">=</span>
+                @if (snapshot().event.scoring_mode === 'LIVES') {
+                  <ds-heart-icon state="half" [size]="40" />
+                } @else {
+                  <span class="ds-choice-mark" aria-hidden="true">=</span>
+                }
                 <span>{{ t('live.choice.draw') }}</span>
               } @else {
                 @if (teams()[choice === 'aWins' ? 0 : 1]?.team; as team) {

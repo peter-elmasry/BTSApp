@@ -57,7 +57,12 @@ numeric contracts end-to-end, including standings/ties and XLSX; computed histor
 hearts draws will recalculate and affected manual tie orders must be invalidated.
 Use red full SVGs in a single row and half-broken SVG for the half remainder/draw;
 large counts need a bounded scrollable/virtualised row, not emoji × N.
-This is agreed requirement and proposed design, not a delivered migration.
+Implementation started on codex/half-heart-scoring: migration 0024 changes draw
+settings, standings, breakdown and tie totals to exact numeric values, and the
+shared meter/overlay use SVGs. Template v6 retains v3/v4/v5 compatibility and
+normalises old hearts draw gains with a preview warning. Whole starting hearts,
+win/loss gains and adjustments stay integers. Runtime acceptance remains pending
+cloud verification; audio is a subsequent delivery slice.
 
 ## D056 — English terms, staff never pick a team, compact phone rows
 

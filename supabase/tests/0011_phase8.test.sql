@@ -122,7 +122,7 @@ insert into public.adjustments(event_id,scope,team_id,points,reason,given_by) va
 
 create temp table p8_rows as select value as r from jsonb_array_elements(public.phase6_standings('38000000-0000-0000-0000-000000000001'));
 select is((select r->>'total' from p8_rows where r->'team'->>'code'='T01'),'2','win keeps a life, loss costs one (3 to 2)');
-select is((select r->>'total' from p8_rows where r->'team'->>'code'='T04'),'3','draw keeps lives and void matches cost nothing');
+select is((select r->>'total' from p8_rows where r->'team'->>'code'='T04'),'2.5','draw removes half a heart and void matches cost nothing');
 select is((select r->>'total' from p8_rows where r->'team'->>'code'='T02'),'0','forfeit costs a life like a loss');
 select is((select r->>'match_points' from p8_rows where r->'team'->>'code'='T03'),'-1','hearts may go below zero (D053)');
 select is((select r->>'total' from p8_rows where r->'team'->>'code'='T03'),'0','a team below zero keeps playing and bonuses still count');

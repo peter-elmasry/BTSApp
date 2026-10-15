@@ -331,7 +331,8 @@
       "Schedule": "Schedule",
       "Staff": "Staff",
       "Workbook": "Workbook"
-    }
+    },
+    "halfDrawWarning": "Hearts draws in this workbook were changed to the fixed −0.5 rule."
   },
   "app": {
     "title": "Demiana Sports Team"
@@ -652,7 +653,7 @@
     "team": "Team",
     "record": "W-D-L",
     "total": "Total",
-    "livesColumn": "Lives {{emoji}}",
+    "livesColumn": "Hearts",
     "pendingNote": "{{n}} result(s) from ended rounds are still being entered, so totals may change."
   },
   "phase6": {
@@ -777,24 +778,27 @@
     "pointsHint": "Wins, draws and losses earn the points configured below.",
     "lives": "Lives",
     "livesHint": "Every team starts with the same number of hearts; each result adds or removes hearts.",
-    "initialLives": "Starting lives per team (1–99)",
+    "initialLives": "Starting hearts per team (1–9999)",
     "initialLivesError": "Enter a number of hearts from 1 to 9999.",
     "lifeEmoji": "Life symbol (any emoji)",
     "emojiSuggestions": "Suggestions",
     "useEmoji": "Use {{emoji}}",
     "preview": "Each team starts with",
-    "livesRules": "Each team starts with the same hearts. Every result adds or removes the hearts set above (use minus for losses). Hearts can go below zero and teams keep playing. Bonuses and penalties add or remove hearts.",
+    "livesRules": "Wins and losses use your configured gains; draws always remove 0.5 heart. Totals may be negative.",
     "locked": "Scoring mode and starting lives are fixed because a round has already started.",
     "livesLeft": "Lives left: {{n}}",
     "lifeLostTitle": "You lost hearts!",
-    "lifeLostLeft": "Keep going — {{n}} {{emoji}} left.",
+    "lifeLostLeft": "{{n}} hearts remaining",
     "lifeLostNone": "Out of lives, but the game goes on. Play for the spirit! 💪",
     "lifeLostBody": "Shake it off — the next one is yours.",
     "lifeLostOk": "Got it",
     "gainsTitle": "What each result does to the hearts",
     "gainWin": "Win",
     "gainDraw": "Draw",
-    "gainLoss": "Loss / forfeit"
+    "gainLoss": "Loss / forfeit",
+    "halfDrawNotice": "Every hearts draw removes half a heart. Existing draw results are recalculated; points scoring is unchanged.",
+    "halfHeartLost": "Half a heart lost",
+    "heartRow": "Hearts — scroll to see all"
   },
   "errors.SCORING_LOCKED": "Scoring mode and starting lives cannot change after a round has started.",
   "ui": {
@@ -986,7 +990,8 @@
       "teams": "Codes, avatars and colours are filled in automatically. Rename the teams afterwards.",
       "games": "Codes are filled in automatically. Add names, locations and photos afterwards.",
       "rounds": "Rounds are numbered after the last one."
-    }
+    },
+    "hexColor": "HEX colour (#RRGGBB)"
   },
   "review": {
     "noName": "The event has no name.",

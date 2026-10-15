@@ -155,6 +155,18 @@ describe('standings XLSX export', () => {
     expect(standings.getCell('A3').font.color?.argb).toBe('FFFFFFFF');
   }, 30000);
 
+  it('round-trips exact half-heart totals as numeric spreadsheet cells', async () => {
+    const snapshot = exportFixture();
+    snapshot.event.scoring_mode = 'LIVES';
+    snapshot.standings[0].match_points = 2.5;
+    snapshot.standings[0].total = -0.5;
+    const workbook = await createStandingsWorkbook(snapshot, 'en', text);
+    const ExcelJS = (await import('exceljs')).default;
+    const parsed = await new ExcelJS.Workbook().xlsx.load(await workbook.xlsx.writeBuffer());
+    expect(parsed.getWorksheet('Standings')!.getCell('J4').value).toBe(2.5);
+    expect(parsed.getWorksheet('Standings')!.getCell('L4').value).toBe(-0.5);
+  });
+
   it('includes match attribution and revoked adjustment history without staff credentials or identifiers', async () => {
     const snapshot = exportFixture();
     Object.assign(snapshot.staff[0], {

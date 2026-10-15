@@ -309,15 +309,18 @@ export class EventSetupPage {
 
   constructor() {
     const context = inject(ManageContext);
-    // Switching to hearts by hand starts from Win 0 · Draw 0 · Loss -1 (D053).
+    // D057 fixes every hearts draw at -0.5; POINTS remains editable.
     const modeChanges = this.settingsForm.controls.scoring_mode.valueChanges.subscribe((mode) => {
       const value = this.settingsForm.getRawValue();
+      this.settingsForm.controls.points_draw.setValue(mode === 'LIVES' ? -0.5 : 1, {
+        emitEvent: false,
+      });
       if (
         mode === 'LIVES' &&
         value.points_loss >= 0 &&
         this.settingsForm.controls.scoring_mode.dirty
       )
-        this.setHeartsPreset(0, 0, -1);
+        this.setHeartsPreset(0, -0.5, -1);
     });
     inject(DestroyRef).onDestroy(() => modeChanges.unsubscribe());
     // The layout shows the name of the event this screen loaded (it may not be the current one).
@@ -382,7 +385,13 @@ export class EventSetupPage {
       ...(value.event as any),
       scoring_mode: value.event.scoring_mode ?? 'POINTS',
       life_emoji: value.event.life_emoji ?? '❤️',
+      points_draw: value.event.scoring_mode === 'LIVES' ? -0.5 : value.event.points_draw,
     });
+    // A mode-change callback can run after points_draw while patching the event.
+    // Restore the server's POINTS value rather than silently replacing it with 1.
+    this.settingsForm.controls.points_draw.setValue(
+      value.event.scoring_mode === 'LIVES' ? -0.5 : value.event.points_draw,
+    );
     for (const name of ['scoring_mode', 'initial_lives'] as const) {
       const control = this.settingsForm.controls[name];
       if (rounds.some((round) => !!round.started_at)) control.disable({ emitEvent: false });
@@ -420,7 +429,7 @@ export class EventSetupPage {
 
   /** Hearts presets: what Win / Draw / Loss add or remove (D053). */
   setHeartsPreset(win: number, draw: number, loss: number) {
-    this.settingsForm.patchValue({ points_win: win, points_draw: draw, points_loss: loss });
+    this.settingsForm.patchValue({ points_win: win, points_draw: -0.5, points_loss: loss });
     this.settingsForm.markAsDirty();
   }
   chooseLifeEmoji(emoji: string) {
@@ -441,6 +450,7 @@ export class EventSetupPage {
       p_settings: {
         ...this.settingsForm.getRawValue(),
         life_emoji: this.settingsForm.controls.life_emoji.value.trim(),
+        points_draw: value.scoring_mode === 'LIVES' ? -0.5 : value.points_draw,
       },
     });
   }
@@ -459,6 +469,8 @@ export class EventSetupPage {
     );
   }
   async saveTeam() {
+    const hex = this.teamForm.controls.color_hex;
+    hex.setValue(hex.value.trim().toUpperCase());
     if (this.teamForm.invalid) {
       this.teamForm.markAllAsTouched();
       return;
