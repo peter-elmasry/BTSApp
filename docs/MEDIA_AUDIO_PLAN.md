@@ -214,6 +214,15 @@ Add typed `core/audio/event-sound.service.ts` plus a static filename manifest.
 Event Settings gains a master switch, per-cue switches and Preview buttons;
 settings use existing audited/idempotent RPC rules and public projection.
 Device controls offer Enable sound, mute and volume for players/staff/display.
+Before playing any cue, show a dismissible app prompt: "Enable event sounds?"
+with **Enable sound** and **Keep muted** choices. Sound starts disabled until
+the viewer explicitly opts in; any unrelated tap must not enable it. Choosing
+Keep muted or dismissing leaves browsing fully usable without sound and avoids
+repeated prompts. A persistent sound control lets the viewer opt in later or
+mute again. This is app consent, not a browser permission dialog; Enable sound
+also supplies the browser activation gesture. Preview buttons play only after
+explicit activation/consent. Test no cue before consent, decline/dismiss,
+later opt-in and immediate mute cancellation.
 Remember preference, but re-establish browser activation when needed after reload;
 logout clearing follows D047. Event enablement never overrides device mute.
 

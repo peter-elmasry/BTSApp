@@ -9,6 +9,10 @@ preloaded MP3 assets in `public/sounds/`, identifier-only fresh round cues and
 visibility-aware own-team result reads. Never play from an optimistic queued
 write, timer expiry or old baseline; deduplicate retries and occurrences.
 Browser activation and foreground/network availability constrain immediacy.
+Gendy confirms an explicit permission prompt first: Enable sound / Keep muted.
+Sound defaults off; decline/dismiss never blocks browsing or repeatedly prompts.
+Only the explicit sound action activates playback; retain a later enable/mute
+control. This is app consent, not a native browser permission request.
 Implementation and device acceptance remain pending; see MEDIA_AUDIO_PLAN.md.
 
 ## D060 — Custom HEX colours and reusable event swatches

@@ -2,6 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-15 — Explicit sound opt-in and sounds folder — DONE
+
+- **Requested by:** Gendy; ask viewers for sound permission first and add public/sounds/.gitkeep now.
+- **Preflight:** Clean codex/media-sound-plan at 075f8bd; reviewed required coordination docs. Scope: placeholder folder and explicit opt-in requirement in the sound plan/decision; no playback implementation.
+- **Changed:** Added empty public/sounds/.gitkeep; sound plan and D061 now require a dismissible Enable sound / Keep muted prompt, default-off playback, no unrelated-tap activation, and a later enable/mute control. This records the requested UX; no app prompt or audio service implemented yet.
+- **Checks/publication:** Changed-document formatting and whitespace checks run before commit; no runtime tests needed for docs/empty placeholder. Publish this logical change to existing PR #24; merging remains separate. Next: supply the five named MP3 clips and implement the planned features.
+
 ## 2026-10-15 — Review latest changes and plan hearts, media, colours and sound — HANDOFF
 
 - **Requested by:** Gendy; fetch/review new changes and documentation, then plan five extensions. Implementation is not requested in this session.
