@@ -2,6 +2,14 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-15 — Planning PR CI repair — HANDOFF
+
+- **Requested by:** Standing requirement to publish checked logical changes and verify the whole PR chain.
+- **Preflight:** Clean planning branch at 335c846, fetched origin; master remains a774e36. Implementation is on stacked PRs #25–#29; no merges performed. Audio frontend passed and its public-contract assertion fix is rerunning separately.
+- **Scope:** Ignore the empty sounds placeholder (and the ignore file itself) in Prettier. Align final diagnostic artifact upload with D062's existing best-effort policy because account artifact quota is exhausted; product checks stay strict.
+- **Checks:** Changed-file formatting (including the explicitly ignored placeholder/ignore file), YAML parsing via Prettier and git diff whitespace checks passed. Runtime code is unchanged; full cloud checks follow publication.
+- **Next:** Commit/push this isolated CI repair to PR #24; verify cloud while returning to the final implementation branch. Preserve published history.
+
 ## 2026-10-15 — Explicit sound opt-in and sounds folder — DONE
 
 - **Requested by:** Gendy; ask viewers for sound permission first and add public/sounds/.gitkeep now.
