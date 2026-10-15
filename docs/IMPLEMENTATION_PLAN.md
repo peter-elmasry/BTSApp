@@ -895,7 +895,11 @@ remaining work are recorded in PROGRESS_LOG.md.
 | Opening attachment (D058) | Admin upload/replace/remove one image or PDF and control display; visible to every viewer, including anonymous users without a chosen team | Public Home/Schedule/Now/display access despite hidden standings; event-scoped writes; PDF fallback; no hidden outcome leak |
 | Team picture (D059) | Uploadable team photo with catalog avatar fallback, shown consistently wherever the team appears | JPEG/PNG/WebP preparation, anonymous viewing, scoped writes, picture removal/error fallback, import preservation |
 | HEX colours (D060) | Add custom colours using #RRGGBB in configuration and team setup; save named reusable swatches | Exact custom HEX survives save/reload, bulk setup and XLSX round trip; invalid values denied; readable labels |
-| Sound (D061) | Configurable round-start/end cues for all viewers; win/loss/draw cues for viewers following the affected team; Enable sound and mute/volume controls | Successful committed actions only, own-team permission-aware results, duplicate/stale suppression, real mobile activation and venue rehearsal |
+| Sound (D061, D063) | Configurable round-start/end cues for all viewers, including admins/referees and anonymous viewers without a team; win/loss/draw cues for viewers following the affected team; Enable sound and mute/volume controls | Successful committed actions only; recovery despite missed broadcasts on a connected socket; retain fresh cues during loading; own-team permission-aware results, duplicate/stale suppression, real mobile activation and venue rehearsal |
+
+Explicit Home navigation is available before team selection and shows the existing
+pick-team prompt (D063). Initial root routing and team QR confirmations still use
+the team picker; schedule/detail audience rules remain unchanged.
 
 Audio assets: `public/sounds/round-start.mp3`, `round-end.mp3`, `match-win.mp3`,
 `match-loss.mp3`, `match-draw.mp3`. Browser activation is required on devices that

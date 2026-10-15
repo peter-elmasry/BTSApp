@@ -11,11 +11,12 @@ describe('player team route guard', () => {
   const event = signal<{ id: string } | null>({ id: 'current' });
   const selectedCode = signal<string | null>(null);
   const initialize = vi.fn(async () => {});
-  const guard = (team?: string) =>
+  const guard = (team?: string, allowUnselected = false) =>
     TestBed.runInInjectionContext(() =>
       teamChosenGuard(
         {
           queryParamMap: convertToParamMap(team === undefined ? {} : { team }),
+          data: { allowUnselected },
         } as never,
         {} as never,
       ),
@@ -45,6 +46,13 @@ describe('player team route guard', () => {
     selectedCode.set(null);
     event.set(null);
     expect(await guard()).toBe(true);
+  });
+
+  it('allows explicit Home without a team but still confirms QR suggestions', async () => {
+    expect(await guard(undefined, true)).toBe(true);
+    const result = await guard('T01', true);
+    expect(TestBed.inject(Router).serializeUrl(result as UrlTree)).toBe('/choose-team?team=T01');
+    expect(selectedCode()).toBeNull();
   });
 
   it('requires explicit QR-code confirmation even with a previous choice', async () => {

@@ -6,13 +6,32 @@ import { bootstrap, eventId, mockPublicEvent } from './public-fixtures';
 // Mocked backend journeys; SQL privacy is independently covered by pgTAP.
 test.use({ serviceWorkers: 'block' });
 for (const lang of ['en', 'ar']) {
+  test(`anonymous Home navigation works before choosing a team in ${lang}`, async ({ page }) => {
+    const labels = JSON.parse(readFileSync(`public/i18n/${lang}.json`, 'utf8'));
+    await page.addInitScript((value) => localStorage.setItem('bts.lang', value), lang);
+    await mockPublicEvent(page);
+    await page.goto('/choose-team');
+    await page.locator('nav').getByRole('link', { name: labels['nav.home'] }).click();
+    await expect(page).toHaveURL(/\/home$/);
+    await expect(
+      page.getByRole('heading', { name: labels['nav.home'], exact: true }),
+    ).toBeVisible();
+    await page
+      .locator('main')
+      .getByRole('link', { name: labels['team.choose.title'], exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/choose-team$/);
+    await expect(page.getByTestId('team-card-T01')).toBeVisible();
+  });
+}
+for (const lang of ['en', 'ar']) {
   test(`confirmed player choice, reload, schedule and switching in ${lang}`, async ({ page }) => {
     const labels = JSON.parse(readFileSync(`public/i18n/${lang}.json`, 'utf8'));
     const teamName = (index: number) =>
       lang === 'ar' ? bootstrap.teams[index].name_ar! : bootstrap.teams[index].name_en;
     await page.addInitScript((value) => localStorage.setItem('bts.lang', value), lang);
     await mockPublicEvent(page);
-    await page.goto('/home');
+    await page.goto('/');
     await expect(page).toHaveURL(/\/choose-team/);
     await expect(page.getByTestId('team-card-T01')).toBeVisible();
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);

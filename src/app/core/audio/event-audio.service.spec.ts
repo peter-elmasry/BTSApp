@@ -3,11 +3,12 @@ import { signal } from '@angular/core';
 import { Subject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EventAudioService } from './event-audio.service';
-import { DEFAULT_AUDIO_CONFIG, type TeamAudioResult } from './audio-types';
+import { DEFAULT_AUDIO_CONFIG, type RoundAudioCue, type TeamAudioResult } from './audio-types';
 import { EventStore } from '../player/event.store';
 import { TeamSelectionStore } from '../player/team-selection.store';
 import { AuthStore } from '../auth/auth.store';
 import { RpcTransport } from '../offline/rpc-transport';
+import { ReadCacheService } from '../offline/read-cache.service';
 import { EventChannelService } from '../realtime/event-channel.service';
 
 describe('audio activation and private response lifetime', () => {
@@ -16,6 +17,9 @@ describe('audio activation and private response lifetime', () => {
   let constructors: number;
   let result: TeamAudioResult;
   let pending: Promise<unknown> | null;
+  let roundCues: RoundAudioCue[];
+  const cacheUpdates = signal(0);
+  const staffWithoutTeam = signal(false);
   const selected = signal('T01');
   const profile = signal<unknown>(null);
   const immediate = new Subject<{ eventId: string; event: string; payload: unknown }>();
@@ -30,6 +34,9 @@ describe('audio activation and private response lifetime', () => {
     starts = 0;
     constructors = 0;
     pending = null;
+    roundCues = [];
+    cacheUpdates.set(0);
+    staffWithoutTeam.set(false);
     selected.set('T01');
     profile.set(null);
     localStorage.clear();
@@ -97,13 +104,14 @@ describe('audio activation and private response lifetime', () => {
         },
         {
           provide: TeamSelectionStore,
-          useValue: { selectedCode: selected, staffWithoutTeam: signal(false) },
+          useValue: { selectedCode: selected, staffWithoutTeam },
         },
         { provide: AuthStore, useValue: { session: signal(null), profile } },
         {
           provide: EventChannelService,
           useValue: { immediate: immediate.asObservable(), isSubscribed: () => true },
         },
+        { provide: ReadCacheService, useValue: { updates: cacheUpdates } },
         {
           provide: RpcTransport,
           useValue: {
@@ -112,7 +120,7 @@ describe('audio activation and private response lifetime', () => {
                 return Promise.resolve({
                   serverNow: new Date().toISOString(),
                   config: DEFAULT_AUDIO_CONFIG,
-                  cues: [],
+                  cues: roundCues,
                 });
               if (pending && args.p_team_code === 'T01') {
                 const response = pending;
@@ -178,4 +186,54 @@ describe('audio activation and private response lifetime', () => {
     await flush();
     expect(starts).toBe(1);
   });
+
+  it.each(['anonymous', 'OWNER', 'EVENT_ADMIN', 'REFEREE'])(
+    'verifies ordinary round updates for %s without a dedicated audio broadcast',
+    async (role) => {
+      if (role !== 'anonymous') {
+        profile.set({ system_role: role === 'OWNER' ? 'OWNER' : 'MEMBER', roles: [] });
+        staffWithoutTeam.set(true);
+      }
+      await service.enable();
+      await flush();
+      roundCues.push({
+        cueId: 'new-round',
+        roundId: 'r1',
+        cue: 'round-start',
+        occurredAt: new Date().toISOString(),
+      });
+      immediate.next({ eventId: 'e1', event: 'round_changed', payload: {} });
+      await flush();
+      expect(starts).toBe(1);
+    },
+  );
+  it('verifies fresh committed cues after a successful local write invalidates reads', async () => {
+    await service.enable();
+    await flush();
+    roundCues.push({
+      cueId: 'closed-round',
+      roundId: 'r1',
+      cue: 'round-end',
+      occurredAt: new Date().toISOString(),
+    });
+    cacheUpdates.update((value) => value + 1);
+    await flush();
+    expect(starts).toBe(1);
+  });
+  it('recovers a fresh cue even when a subscribed socket delivers no signal', async () => {
+    await service.enable();
+    await flush();
+    roundCues.push({
+      cueId: 'missed-round',
+      roundId: 'r1',
+      cue: 'round-end',
+      occurredAt: new Date().toISOString(),
+    });
+    await new Promise((resolve) => setTimeout(resolve, 2100));
+    await flush();
+    expect(starts).toBe(1);
+    await new Promise((resolve) => setTimeout(resolve, 2100));
+    await flush();
+    expect(starts).toBe(1);
+  }, 10000);
 });

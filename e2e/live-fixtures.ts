@@ -210,6 +210,7 @@ export async function mockLiveEvent(
     await route.fulfill({ status: 200, headers, json: data });
   });
   return {
+    profile,
     snapshot,
     calls,
     applied,

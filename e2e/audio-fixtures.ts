@@ -1,5 +1,6 @@
 import { expect, type Page, type WebSocketRoute } from '@playwright/test';
 import { event, eventId, mockPublicEvent } from './public-fixtures';
+import { mockLiveEvent } from './live-fixtures';
 import {
   DEFAULT_AUDIO_CONFIG,
   type AudioConfig,
@@ -11,8 +12,13 @@ export async function mockAudio(
   lang: 'en' | 'ar' = 'en',
   team = false,
   subscribed = true,
+  role?: 'OWNER' | 'EVENT_ADMIN' | 'REFEREE',
 ) {
-  await mockPublicEvent(page);
+  const live = role
+    ? await mockLiveEvent(page, { lang, role: role === 'OWNER' ? 'EVENT_ADMIN' : role })
+    : undefined;
+  if (live && role === 'OWNER') live.profile.system_role = 'OWNER';
+  if (!role) await mockPublicEvent(page);
   await page.addInitScript(
     ({ lang, team, eventId }) => {
       localStorage.setItem('bts.lang', lang);
@@ -130,6 +136,7 @@ export async function mockAudio(
     });
   });
   return {
+    live,
     backend,
     emit: async (name: string, payload: unknown) => {
       await expect.poll(() => !!socket).toBe(true);
