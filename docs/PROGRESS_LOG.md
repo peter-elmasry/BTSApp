@@ -2,11 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-15 — Retry Vercel after approved access — STARTED
+## 2026-10-15 — Retry Vercel after approved access — HANDOFF
 
 - **Requested by:** Gendy confirms the Vercel access request was approved and asks to retry.
 - **Preflight/scope:** Clean codex/event-audio; refreshing origin and the current deployment statuses. Existing blocked statuses do not automatically prove whether approval has taken effect. Trigger a fresh PR #29 preview through this progress commit, then retry the remaining preview branches if access is recognized. No merge or production deployment.
-- **Checks/next:** Documentation formatting and whitespace checks precede publication. Inspect the new Vercel status/build result; no successful post-approval preview is confirmed yet.
+- **Retry/result:** Progress commit 77481bd was pushed to PR #29 and created fresh Vercel deployment GQziXhBV7sK9joUTgrPgXpHBEY7N. It failed at 2026-10-15 10:49:22 UTC with only Deployment was blocked exposed by GitHub. The older membership comment still references 7e3eb7b; it is not evidence that the new attempt has the same specific cause. Remaining five branches were not retriggered while this common access question remains unresolved.
+- **Checks/access:** Changed-document Prettier and whitespace checks passed. GitHub CI run 38722970262 is in progress; hosted acceptance is not passed. No local Vercel CLI session or accessible authenticated dashboard is available. Requested the new deployment's detailed reason from Gendy; next resolve that reason and retry previews. No merge or production deployment occurred.
 
 ## 2026-10-15 — Diagnose blocked Vercel previews — HANDOFF
 
