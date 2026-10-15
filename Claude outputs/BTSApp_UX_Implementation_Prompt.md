@@ -1,5 +1,11 @@
 # Implementation prompt — BTSApp UX enhancement (U0–U8)
 
+2026-10-15 amendment: this historical U0–U8 prompt must be read with later
+decisions through D056 and implementation plan §22 (D057–D061). For hearts,
+team photos, opening attachments, custom HEX and sound, use
+`docs/MEDIA_AUDIO_PLAN.md`; do not restore older emoji/integer-draw requirements.
+The new extensions are planned, not yet delivered.
+
 > Agreed scope v3.2 (2026-10-13; Schedule Cards switch kept; privacy & search added as phase P1). Every decision is final **except D-3 (auto-fill pairings)**. Phase U7b is **not authorised**. Do not build it.
 >
 > v3 reconciles this plan with **Phase 8** (`feat/phase-8-extensions`, D035–D040). **Where existing Phase 8 behaviour conflicts with this prompt, this prompt wins** (product-owner rule A9). The conflicts and their binding resolutions are R1–R10 in `Claude outputs/BTSApp_UX_Assessment.md` §12 (R5 resolved: Cards switch kept).

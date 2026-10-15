@@ -49,9 +49,10 @@ accepted. Phase 0 hosted acceptance remains separate.
 - Referees submit and confirm assigned results; check the pending-upload indicator
   clears. Correct mistakes through the same match entry. Administrators can
   correct any match and review adjustment giver/reason/history.
-- Overtime does not close a round. Extend it when needed. Before closing, enter
-  every pending result or cancel the match with a reason. Cancelled matches must
-  be reset by an administrator before scoring again.
+- Overtime does not close a round. Extend it when needed. End round may leave
+  pending matches as late results; never cancel or forfeit them just to end it.
+  Assigned referees may enter their first late result; closed-round corrections
+  require an administrator. Cancelled matches must be reset before scoring again.
 - If connectivity fails, keep the same staff account and device. Leave the app's
   saved data intact; reconnect and use Retry uploads. Do not clear browser storage,
   uninstall, or switch accounts to fix a pending upload.
@@ -119,6 +120,15 @@ A deployment maintainer with authorized service/operator access should:
 Reconciliation is an operator procedure until an owner recovery UI is implemented.
 
 ## Acceptance record before release
+
+The hearts/media/audio extensions in implementation plan §22 are planned, not
+deployed. Once implemented, add rehearsal checks for exact half-heart draws,
+public opening image/PDF access without login/team selection, team photos and
+custom HEX workbook round trips. Put the five clips listed in MEDIA_AUDIO_PLAN.md
+under `public/sounds/`; enable sound and test each cue on the venue display and
+actual Android/iPhone devices before play. Verify winning, losing and drawing
+team devices separately, mute, reconnect and duplicate suppression. Browser
+activation is required and network/background restrictions limit immediacy.
 
 Record deployed commit, production URL, device/browser, network profile, date and
 outcome in `PROGRESS_LOG.md`. Required: initial bundle below 500 kB, measured

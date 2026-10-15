@@ -1,5 +1,10 @@
 # BTSApp — UX Assessment & Enhancement Plan
 
+2026-10-15 amendment: later decisions through D056 and implementation plan §22
+(D057–D061, detailed in `docs/MEDIA_AUDIO_PLAN.md`) supersede older requirements
+here for integer/emoji hearts, catalog-only team pictures and opening media/audio.
+The new extensions are planned; their implementation and acceptance remain pending.
+
 |                     |                                                                                                                                                                                                                                                                                                                                                                                             |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Status**          | AGREED v3.2 (2026-10-13; Schedule Cards switch kept; privacy & search requirements added §13), except **D-3 auto-fill pairings (open)**. v3 reconciles the plan with Phase 8 (§12). **Where Phase 8 conflicts with this agreement, this agreement wins.**                                                                                                                                   |

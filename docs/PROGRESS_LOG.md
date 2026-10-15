@@ -2,6 +2,33 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-15 — Planning PR CI repair — HANDOFF
+
+- **Requested by:** Standing requirement to publish checked logical changes and verify the whole PR chain.
+- **Preflight:** Clean planning branch at 335c846, fetched origin; master remains a774e36. Implementation is on stacked PRs #25–#29; no merges performed. Audio frontend passed and its public-contract assertion fix is rerunning separately.
+- **Scope:** Ignore the empty sounds placeholder (and the ignore file itself) in Prettier. Align final diagnostic artifact upload with D062's existing best-effort policy because account artifact quota is exhausted; product checks stay strict.
+- **Checks:** Changed-file formatting (including the explicitly ignored placeholder/ignore file), YAML parsing via Prettier and git diff whitespace checks passed. Runtime code is unchanged; full cloud checks follow publication.
+- **Next:** Commit/push this isolated CI repair to PR #24; verify cloud while returning to the final implementation branch. Preserve published history.
+
+## 2026-10-15 — Explicit sound opt-in and sounds folder — DONE
+
+- **Requested by:** Gendy; ask viewers for sound permission first and add public/sounds/.gitkeep now.
+- **Preflight:** Clean codex/media-sound-plan at 075f8bd; reviewed required coordination docs. Scope: placeholder folder and explicit opt-in requirement in the sound plan/decision; no playback implementation.
+- **Changed:** Added empty public/sounds/.gitkeep; sound plan and D061 now require a dismissible Enable sound / Keep muted prompt, default-off playback, no unrelated-tap activation, and a later enable/mute control. This records the requested UX; no app prompt or audio service implemented yet.
+- **Checks/publication:** Changed-document formatting and whitespace checks run before commit; no runtime tests needed for docs/empty placeholder. Publish this logical change to existing PR #24; merging remains separate. Next: supply the five named MP3 clips and implement the planned features.
+
+## 2026-10-15 — Review latest changes and plan hearts, media, colours and sound — HANDOFF
+
+- **Requested by:** Gendy; fetch/review new changes and documentation, then plan five extensions. Implementation is not requested in this session.
+- **Preflight:** Clean `codex/owner-admin-touch-target` at `9e32743`; fetched origin. Planning branch `codex/media-sound-plan` starts from latest `origin/master` at `a774e36` (PR #23).
+- **Scope:** Review changes since the prior checkout (189 changed files), current contracts and docs; update the requirements source and add a concrete media/audio implementation plan with acceptance checks. Preserve published history and unrelated implementation.
+- **Review milestone:** Inventoried 189 changed files and reviewed relevant current contracts/new docs. This is a planning review, not a complete line-by-line security audit. Latest master includes signed hearts gains, single names, quick look, member profiles, late results and phone UX; existing check counts are historical evidence, not rerun here.
+- **Confirmed clarification:** Every LIVES draw removes exactly 0.5 heart with animation and sound; opening attachments support images/PDFs. POINTS stays integer-configured. Half-heart scoring needs exact numeric SQL/projection/import/export changes, not just an icon replacement.
+- **Changed:** Added MEDIA_AUDIO_PLAN.md with five extension designs, file/bucket/contracts, delivery order and checks; plan §22 and D057–D061 record requirements. Corrected stale close/late-result rules and team-photo exclusion; added status/amendment pointers to audit and UX docs and pending rehearsal instructions to the runbook. Found custom HEX export fallback that loses unknown colours; included repair in plan. Duplicate legacy D029–D031 references remain a separately documented reconciliation issue.
+- **Checks/publication:** Changed-document Prettier and git diff --check passed; IMPLEMENTATION_PLAN.md is excluded by the existing Prettier configuration; no app/database/device tests run because no runtime code changed. Audio assets and feature implementation are not delivered. Standing authorization covers publishing this documentation PR; merge is not authorized.
+- **Published:** Planning commit 8a049cf pushed on codex/media-sound-plan; PR #24 opened and attached. GitHub connector returned 404; creation succeeded through GitHub REST using the existing Git credential in memory, without recording secrets. Cloud CI run 38660481429 is in progress. Vercel reports Deployment was blocked; its underlying reason is not established by that status alone.
+- **Next:** Verify cloud checks and resolve/report deployment access; review the planning PR (no merge authorized), then implement exact half-heart contracts/icons first, followed by media, colours and audio. Clips needed: round-start.mp3, round-end.mp3, match-win.mp3, match-loss.mp3, match-draw.mp3 under public/sounds/.
+
 ## 2026-10-13 — UX round 3: hearts gains, single names, quick look, phone rows — DONE
 
 - **Branch:** `codex/ux-round3`.

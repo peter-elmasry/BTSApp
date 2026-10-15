@@ -55,6 +55,8 @@ jobs:
           npm run test:lighthouse
       - uses: actions/upload-artifact@v4
         if: always()
+        # Diagnostic reports are best effort; tests/build/Lighthouse remain strict.
+        continue-on-error: true
         with:
           name: shell-checks
           path: artifacts/

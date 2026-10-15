@@ -1,5 +1,12 @@
 # Implementation and acceptance audit — 2026-10-11
 
+Current-status pointer (2026-10-15): this report audits the historical commit
+below. Later remediation and UX changes are recorded in PROGRESS_LOG.md and
+DECISIONS.md through D056. The new §22 hearts/media/audio requirements are planned
+in MEDIA_AUDIO_PLAN.md (D057–D061), with no new runtime acceptance claimed here.
+Do not treat this report's original findings or check counts as a fresh audit
+of fetched master `a774e36`.
+
 **Verdict: the app is not fully compliant or ready for final acceptance.** Most
 implemented player, scoring, import, standings and offline journeys pass. The
 audit found a privileged-screen privacy defect, two Edge handler contract
