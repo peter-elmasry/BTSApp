@@ -2,6 +2,17 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-15 — Review latest changes and plan hearts, media, colours and sound — HANDOFF
+
+- **Requested by:** Gendy; fetch/review new changes and documentation, then plan five extensions. Implementation is not requested in this session.
+- **Preflight:** Clean `codex/owner-admin-touch-target` at `9e32743`; fetched origin. Planning branch `codex/media-sound-plan` starts from latest `origin/master` at `a774e36` (PR #23).
+- **Scope:** Review changes since the prior checkout (189 changed files), current contracts and docs; update the requirements source and add a concrete media/audio implementation plan with acceptance checks. Preserve published history and unrelated implementation.
+- **Review milestone:** Inventoried 189 changed files and reviewed relevant current contracts/new docs. This is a planning review, not a complete line-by-line security audit. Latest master includes signed hearts gains, single names, quick look, member profiles, late results and phone UX; existing check counts are historical evidence, not rerun here.
+- **Confirmed clarification:** Every LIVES draw removes exactly 0.5 heart with animation and sound; opening attachments support images/PDFs. POINTS stays integer-configured. Half-heart scoring needs exact numeric SQL/projection/import/export changes, not just an icon replacement.
+- **Changed:** Added MEDIA_AUDIO_PLAN.md with five extension designs, file/bucket/contracts, delivery order and checks; plan §22 and D057–D061 record requirements. Corrected stale close/late-result rules and team-photo exclusion; added status/amendment pointers to audit and UX docs and pending rehearsal instructions to the runbook. Found custom HEX export fallback that loses unknown colours; included repair in plan. Duplicate legacy D029–D031 references remain a separately documented reconciliation issue.
+- **Checks/publication:** Changed-document Prettier and git diff --check passed; IMPLEMENTATION_PLAN.md is excluded by the existing Prettier configuration; no app/database/device tests run because no runtime code changed. Audio assets and feature implementation are not delivered. Standing authorization covers publishing this documentation PR; merge is not authorized.
+- **Next:** Finish document checks, commit/push/open planning PR and inspect cloud checks; then implement the exact half-heart contracts/icons first, followed by media, colours and audio. Clips needed: round-start.mp3, round-end.mp3, match-win.mp3, match-loss.mp3, match-draw.mp3 under public/sounds/.
+
 ## 2026-10-13 — UX round 3: hearts gains, single names, quick look, phone rows — DONE
 
 - **Branch:** `codex/ux-round3`.

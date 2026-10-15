@@ -367,7 +367,7 @@ All `SECURITY DEFINER` functions MUST `set search_path = public, pg_temp`.
 | `reopen_round(reason)` | Event Admin | status `CLOSED`; no other `ACTIVE` round | `status=ACTIVE` (does not reset timer; audit with reason) |
 
 - **No auto-close, ever.** When `now() > started_at + (duration_min + extension_min) minutes` the round is in **OVERTIME** (derived, not stored). Overtime UI: red count-up timer for everyone; for Event Admins a sticky bar "Overtime +mm:ss · N matches pending · [Extend] [Close round]".
-- Referees MAY submit results during overtime until the admin closes (agreed).
+- Referees MAY submit results during overtime; after close, assigned referees may enter the first late result, but corrections require an administrator (D041/D050).
 - Editing schedule (participants, game) of a match: Event Admin only; forbidden if match `COMPLETED` (reset result first via `reset_match_result`).
 
 ### 6.2 Results
@@ -394,6 +394,8 @@ Allowed outcome sets:
 | PENDING / VOID match | 0 |
 
 Total = Σ outcome points + Σ non-revoked adjustments. Changing points config instantly recalculates (computed). The settings screen MUST show a warning when the event is `LIVE`: "Changing points recalculates all results."
+
+LIVES mode follows D053 with §22/D057's planned amendment: every draw removes exactly 0.5 heart; signed totals, breakdowns, ties and exports preserve half-hearts. POINTS mode retains configured integer gains.
 
 ### 6.4 Adjustments (bonus / penalty) & caps
 
@@ -813,8 +815,8 @@ Each phase = one branch + PR. Do not start a phase before the previous one's cri
 - ✅ Usable one-handed at 360 px; selection persists across reloads; hidden leaderboard ⇒ other teams' outcomes not returned by `get_schedule` for anon.
 
 **Phase 5 — Live operations**
-- Round lifecycle UI (start, extend, overtime, close with pending-matches blocker, reopen), referee board + result entry (regular & opening), adjustments with caps & giver, void/reset, realtime broadcast + polling fallback, offline op queue + idempotency.
-- ✅ Referee cannot submit for an unassigned game or a CLOSED round (server); same `op_id` sent twice applies once; airplane-mode submit is delivered after reconnect; round never auto-closes; ending a round with pending matches keeps them as late results and nothing is auto-voided (D041).
+- Round lifecycle UI (start, extend, overtime, end with late results, reopen), referee board + result entry (regular & opening), adjustments with caps & giver, void/reset, realtime broadcast + polling fallback, offline op queue + idempotency.
+- ✅ Referee cannot submit for an unassigned game or correct a CLOSED-round result; the first late result is allowed for assigned referees (server, D041/D050); same `op_id` sent twice applies once; airplane-mode submit is delivered after reconnect; round never auto-closes; ending a round with pending matches keeps them as late results and nothing is auto-voided (D041).
 
 **Phase 6 — Standings, visibility, export, display**
 - `get_standings`, leaderboard page with animations, visibility toggle, tie resolution, export XLSX, `/display`.
@@ -849,7 +851,7 @@ Each phase = one branch + PR. Do not start a phase before the previous one's cri
 ---
 
 ## 19. Out of scope (v1)
-Automatic tie-break rules, multiple simultaneous events, SMS/OTP, push notifications, player accounts, image uploads for teams (avatars are catalog-only), chat.
+Automatic tie-break rules, multiple simultaneous events, SMS/OTP, push notifications, player accounts, chat.
 
 ---
 
@@ -863,7 +865,7 @@ Product owner approved slices 1–7 on 2026-10-12. Decisions D035–D040 record 
 | 2 Breaks (D037) | A game with no match in a regular round is on a break; shown in schedule, game details, setup builder; referees get a round × game table of their games | Break rows/cards appear where no match exists; referee table lists assigned games and breaks |
 | 3 Referee names (D036) | Game details and match cards list the game's referees (names only) | Public bootstrap exposes names only; pgTAP privacy checks |
 | 4 Staff layout (D040) | One section bar, consistent spacing and ≥44 px targets on admin/owner screens; closes audit A07/A08 | No 360 px overflow, axe clean, masked localized password sheet |
-| 5 Lives scoring (D038) | Optional LIVES mode: N lives, loss/forfeit −1, floor at 0, keep playing; emoji symbol; life-lost animation | Standings/locks/import covered by pgTAP; browser journeys for settings, meter and animation |
+| 5 Lives scoring (D038) | Optional LIVES mode: Current scoring follows D053 (signed gains, negative totals), amended by §22 for fixed half-heart draws; SVG presentation replaces emoji | Standings/locks/import covered by pgTAP; browser journeys for settings, meter and animation |
 | 6 Schedule table (D039) | `/schedule` Table (default) and Cards views, remembered per device | Table default, switch and persistence covered in EN/AR |
 | 7 Docs | This section, D035–D040, README, progress log | — |
 
@@ -876,3 +878,26 @@ Amendments from the UX enhancement plan: D044 amends slice 1 (signed-in guides m
 ## 21. UX enhancement (agreed 2026-10-13)
 
 The agreed UX plan and its implementation prompt live in `Claude outputs/BTSApp_UX_Assessment.md` and `Claude outputs/BTSApp_UX_Implementation_Prompt.md` (phases U0–U8; U7b auto-fill pairings not authorised). Decisions D041–D045 record the rule changes. Where earlier behaviour conflicts with that plan, the plan wins (§12 of the assessment).
+
+---
+
+## 22. Hearts and media/audio extensions — requested 2026-10-15
+
+Gendy requests the following changes. Detailed delivery design and checks are in
+[MEDIA_AUDIO_PLAN.md](MEDIA_AUDIO_PLAN.md). This section supersedes earlier
+catalog-only team images, emoji presentation and integer hearts draw rules.
+This session plans the implementation; it does not claim these features shipped.
+
+| Area | Requirement | Acceptance |
+| --- | --- | --- |
+| Hearts (D057) | Red SVG hearts together in one row; half-broken SVG for half a heart. Every LIVES draw removes exactly 0.5 heart, with breaking animation and sound; POINTS scoring stays unchanged | 3 -> 2.5 -> 2 after two draws; exact standings/breakdowns/ties/import/export; large rows bounded without emoji × N; zero/negative supported; EN/AR/reduced motion |
+| Opening attachment (D058) | Admin upload/replace/remove one image or PDF and control display; visible to every viewer, including anonymous users without a chosen team | Public Home/Schedule/Now/display access despite hidden standings; event-scoped writes; PDF fallback; no hidden outcome leak |
+| Team picture (D059) | Uploadable team photo with catalog avatar fallback, shown consistently wherever the team appears | JPEG/PNG/WebP preparation, anonymous viewing, scoped writes, picture removal/error fallback, import preservation |
+| HEX colours (D060) | Add custom colours using #RRGGBB in configuration and team setup; save named reusable swatches | Exact custom HEX survives save/reload, bulk setup and XLSX round trip; invalid values denied; readable labels |
+| Sound (D061) | Configurable round-start/end cues for all viewers; win/loss/draw cues for viewers following the affected team; Enable sound and mute/volume controls | Successful committed actions only, own-team permission-aware results, duplicate/stale suppression, real mobile activation and venue rehearsal |
+
+Audio assets: `public/sounds/round-start.mp3`, `round-end.mp3`, `match-win.mp3`,
+`match-loss.mp3`, `match-draw.mp3`. Browser activation is required on devices that
+block autoplay; simultaneous sound on every device cannot be guaranteed when
+muted, backgrounded, locked, offline or delayed by the network. Cue delivery must
+start promptly after a fresh committed event is received.

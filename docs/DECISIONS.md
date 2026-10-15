@@ -1,5 +1,52 @@
 # Implementation decisions
 
+## D061 — Live sound is device-activated and follows committed actions
+
+Gendy requests round start/end sounds for all viewers and win/loss sounds for
+followers of the affected team; the draw clarification also requests draw sound.
+Plan a master/per-cue event configuration, device Enable sound/mute/volume,
+preloaded MP3 assets in `public/sounds/`, identifier-only fresh round cues and
+visibility-aware own-team result reads. Never play from an optimistic queued
+write, timer expiry or old baseline; deduplicate retries and occurrences.
+Browser activation and foreground/network availability constrain immediacy.
+Implementation and device acceptance remain pending; see MEDIA_AUDIO_PLAN.md.
+
+## D060 — Custom HEX colours and reusable event swatches
+
+Keep default swatches and add explicit #RRGGBB entry plus named event custom
+swatches. Validate/normalise consistently and preserve unknown custom HEX in
+XLSX export/import instead of substituting a default palette colour. Removing a
+swatch never changes a team's saved colour. Planned, not implemented.
+
+## D059 — Team photos supplement catalog avatars
+
+Gendy authorizes uploadable team pictures, superseding plan §19's exclusion.
+Plan optional image_path, public event-scoped Storage, owner/admin writes,
+D034 image preparation and shared-avatar fallback across all team presentations.
+Workbook UPSERT preserves omitted pictures; binary workbook media is excluded.
+Planned, not implemented.
+
+## D058 — Opening attachment is public without login or team selection
+
+Gendy confirms images and PDFs. Plan one optional published attachment per
+OPENING round, managed by the event owner/admin and projected through public
+RPCs. It is available despite hidden standings and without selecting a team;
+this is a specific exception to D046's visitor screen scope. Public Storage links
+remain readable when merely hidden; deletion is needed to revoke future reads.
+Planned, not implemented.
+
+## D057 — SVG hearts and a fixed half-heart draw
+
+Gendy explicitly confirms: a draw always removes half a heart with animation and
+sound. LIVES DRAW therefore becomes -0.5, superseding D053's configurable integer
+draw gain; POINTS scoring is unchanged. Win/loss gains and whole-heart adjustments
+remain configurable as before. Negative hearts remain valid. Use exact half-unit
+numeric contracts end-to-end, including standings/ties and XLSX; computed historical
+hearts draws will recalculate and affected manual tie orders must be invalidated.
+Use red full SVGs in a single row and half-broken SVG for the half remainder/draw;
+large counts need a bounded scrollable/virtualised row, not emoji × N.
+This is agreed requirement and proposed design, not a delivered migration.
+
 ## D056 — English terms, staff never pick a team, compact phone rows
 
 The Arabic UI keeps these terms in English: Guide, Round, Game, Match, Team, Event, Referee, Admin, Owner, Break, Station; "ضد" is written "vs" everywhere. Signed-in staff who guide no team never see team selection: `/choose-team`, the header team chip and "Player screen" are hidden and redirect to their own start page. Below 640 px every `ds-data-table` row renders as two short lines (first column plus an end-aligned last column, then the rest with small labels on numeric or normally hidden values); no column is hidden and the schedule's Table/Cards switch appears only from 640 px. ARIA table roles are explicit so the semantics survive the layout change.
