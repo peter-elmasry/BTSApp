@@ -2,6 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-15 — Reliable round sound and anonymous Home navigation — STARTED
+
+- **Requested by:** Gendy reports no MP3 cue when admins finish/start rounds and intermittent anonymous Home taps doing nothing. Round cues must reach every viewer role after explicit device sound activation.
+- **Preflight:** Clean deployment-record branch; fetched origin and created codex/round-audio-home-fixes from deployed master 9b4d75e. PR #31 remains separate; preserve its test correction and deployment record.
+- **Findings/scope:** Home currently redirects unselected visitors back to choose-team, making the Home link a silent same-page navigation. Keep initial root/QR selection rules but allow explicit Home to render its existing choose-team prompt. Audio currently reads fresh round cues only for the dedicated round_audio message when the socket reports subscribed; a missed/custom broadcast has no independent recovery despite ordinary round_changed signals. Reproduce missing broadcast recovery, then cover admins/anonymous viewers and committed close/start ordering without live production result writes.
+- **Next:** Add regression coverage, fix verified delivery/navigation gaps, run relevant unit/browser/build and cloud checks, publish a separate PR. Browser consent, mute and historical/stale-cue suppression remain required; no unsolicited production event mutations.
+- **Implementation milestone:** Explicit Home now renders its existing pick-team prompt without redirecting back to the same picker; root/QR/staff and schedule/detail guards are retained. Round cues verify on normal round updates, successful write cache invalidation and a two-second foreground recovery check even with a subscribed socket. Fresh cues arriving while MP3s prepare are queued instead of discarded; mute/freshness/deduplication remain enforced. D063 and plan §22 record the amended behavior. No database migration or permission expansion.
+- **Local checks:** Production build passed (below 500 kB), spec TypeScript and 1,034-key translation parity passed. All 19 focused audio/buffering/guard unit tests passed. Browser audio/player suite passed 20/22; both new Home tests initially used the wrong translation lookup, corrected to existing flat keys, then both passed. Includes actual admin close/start actions without broadcasts, owner/admin/referee no-team round playback, subscribed-but-missed broadcast recovery, consent/mute, own results, two tabs and EN/AR/QR/lock behavior. No live production scoring writes were made.
+- **Publication next:** Inspect/publish this isolated fix PR against master and verify full cloud CI/Vercel preview. The fix is not deployed until separately authorized to merge; prior merge authorization covered PR #30.
+
 ## 2026-10-15 — Release integration and deployment readiness — HANDOFF
 
 - **Requested by:** Gendy; proceed with combined CI, database/frontend deployment and readiness checks after the past PRs were merged.

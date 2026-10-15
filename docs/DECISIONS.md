@@ -1,5 +1,21 @@
 # Implementation decisions
 
+## D063 — Round cues recover independently of broadcast delivery; explicit Home is public
+
+Gendy reports missing round start/end sounds and silent Home taps for anonymous
+visitors. After explicit sound activation, all viewer roles verify committed
+round occurrences on ordinary round_changed signals and successful local-write
+cache invalidation, as well as dedicated audio broadcasts. A two-second foreground
+round-cue check also runs while the socket claims to be subscribed, because a
+connected socket alone does not prove delivery. Existing UUID deduplication,
+server-time freshness, mute/config switches, silent history and one audible tab
+remain enforced. Fresh cues received during MP3 preparation wait for decoding
+instead of being discarded. Team result reads remain scoped to the followed team.
+
+The explicit /home route allows visitors without a selected team to render its
+existing pick-team prompt; initial root routing and QR confirmations still lead
+through team selection. Schedule/detail privacy and staff landing rules remain.
+
 ## D062 — CI diagnostic artifacts are best effort
 
 GitHub artifact quota exhaustion must not invalidate passing product checks.

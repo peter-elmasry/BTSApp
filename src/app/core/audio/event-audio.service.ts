@@ -2,6 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import { computed, DestroyRef, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { AuthStore } from '../auth/auth.store';
 import { RpcTransport } from '../offline/rpc-transport';
+import { ReadCacheService } from '../offline/read-cache.service';
 import { EventStore } from '../player/event.store';
 import { TeamSelectionStore } from '../player/team-selection.store';
 import { EventChannelService } from '../realtime/event-channel.service';
@@ -43,6 +44,7 @@ export class EventAudioService {
   private readonly selection = inject(TeamSelectionStore);
   private readonly auth = inject(AuthStore);
   private readonly transport = inject(RpcTransport);
+  private readonly cache = inject(ReadCacheService);
   private readonly channel = inject(EventChannelService);
   readonly config = computed(() => this.events.event()?.audio_config ?? DEFAULT_AUDIO_CONFIG);
   readonly decision = signal(read(PREFERENCE));
@@ -115,19 +117,23 @@ export class EventAudioService {
     });
     const subscription = this.channel.immediate.subscribe((message) => {
       if (message.eventId !== this.eventId || !this.canListen()) return;
-      if (message.event === 'round_audio') void this.readRounds();
+      if (message.event === 'round_audio' || message.event === 'round_changed')
+        void this.readRounds();
       else if (message.event === 'match_changed') void this.readResults();
     });
+    // Successful local writes invalidate the read cache, even without a broadcast.
+    effect(() => {
+      this.cache.updates();
+      untracked(() => void this.readRounds());
+    });
     const poll = setInterval(() => {
-      if (
-        this.eventId &&
-        this.canListen() &&
-        (!this.channel.isSubscribed(this.eventId) || this.failed())
-      ) {
+      if (this.eventId && this.canListen()) {
+        // A subscribed socket can silently miss a database broadcast. Verify fresh
+        // occurrences independently; IDs/server timestamps still prevent replays.
         void this.readRounds();
-        void this.readResults();
+        if (!this.channel.isSubscribed(this.eventId) || this.failed()) void this.readResults();
       }
-    }, 4000);
+    }, 2000);
     const visibility = () => this.foreground.set(this.document.visibilityState !== 'hidden');
     const online = () => {
       this.reset(this.eventId, this.teamCode);
@@ -337,7 +343,7 @@ export class EventAudioService {
     config: AudioConfig,
     generation: number,
   ) {
-    if (!cueEnabled(config, cue) || this.loading() || this.heard(id)) return;
+    if (!cueEnabled(config, cue) || this.heard(id)) return;
     this.remember(id);
     this.audio.enqueue(
       cue,

@@ -26,7 +26,9 @@ export const teamChosenGuard: CanActivateFn = async (route) => {
   const suggested = route.queryParamMap.get('team');
   if (suggested !== null)
     return router.createUrlTree(['/choose-team'], { queryParams: { team: suggested } });
-  return selection.selectedCode() ? true : router.createUrlTree(['/choose-team']);
+  return selection.selectedCode() || route.data?.['allowUnselected']
+    ? true
+    : router.createUrlTree(['/choose-team']);
 };
 
 /** `/choose-team` is for players and guides only. */

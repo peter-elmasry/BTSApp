@@ -92,6 +92,27 @@ describe('activated buffered audio', () => {
     expect(sources).toHaveLength(3);
     audio.destroy();
   });
+  it('retains a fresh round cue while consent-triggered files are still loading', async () => {
+    let release!: () => void;
+    const loading = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const original = fetch;
+    vi.stubGlobal('fetch', async (url: string) => {
+      await loading;
+      return original(url);
+    });
+    const audio = new BufferedAudio(vi.fn());
+    const enabling = audio.enable();
+    await Promise.resolve();
+    audio.enqueue('round-start', () => true);
+    expect(sources).toHaveLength(0);
+    release();
+    await enabling;
+    expect(sources).toHaveLength(1);
+    expect(sources[0].buffer.id).toBe(1);
+    audio.destroy();
+  });
   it('drops queued sounds when their permission/freshness changes', async () => {
     const audio = new BufferedAudio(vi.fn());
     await audio.enable();

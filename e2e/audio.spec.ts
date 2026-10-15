@@ -1,9 +1,93 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { mockAudio, starts } from './audio-fixtures';
+import { eventId } from './public-fixtures';
 import type { RoundAudioCue } from '../src/app/core/audio/audio-types';
 test.use({ serviceWorkers: 'block' });
 const roundId = '66000000-0000-0000-0000-000000000001';
+test('admin hears committed close/start actions without any websocket broadcast', async ({
+  page,
+}) => {
+  const mock = await mockAudio(page, 'en', false, true, 'EVENT_ADMIN');
+  const labels = JSON.parse(readFileSync('public/i18n/en.json', 'utf8'));
+  page.on('response', (response) => {
+    const name = new URL(response.url()).pathname.split('/').at(-1);
+    if (
+      response.request().method() === 'POST' &&
+      response.ok() &&
+      (name === 'close_round' || name === 'start_round')
+    ) {
+      mock.backend.cues.push({
+        cueId: crypto.randomUUID(),
+        roundId,
+        cue: name === 'close_round' ? 'round-end' : 'round-start',
+        occurredAt: new Date().toISOString(),
+      });
+    }
+  });
+  await page.goto(`/manage/${eventId}/live`);
+  await page.getByRole('button', { name: labels.audio.enable, exact: true }).click();
+  await expect(page.getByText(labels.audio.enabled, { exact: true })).toBeVisible();
+  await expect.poll(() => mock.backend.roundReads).toBeGreaterThan(0);
+  await page.getByTestId('end-and-start').click();
+  await page.getByTestId('confirm-live-action').click();
+  await expect.poll(() => mock.live!.snapshot.rounds[0].status).toBe('CLOSED');
+  await expect.poll(() => mock.live!.snapshot.rounds[1].status).toBe('ACTIVE');
+  await expect.poll(() => starts(page), { timeout: 7000 }).toHaveLength(2);
+  expect((await starts(page)).map((item) => item.clip.split('/').at(-1))).toEqual([
+    'round-end.mp3',
+    'round-start.mp3',
+  ]);
+});
+for (const role of ['OWNER', 'EVENT_ADMIN', 'REFEREE'] as const) {
+  test(`round sounds reach ${role} without a selected player team`, async ({ page }) => {
+    const mock = await mockAudio(page, 'en', false, true, role);
+    const labels = JSON.parse(readFileSync('public/i18n/en.json', 'utf8'));
+    await page.goto(role === 'REFEREE' ? '/ref' : `/manage/${eventId}/live`);
+    await page.getByRole('button', { name: labels.audio.enable, exact: true }).click();
+    await expect(page.getByText(labels.audio.enabled, { exact: true })).toBeVisible();
+    await expect.poll(() => mock.backend.roundReads).toBeGreaterThan(0);
+    const cue: RoundAudioCue = {
+      cueId: crypto.randomUUID(),
+      roundId,
+      cue: 'round-end',
+      occurredAt: new Date().toISOString(),
+    };
+    mock.backend.cues.push(cue);
+    await mock.emit('round_changed', { type: 'round_changed', roundId });
+    await expect.poll(() => starts(page)).toHaveLength(1);
+    expect((await starts(page))[0].clip).toContain('round-end.mp3');
+    expect(mock.backend.resultReads).toBe(0);
+  });
+}
+test('a subscribed viewer recovers committed round end/start when broadcasts are missing', async ({
+  page,
+}) => {
+  const mock = await mockAudio(page);
+  const labels = JSON.parse(readFileSync('public/i18n/en.json', 'utf8'));
+  await page.goto('/choose-team');
+  await page.getByRole('button', { name: labels.audio.enable, exact: true }).click();
+  await expect(page.getByText(labels.audio.enabled, { exact: true })).toBeVisible();
+  await expect.poll(() => mock.backend.roundReads).toBeGreaterThan(0);
+  mock.backend.cues.push({
+    cueId: crypto.randomUUID(),
+    roundId,
+    cue: 'round-end',
+    occurredAt: new Date().toISOString(),
+  });
+  await expect.poll(() => starts(page), { timeout: 5000 }).toHaveLength(1);
+  mock.backend.cues.push({
+    cueId: crypto.randomUUID(),
+    roundId,
+    cue: 'round-start',
+    occurredAt: new Date().toISOString(),
+  });
+  await expect.poll(() => starts(page), { timeout: 7000 }).toHaveLength(2);
+  expect((await starts(page)).map((item) => item.clip.split('/').at(-1))).toEqual([
+    'round-end.mp3',
+    'round-start.mp3',
+  ]);
+});
 for (const lang of ['en', 'ar'] as const) {
   test(`sound consent, fresh round cues and mute in ${lang}`, async ({ page }) => {
     const mock = await mockAudio(page, lang);

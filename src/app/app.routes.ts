@@ -23,6 +23,7 @@ export const routes: Routes = [
   },
   {
     path: 'home',
+    data: { allowUnselected: true },
     canActivate: [teamChosenGuard],
     loadComponent: () => import('./features/public/home-page').then((m) => m.HomePage),
   },

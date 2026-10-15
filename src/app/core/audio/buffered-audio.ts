@@ -12,6 +12,7 @@ export class BufferedAudio {
   private queue: PendingSound[] = [];
   private current?: { source: AudioBufferSourceNode; cue: AudioCue };
   private volume = 0.7;
+  private preparing = false;
   constructor(private readonly state: (running: boolean) => void) {}
   get running() {
     return this.context?.state === 'running';
@@ -28,30 +29,36 @@ export class BufferedAudio {
       this.context.onstatechange = () => this.state(this.running);
     }
     const context = this.context;
-    // This call precedes every await, preserving the activation gesture on mobile browsers.
-    const resumed = context.resume();
-    this.gain!.gain.value = this.volume;
-    await resumed;
-    this.state(this.running);
-    if (!this.running) throw new Error('AUDIO_BLOCKED');
-    await Promise.allSettled(
-      AUDIO_CUES.map(async (cue) => {
-        if (this.buffers.has(cue)) return;
-        const response = await fetch(`/sounds/${cue}.mp3`);
-        if (!response.ok) throw new Error('MISSING_AUDIO');
-        const buffer = await context.decodeAudioData(await response.arrayBuffer());
-        if (!buffer.duration) throw new Error('INVALID_AUDIO');
-        this.buffers.set(cue, buffer);
-      }),
-    );
-    return AUDIO_CUES.filter((cue) => !this.buffers.has(cue));
+    this.preparing = true;
+    try {
+      // This call precedes every await, preserving the activation gesture on mobile browsers.
+      const resumed = context.resume();
+      this.gain!.gain.value = this.volume;
+      await resumed;
+      this.state(this.running);
+      if (!this.running) throw new Error('AUDIO_BLOCKED');
+      await Promise.allSettled(
+        AUDIO_CUES.map(async (cue) => {
+          if (this.buffers.has(cue)) return;
+          const response = await fetch(`/sounds/${cue}.mp3`);
+          if (!response.ok) throw new Error('MISSING_AUDIO');
+          const buffer = await context.decodeAudioData(await response.arrayBuffer());
+          if (!buffer.duration) throw new Error('INVALID_AUDIO');
+          this.buffers.set(cue, buffer);
+        }),
+      );
+      return AUDIO_CUES.filter((cue) => !this.buffers.has(cue));
+    } finally {
+      this.preparing = false;
+      this.pump();
+    }
   }
   setVolume(value: number) {
     this.volume = Math.min(1, Math.max(0, value));
     if (this.gain) this.gain.gain.value = this.volume;
   }
   enqueue(cue: AudioCue, allowed: () => boolean) {
-    if (!this.running || !this.buffers.has(cue) || !allowed()) return;
+    if (!this.running || (!this.preparing && !this.buffers.has(cue)) || !allowed()) return;
     const round = cue.startsWith('round-');
     if (round) {
       this.queue = this.queue.filter((item) => item.cue.startsWith('round-'));
@@ -62,7 +69,7 @@ export class BufferedAudio {
     this.pump();
   }
   private pump() {
-    if (this.current || !this.running) return;
+    if (this.preparing || this.current || !this.running) return;
     while (this.queue.length) {
       const item = this.queue.shift()!;
       const buffer = this.buffers.get(item.cue);
