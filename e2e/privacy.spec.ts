@@ -61,8 +61,14 @@ test('signed-in members keep every view and logout clears the device (D047)', as
       return ''; // The page is reloading.
     }
   };
-  await expect.poll(readName).not.toBe('');
-  const left = JSON.parse(await readName());
-  expect(left.keys).toEqual(['bts.lang']);
-  expect(left.session).toBe(0);
+  // Parse and assert the same sample: another read can land in the reload.
+  await expect
+    .poll(async () => {
+      try {
+        return JSON.parse(await readName());
+      } catch {
+        return null;
+      }
+    })
+    .toEqual({ keys: ['bts.lang'], session: 0 });
 });
