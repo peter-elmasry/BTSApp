@@ -1,6 +1,10 @@
 -- D057: exact half-heart draws. Other gains and POINTS remain integer-configured.
 alter table public.events drop constraint events_points_draw_check;
+-- UPDATE OF dependencies prevent altering the column type; preserve the exact trigger.
+drop trigger phase6_points_invalidate on public.events;
 alter table public.events alter column points_draw type numeric using points_draw::numeric;
+create trigger phase6_points_invalidate after update of points_win,points_draw,points_loss,scoring_mode,initial_lives on public.events
+for each row execute function public.phase6_invalidate_ties();
 create function public.half_heart_draw_rule()
 returns trigger language plpgsql set search_path=public,pg_temp as $$
 begin
