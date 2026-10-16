@@ -2,13 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-16 — Password visibility controls — STARTED
+## 2026-10-16 — Password visibility controls — HANDOFF
 
-- **Scope/preflight:** Gendy requested the familiar eye icon to reveal/hide passwords. Clean, fetched `codex/realtime-sound-reliability`; PR #35 final CI and preview passed. Extend that existing UI PR without merging.
-- **Intended changes:** Add an accessible localized toggle to shared password inputs, reuse it for owner create/reset fields, and cover EN/AR login/change/create/reset behavior. Keep values, validation, autocomplete and submission behavior; start masked and reset visibility on programmatic writes.
-- **Next:** Implement, run relevant unit/browser/format/translation/build checks, then commit/push and verify cloud CI. No production writes.
-- **Implementation/checkpoint:** Shared eye/eye-slash controls now cover login, password change/confirmation and owner create/reset fields; keyboard/pressed-state/44 px touch targets use localized labels. Programmatic values remask. App/spec TypeScript, 1,119-key parity, changed-file formatting and whitespace passed. Local Angular unit/build processes ran out of Windows memory, including sequential Node 24 retry; no completed local browser result claimed. Publish for full cloud unit/build/browser acceptance, including six new EN/AR visibility journeys and reset regression.
-- **Cloud milestone:** Run 38844775449 passed 267 units, build, database/integration and all six new visibility journeys. Two existing member-audit browser cases targeted the old native password markup; change that locator to the accessible field label, preserving audit assertions, then rerun full acceptance.
+- **Scope/preflight:** Gendy requested eye icons to reveal/hide passwords. Clean, fetched `codex/realtime-sound-reliability`; extend existing PR #35 without merging.
+- **Delivered:** Shared eye/eye-slash buttons cover all six login/change/confirmation/owner create/reset fields. Independent local visibility, EN/AR labels, keyboard support, pressed state and 44 px touch targets; programmatic writes/form reset remask. Owner fields reuse DsInput; validation, autocomplete, values and submit behavior are retained. D065 and plan §24 updated.
+- **Acceptance:** [CI 38845194160](https://github.com/peter-elmasry/BTSApp/actions/runs/38845194160) on `fc73728` passed 267 units (55 files), all 141 browser tests including six EN/AR visibility journeys and unchanged audit assertions, 1,110 SQL assertions, real database/WebSocket/Auth integration, Edge checks, build, formatting and 1,119-key parity. Initial bundle 459.82 kB; Lighthouse accessibility 100 / best practices 96 / performance 67. Vercel preview succeeded; mobile EN/AR screenshots inspected.
+- **Failures/limits:** Local app/spec TypeScript and formatting/translation/whitespace passed; Windows memory errors blocked Angular unit/build completion despite sequential Node 24 retry, so cloud supplies runtime acceptance. Initial cloud run found two existing audit-test selectors targeting old native markup; corrected to accessible labels, preserving assertions. No physical-device/production acceptance or production writes.
+- **Publication/next:** Implementation and test correction committed/pushed to [PR #35](https://github.com/peter-elmasry/BTSApp/pull/35); this documentation-only commit records accepted SHA `fc73728` and has separate follow-up CI. Review/authorize PR merge, then verify normal migration/frontend release and device rehearsal. No merge/deployment performed.
 
 ## 2026-10-16 — Realtime and sound reliability — HANDOFF
 
