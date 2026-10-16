@@ -7,6 +7,9 @@ deployment access token/project reference to obtain its service credential in
 memory. It creates the VAPID identity once and retains it on subsequent releases.
 No extra paid provider or frontend secret is required. Runtime private keys and
 dispatch secret live in the `round_push_runtime` Vault secret, never in Git/logs.
+The deployment management token must permit revealing project API key secrets;
+an explicitly supplied `SUPABASE_SERVICE_ROLE_KEY` is the alternative. The helper
+requests `reveal=true` in memory and never prints the credential response.
 
 Keep `net` out of Data API exposed schemas. Supabase owns pg_net's grants and
 does not support revoking them per project. Provisioning fails closed unless an
