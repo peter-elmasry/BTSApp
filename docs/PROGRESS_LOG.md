@@ -8,6 +8,7 @@ Append entries newest-first. Preserve older entries as the handoff history.
 - **Intended changes:** Add an accessible localized toggle to shared password inputs, reuse it for owner create/reset fields, and cover EN/AR login/change/create/reset behavior. Keep values, validation, autocomplete and submission behavior; start masked and reset visibility on programmatic writes.
 - **Next:** Implement, run relevant unit/browser/format/translation/build checks, then commit/push and verify cloud CI. No production writes.
 - **Implementation/checkpoint:** Shared eye/eye-slash controls now cover login, password change/confirmation and owner create/reset fields; keyboard/pressed-state/44 px touch targets use localized labels. Programmatic values remask. App/spec TypeScript, 1,119-key parity, changed-file formatting and whitespace passed. Local Angular unit/build processes ran out of Windows memory, including sequential Node 24 retry; no completed local browser result claimed. Publish for full cloud unit/build/browser acceptance, including six new EN/AR visibility journeys and reset regression.
+- **Cloud milestone:** Run 38844775449 passed 267 units, build, database/integration and all six new visibility journeys. Two existing member-audit browser cases targeted the old native password markup; change that locator to the accessible field label, preserving audit assertions, then rerun full acceptance.
 
 ## 2026-10-16 — Realtime and sound reliability — HANDOFF
 

@@ -33,7 +33,7 @@ for (const lang of ['en', 'ar'] as const) {
     const form = page.locator('app-owner-page dialog form').first();
     await form.locator('[formControlName=username]').fill('new_guide');
     await form.locator('[formControlName=full_name_en]').fill('Test Guide');
-    await form.locator('[formControlName=password]').fill('synthetic-test-password');
+    await form.getByLabel(labels.initialPassword, { exact: true }).fill('synthetic-test-password');
     await form.getByRole('button', { name: labels.createMember, exact: true }).click();
     const warning = page.locator('app-owner-page [role=alert]');
     await expect(warning).toContainText(labels.memberOperationPending);
