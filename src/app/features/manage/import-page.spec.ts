@@ -76,7 +76,7 @@ describe('event import confirmation safety', () => {
     expect(page.notice()).toBe('import.success');
   });
 
-  it('merges client and server row errors and blocks confirmation', async () => {
+  it('shows local row errors without sending invalid rows for duplicate server errors', async () => {
     const issue = { sheet: 'Teams' as const, row: 2, column: 'code', code: 'REQUIRED' };
     page.parsed.set({ payload, errors: [issue] });
     api.validate.mockResolvedValue({
@@ -85,10 +85,19 @@ describe('event import confirmation safety', () => {
       errors: [issue, { ...issue, row: 3 }],
     });
     await page.validatePreview();
-    expect(page.issues()).toHaveLength(2);
+    expect(page.issues()).toHaveLength(1);
+    expect(api.validate).not.toHaveBeenCalled();
     expect(page.canConfirm()).toBe(false);
     page.openConfirmation();
     expect(page.confirmationOpen()).toBe(false);
+  });
+
+  it('identifies a workbook from another event before confirmation', () => {
+    page.setup.set({ event: { code: 'PROD', name_ar: 'الإنتاج' } });
+    page.parsed.set({ ...parsed, sourceEventCode: 'OTHER' });
+    expect(page.differentSourceEvent()).toBe(true);
+    page.parsed.set({ ...parsed, sourceEventCode: 'PROD' });
+    expect(page.differentSourceEvent()).toBe(false);
   });
 
   it('ignores a stale server validation after the import mode changes', async () => {

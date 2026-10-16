@@ -9,7 +9,7 @@ export class EventImportService {
   private readonly queue = inject(OpQueueService);
   private readonly cache = inject(ReadCacheService);
   async loadSetup(eventId: string): Promise<Record<string, unknown>> {
-    return this.cache.read<Record<string, unknown>>('get_event_setup', { p_event: eventId });
+    return this.cache.read<Record<string, unknown>>('get_event_setup', { p_event: eventId }, true);
   }
 
   validate(eventId: string, payload: ImportPayload, mode: ImportMode): Promise<ImportReport> {

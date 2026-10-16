@@ -186,6 +186,82 @@ describe('XLSX event setup template v4', () => {
     expect(invalid.errors.map((error) => error.code)).toContain('INVALID_NUMBER');
   });
 
+  it('uses a visible fallback for blank emblems and preserves existing team emblems', async () => {
+    const parsed = await edit(
+      liveBook,
+      (book) => {
+        book.getWorksheet(SHEETS.teams)!.getCell(TABLE_ROW, 4).value = null;
+        book.getWorksheet(SHEETS.teams)!.getCell(TABLE_ROW + 1, 4).value = null;
+      },
+      { ...live, teams: [{ ...live.teams![0], avatar_key: 'crown' }] },
+    );
+    expect(parsed.errors).toEqual([]);
+    expect(parsed.payload.teams[0]['avatar_key']).toBe('crown');
+    expect(parsed.payload.teams[1]['avatar_key']).toBe('lion');
+    expect(parsed.warnings).toContain('import.defaultAvatarsWarning');
+  });
+
+  it('fills a blank hearts draw with the server rule, but never defaults blank points scoring', async () => {
+    const change = (book: Workbook) => {
+      book.getWorksheet(SHEETS.event)!.getCell(eventRow('points_draw'), 2).value = null;
+    };
+    const livesBook = await createImportTemplate({
+      ...live,
+      event: { ...live.event, scoring_mode: 'LIVES', initial_lives: 7 },
+    });
+    const lives = await edit(livesBook, change, live);
+    expect(lives.errors).toEqual([]);
+    expect(lives.payload.event['points_draw']).toBe(-0.5);
+    expect(lives.warnings).toContain('import.halfDrawWarning');
+    const points = await edit(liveBook, change, live);
+    expect(points.errors.some((issue) => issue.code === 'REQUIRED')).toBe(true);
+  });
+
+  it('resolves unique Arabic spelling variants and direct usernames without trusting stale username formulas', async () => {
+    const context = {
+      ...live,
+      teams: live.teams!.map((team, i) => (i ? team : { ...team, name_ar: 'إسماعيل يس' })),
+      eligible_members: members.map((m, i) => (i ? m : { ...m, full_name_ar: 'فيلوباتير ايهاب' })),
+    };
+    const bytes = await createImportTemplate(context);
+    const parsed = await edit(
+      bytes,
+      (book) => {
+        book.getWorksheet(SHEETS.schedule)!.getCell(GRID_ROW, GRID_COL).value = '  اسماعيل   يس ';
+        book.getWorksheet(SHEETS.staff)!.getCell(TABLE_ROW, 1).value = 'فيلوباتير إيهاب';
+        book.getWorksheet(SHEETS.staff)!.getCell(TABLE_ROW + 1, 1).value = 'MINA.MAKRAM';
+      },
+      context,
+    );
+    expect(parsed.errors).toEqual([]);
+    expect(parsed.payload.matches[1]['team_a_code']).toBe('T01');
+    expect(parsed.payload.staff[0]['member']).toBe('mina.makram');
+    expect(parsed.warnings).toContain('import.normalizedNamesWarning');
+    expect(parsed.sourceEventCode).toBe('EVT-1');
+  });
+
+  it('rejects an ambiguous spelling variant instead of assigning the wrong team', async () => {
+    const context = {
+      ...live,
+      teams: live.teams!.map((team, i) =>
+        i < 2 ? { ...team, name_ar: i ? 'احمد' : 'أحمد' } : team,
+      ),
+    };
+    const parsed = await edit(
+      await createImportTemplate(context),
+      (book) => {
+        book.getWorksheet(SHEETS.schedule)!.getCell(GRID_ROW, GRID_COL).value = 'إحمد';
+      },
+      context,
+    );
+    expect(parsed.errors).toContainEqual({
+      sheet: 'Schedule',
+      row: GRID_ROW,
+      column: 'D',
+      code: 'UNKNOWN_TEAM',
+    });
+  });
+
   it('still accepts version 3 workbooks without scoring rows', async () => {
     const parsed = await edit(fresh, (book) => {
       book.getWorksheet(SHEETS.meta)!.getCell(1, 2).value = '3';
@@ -198,6 +274,8 @@ describe('XLSX event setup template v4', () => {
     await book.xlsx.load(arrayBuffer(fresh));
     expect(book.worksheets.map((sheet) => sheet.name)).toEqual(Object.values(SHEETS));
     expect(book.getWorksheet(SHEETS.meta)!.state).toBe('veryHidden');
+    // A frozen pane with no split is rejected by native Excel, but ExcelJS accepts it.
+    expect(book.getWorksheet(SHEETS.start)!.views[0].state).not.toBe('frozen');
     expect(book.getWorksheet(SHEETS.schedule)!.views[0].rightToLeft).toBe(true);
     expect(
       book.getWorksheet(SHEETS.schedule)!.getCell(GRID_ROW, GRID_COL).dataValidation.formulae,

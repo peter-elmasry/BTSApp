@@ -36,6 +36,12 @@ export class EventImportPage {
   readonly modeControl = new FormControl<ImportMode>('UPSERT', { nonNullable: true });
   readonly mode = signal<ImportMode>('UPSERT');
   readonly setup = signal<Record<string, unknown> | null>(null);
+  readonly targetEvent = computed(() => (this.setup()?.['event'] ?? {}) as Record<string, unknown>);
+  readonly differentSourceEvent = computed(
+    () =>
+      !!this.parsed()?.sourceEventCode &&
+      this.parsed()?.sourceEventCode !== this.targetEvent()['code'],
+  );
   readonly loading = signal(true);
   readonly parsing = signal(false);
   readonly validating = signal(false);
@@ -167,6 +173,12 @@ export class EventImportPage {
   async validatePreview() {
     const parsed = this.parsed();
     if (!parsed || this.validating() || this.applying()) return;
+    // Do not turn a few actionable workbook errors into a second cascade of server errors.
+    if (parsed.errors.length) {
+      this.report.set(null);
+      this.confirmationOpen.set(false);
+      return;
+    }
     const revision = this.revision;
     const mode = this.mode();
     this.report.set(null);

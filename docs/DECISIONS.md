@@ -1,5 +1,13 @@
 # Implementation decisions
 
+## D068 — Import previews recover safe omissions and stop error cascades
+
+Workbook sheets with no frozen rows must use a normal view. ExcelJS accepts a zero-split frozen pane on readback, while desktop Excel rejects the generated template and repairs the first sheet's view. Native Excel opening of downloaded templates is separate from library round-trip and browser import acceptance.
+
+Import name references accept Unicode normalization, Arabic alef variants, Arabic vowel marks and whitespace differences only when the result identifies one entity; exact dropdown names still win and ambiguous variants remain errors. Staff can use a current directory username. Cached username formulas are never trusted as identity. A blank emblem preserves the existing avatar by team code during UPSERT, or uses a catalog default; uploaded team photos remain governed by the existing import contract. Blank hearts draws use the server's fixed -0.5 rule. All automatic resolutions are visible preview warnings; invalid explicit avatars, unknown references, duplicate colours and invalid POINTS scores remain errors.
+
+Show the target event name/code on the page and confirmation, and warn when workbook metadata names another source event. Request fresh setup on entry. Local errors stop before server dry-run, avoiding duplicate/cascading reports; locally valid payloads still require server dry-run and apply-time validation. Server permissions and all-or-nothing writes are unchanged. The independently repaired user workbook is outside the repository; Excel compatibility requires a native Excel open/recalculate/save check in addition to parser acceptance.
+
 ## D067 — Visible acknowledgments for completed save actions
 
 Gendy requested clear confirmation whenever a save succeeds. Reuse ToastService's

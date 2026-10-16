@@ -98,6 +98,23 @@ const normalizeHeader = (value: unknown) =>
     .trim()
     .replace(/\*$/, '');
 const text = (value: unknown) => String(value ?? '').trim();
+// Only resolve spelling variants when they identify exactly one entity. Never fuzzy-match people.
+const referenceKey = (value: string) =>
+  value
+    .normalize('NFKC')
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+    .replace(/[أإآٱ]/g, 'ا')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLocaleLowerCase();
+function resolveReference(value: string, entries: Map<string, string>): string | undefined {
+  if (entries.has(value)) return entries.get(value);
+  const key = referenceKey(value);
+  const matches = new Set(
+    [...entries].filter(([name]) => referenceKey(name) === key).map(([, code]) => code),
+  );
+  return matches.size === 1 ? [...matches][0] : undefined;
+}
 const blank = (value: unknown) =>
   value === null || value === undefined || (typeof value === 'string' && value.trim() === '');
 const integer = (value: unknown, min = 0, max = 999999) =>
@@ -207,7 +224,15 @@ function addSheet(book: Workbook, name: string, tab: string, frozenRows = 3) {
   return book.addWorksheet(name, {
     properties: { tabColor: { argb: argb(tab) } },
     views: [
-      { rightToLeft: true, showGridLines: false, state: 'frozen', ySplit: frozenRows, xSplit: 0 },
+      frozenRows > 0
+        ? {
+            rightToLeft: true,
+            showGridLines: false,
+            state: 'frozen',
+            ySplit: frozenRows,
+            xSplit: 0,
+          }
+        : { rightToLeft: true, showGridLines: false, state: 'normal' },
     ],
   });
 }
@@ -1253,11 +1278,17 @@ export async function parseImportWorkbook(
   const warnings: string[] = [];
   if ((payload.event['scoring_mode'] ?? context?.event?.['scoring_mode']) === 'LIVES') {
     const draw = payload.event['points_draw'];
-    if (integer(draw, -999999) || draw === -0.5) {
+    if (blank(draw) || integer(draw, -999999) || draw === -0.5) {
       if (draw !== -0.5) warnings.push('import.halfDrawWarning');
       payload.event['points_draw'] = -0.5;
     }
   }
+  const resolve = (value: string, entries: Map<string, string>) => {
+    const result = resolveReference(value, entries);
+    if (result && !entries.has(value) && !warnings.includes('import.normalizedNamesWarning'))
+      warnings.push('import.normalizedNamesWarning');
+    return result;
+  };
 
   // Read named custom swatches from the generated list; team payloads still contain HEX only.
   const listColours = new Map(TEAM_PALETTE.map((entry) => [entry.name, entry.hex]));
@@ -1284,9 +1315,18 @@ export async function parseImportWorkbook(
         listColours.get(colorText) ??
         (/^#[0-9a-f]{6}$/i.test(colorText) ? colorText.toUpperCase() : '');
       const avatarText = text(scalar(tm.getCell(r, 4).value, 'Teams', r, 'D', errors));
-      const avatar =
+      let avatar =
         AVATAR_LABELS.find((entry) => entry.label === avatarText)?.key ??
         (TEAM_AVATARS.includes(avatarText) ? avatarText : '');
+      if (!avatarText) {
+        const existing = context?.teams?.find((team) => team['code'] === code);
+        const previous = text(existing?.['avatar_key']);
+        avatar = TEAM_AVATARS.includes(previous)
+          ? previous
+          : TEAM_AVATARS[(r - TABLE_ROW) % TEAM_AVATARS.length];
+        if (!warnings.includes('import.defaultAvatarsWarning'))
+          warnings.push('import.defaultAvatarsWarning');
+      }
       if (color && usedColors.has(color))
         errors.push({ sheet: 'Teams', row: r, column: 'C', code: 'DUPLICATE_COLOR' });
       if (color) usedColors.set(color, r);
@@ -1330,7 +1370,7 @@ export async function parseImportWorkbook(
 
   // opening round from the event sheet
   if (openingGame) {
-    const code = gameCodeByName.get(openingGame);
+    const code = resolve(openingGame, gameCodeByName);
     const r = eventRow('opening_game');
     if (!code) errors.push({ sheet: 'Event', row: r, column: 'B', code: 'UNKNOWN_GAME' });
     payload.rounds.push({
@@ -1387,22 +1427,23 @@ export async function parseImportWorkbook(
           errors.push({ sheet: 'Schedule', row: r, column: ca, code: 'UNKNOWN_GAME' });
           continue;
         }
-        for (const [team, column] of [
-          [a, ca],
-          [b, cb],
+        const teamA = resolve(a, teamCodeByName);
+        const teamB = resolve(b, teamCodeByName);
+        for (const [, column, code] of [
+          [a, ca, teamA],
+          [b, cb, teamB],
         ] as const) {
-          if (!teamCodeByName.has(team))
-            errors.push({ sheet: 'Schedule', row: r, column, code: 'UNKNOWN_TEAM' });
-          else if (seen.has(team))
+          if (!code) errors.push({ sheet: 'Schedule', row: r, column, code: 'UNKNOWN_TEAM' });
+          else if (seen.has(code))
             errors.push({ sheet: 'Schedule', row: r, column, code: 'TEAM_ALREADY_SCHEDULED' });
-          seen.add(team);
+          if (code) seen.add(code);
         }
         payload.matches.push({
           row: r,
           round_number: number,
           game_code: gameAt[g],
-          team_a_code: teamCodeByName.get(a) ?? a,
-          team_b_code: teamCodeByName.get(b) ?? b,
+          team_a_code: teamA ?? a,
+          team_b_code: teamB ?? b,
         });
       }
     }
@@ -1411,6 +1452,7 @@ export async function parseImportWorkbook(
   // staff — one referee row per game, grouped back to comma game_codes for the server
   const directory = memberDirectory(context?.eligible_members);
   const usernameByName = new Map(directory.map((m) => [m.name, m.username]));
+  for (const member of directory) usernameByName.set(member.username, member.username);
   const st = sheets.staff!;
   if (checkHeaders(st, 3, STAFF_HEADERS.slice(0, 4), 'Staff', errors)) {
     const referees = new Map<string, ImportRecord>();
@@ -1420,14 +1462,14 @@ export async function parseImportWorkbook(
       const game = text(scalar(st.getCell(r, 3).value, 'Staff', r, 'C', errors));
       const team = text(scalar(st.getCell(r, 4).value, 'Staff', r, 'D', errors));
       if (!member && !roleText && !game && !team) continue;
-      const username = usernameByName.get(member) ?? (context?.eligible_members ? '' : member);
+      const username = resolve(member, usernameByName) ?? (context?.eligible_members ? '' : member);
       if (member && !username)
         errors.push({ sheet: 'Staff', row: r, column: 'A', code: 'MEMBER_NOT_FOUND' });
       const role = roleKey(roleText);
-      const gameCode = game ? gameCodeByName.get(game) : '';
+      const gameCode = game ? resolve(game, gameCodeByName) : '';
       if (game && !gameCode)
         errors.push({ sheet: 'Staff', row: r, column: 'C', code: 'UNKNOWN_GAME' });
-      const teamCode = team ? teamCodeByName.get(team) : '';
+      const teamCode = team ? resolve(team, teamCodeByName) : '';
       if (team && !teamCode)
         errors.push({ sheet: 'Staff', row: r, column: 'D', code: 'UNKNOWN_TEAM' });
       if (role === 'REFEREE' && username && !team) {
@@ -1475,6 +1517,7 @@ export async function parseImportWorkbook(
   return {
     payload,
     warnings,
+    sourceEventCode: text(meta.getCell(2, 2).value),
     errors: [
       ...errors,
       ...validation.filter((issue) => !seen.has(`${issue.sheet}:${issue.row}:${issue.column}`)),

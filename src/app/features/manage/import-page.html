@@ -1,10 +1,13 @@
 <div *transloco="let t" class="min-w-0 space-y-5">
-  @for (warning of parsed()?.warnings ?? []; track warning) {
-    <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(warning) }}</p>
-  }
   <header class="space-y-3">
     <h1 class="text-2xl font-extrabold">{{ t('import.title') }}</h1>
     <p class="text-sm text-slate">{{ t('import.intro') }}</p>
+    @if (setup()) {
+      <p class="font-semibold" data-testid="import-target">
+        {{ t('import.targetEvent') }}: {{ targetEvent()['name_ar'] || targetEvent()['name_en'] }} ·
+        {{ targetEvent()['code'] }}
+      </p>
+    }
   </header>
   @if (notice()) {
     <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
@@ -75,6 +78,18 @@
           }
         </dl>
         <p class="text-sm text-slate">{{ t('import.previewHint') }}</p>
+        @if (parsed()?.warnings?.length) {
+          <details class="rounded-xl bg-gold-soft p-3">
+            <summary class="min-h-11 cursor-pointer py-2 font-semibold">
+              {{ t('import.automaticFixes') }} ({{ parsed()?.warnings?.length }})
+            </summary>
+            <ul class="space-y-2 text-sm">
+              @for (warning of parsed()?.warnings ?? []; track warning) {
+                <li>{{ t(warning) }}</li>
+              }
+            </ul>
+          </details>
+        }
         <details>
           <summary class="min-h-11 cursor-pointer py-2 font-semibold">
             {{ t('import.eventSettings') }}
@@ -113,6 +128,16 @@
           </details>
         }
       </section>
+      @if (differentSourceEvent()) {
+        <p role="status" class="rounded-xl bg-gold-soft p-3">
+          {{
+            t('import.sourceEventWarning', {
+              source: parsed()?.sourceEventCode,
+              target: targetEvent()['code'],
+            })
+          }}
+        </p>
+      }
       @if (issues().length) {
         <section class="space-y-3 rounded-card bg-white p-4 shadow-card" aria-live="polite">
           <h2 class="text-lg font-bold text-error">
@@ -171,6 +196,10 @@
   @if (confirmationOpen()) {
     <ds-bottom-sheet [title]="t('import.confirmTitle')" (close)="closeConfirmation()">
       <div class="space-y-4">
+        <p class="font-semibold">
+          {{ t('import.targetEvent') }}:
+          {{ targetEvent()['name_ar'] || targetEvent()['name_en'] }} · {{ targetEvent()['code'] }}
+        </p>
         <p>{{ t(mode() === 'REPLACE' ? 'import.confirmReplace' : 'import.confirmUpsert') }}</p>
         <p class="text-sm text-slate">{{ t('import.atomicHint') }}</p>
         @if (notice() === 'import.applyFailed') {
