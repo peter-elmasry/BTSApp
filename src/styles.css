@@ -109,6 +109,9 @@ select {
   padding: 1rem;
   box-shadow: var(--shadow-card);
 }
+.ds-card + .ds-card {
+  margin-block-start: 4px;
+}
 .ds-actions {
   display: flex;
   flex-wrap: wrap;
@@ -159,6 +162,7 @@ select {
   background: var(--color-teal);
 }
 .ds-control {
+  margin-block-start: 4px;
   min-height: 48px;
   border: 1px solid var(--color-slate);
   border-radius: 0.75rem;

@@ -211,7 +211,24 @@
             autocomplete="new-password"
             formControlName="password"
             data-testid="owner-new-password"
-          /><small class="block text-slate">{{ t('owner.passwordHint') }}</small></label
+            [attr.aria-invalid]="
+              passwordForm.controls.password.touched && passwordForm.controls.password.invalid
+            "
+            aria-describedby="owner-password-help"
+          /><small
+            id="owner-password-help"
+            class="block"
+            [class.text-error]="
+              passwordForm.controls.password.touched && passwordForm.controls.password.invalid
+            "
+            >{{
+              t(
+                passwordForm.controls.password.touched && passwordForm.controls.password.invalid
+                  ? 'owner.passwordTooShort'
+                  : 'owner.passwordHint'
+              )
+            }}</small
+          ></label
         >
         <label class="block space-y-1"
           ><span>{{ t('account.confirmPassword') }}</span

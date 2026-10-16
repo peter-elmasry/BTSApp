@@ -56,7 +56,7 @@ export class TeamViewState {
       if (!event || !code) return;
       this.loading.set(true);
       void this.api
-        .teamView(event.id, code)
+        .teamView(event.id, code, true)
         .then((view) => {
           if (request === this.request && context === this.context()) {
             this.responseContext.set(context);

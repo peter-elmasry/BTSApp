@@ -2,6 +2,18 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-16 — Realtime and sound reliability — STARTED
+
+- **Requested/preflight:** Gendy approved implementation of reliable live updates, sound recovery/test playback and both collapsible sound cards. Clean workspace; fetched master and created `codex/realtime-sound-reliability`.
+- **Scope:** Shared foreground recovery and bounded broadcasts; fresh/coalesced reads; protect setup drafts; playback acknowledgment and result recovery; compact accessible EN/AR controls. Audit database emissions and add missing signals only where necessary. No live event writes or merging.
+- **Next:** Implement focused regression coverage, run local checks and cloud integration acceptance, then publish the checked PR.
+- **Milestone/steering:** Full local unit suite passed 262/262 after fixing the new recovery test's timer setup. Production build passed with one worker; unconstrained concurrent processes exhausted Windows memory. Gendy additionally requested helpful password validation; add inline required/minimum-length/mismatch feedback using existing design-system error/hint/ARIA support, preserving temporary-password login rules.
+- **Implementation/checks:** Migration 0030 adds a thin audit-sequence/current-event recovery token plus missing current-event/admin-role notifications. Shared probes check every 4–5 seconds while visible, back off failures and avoid full reads when unchanged; notifications batch within 250 ms. Fresh/coalesced reads, live owner lists/profile refresh and protected setup drafts are integrated. Result sounds recover every two seconds; queued cues acknowledge source start, clip downloads retry once, and both cards collapse with Test sound. EN/AR password messages reuse field error/ARIA support.
+- **Browser/checkpoint:** New healthy broadcast (2 s), missed-score/visibility recovery (7 s) and EN/AR settings-draft tests pass (3/3 rerun). Audio/password journeys passed apart from duplicate error text (fixed and rechecked) and an initially incomplete CORS fixture (fixed after trace inspection). The broad local run was interrupted during final display/runner cleanup; full cloud browser acceptance is still required. EN/AR mobile screenshots inspected. TypeScript, 1,117-key parity, changed-file formatting/whitespace, 22 login and 34 member Edge checks passed. Last production build: 458.62 kB initial (<500 kB).
+- **Environment/next:** Local SQL cannot run: Supabase CLI reaches 127.0.0.1:54322 but connection is refused. New SQL and real database-to-WebSocket checks run in cloud via the localhost-only Auth acceptance runner. Final focused units, diff review/publication and cloud checks remain next; no production writes/deployment.
+- **Additional steering:** Gendy requested 4 px more label/input/card spacing and reliable post-add/delete list refresh. Shared control/adjacent-card CSS supplies spacing; owner member/event reloads now force fresh reads after actions, with a creation/deactivation regression. A failed-read recovery marker also keeps probes retrying a stale snapshot even when the audit token has not changed; abandoned read markers expire to avoid perpetual refetching.
+- **Final unit milestone:** All 265 local unit tests across 54 files passed, including failed-read recovery, clip retry, owner list refresh and playback acknowledgment. Latest build/browser sequence is running; cloud SQL and real transport verification follow publication.
+
 ## 2026-10-16 — Registration production release verification — DONE
 
 - **Requested/preflight:** Gendy confirmed PR #33 merged and authorized post-merge follow-through. Clean workspace; fetched origin and branched `codex/registration-release-verification` from merged master `743e7b1`.

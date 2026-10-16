@@ -929,3 +929,28 @@ team's link, expired/disabled/replaced/closed-event links, private guide/event s
 reassignment, corrections after round lock, individual/batch undo/restore, online-only
 confirmation and EN/AR mobile accessibility. Existing scoring/results/public browsing
 must retain their behavior. Verify SQL in cloud CI when local Supabase is unavailable.
+
+## 24. Realtime and sound reliability — approved 2026-10-16
+
+Live foreground screens must update without manual refresh: target within two
+seconds for delivered broadcasts and seven seconds for silently missed broadcasts
+on the agreed healthy test network. Keep thin signals and server-enforced read
+permissions; use cheap recovery probes even while subscribed, bounded notification
+batching and fresh/coalesced reads. Protect unsaved setup/settings edits and retain
+displayed content/focus while refreshing. Check scoring, adjustments, rounds,
+settings, roster, permissions and current-event changes. Back off failures and
+pause unnecessary hidden/offline work.
+
+Recover both round and followed-team result sounds. Explicit local Test sound,
+meaningful activation/error state and acknowledgment on actual playback are
+required. Preserve consent, mute, freshness, privacy and cross-tab deduplication.
+Both device sound controls and admin sound settings are expandable/collapsible;
+keep errors, current status, device actions and unsaved-change indication visible.
+D065 records implementation details. Validate unit/browser regressions, real local
+database/WebSocket delivery, EN/AR mobile layouts, build and permission checks.
+Real-device audible output remains an operator acceptance check.
+
+Gendy additionally requested clear password validation feedback: show localized
+inline required-field, 12-character minimum and confirmation-mismatch messages,
+with accessible field associations. Preserve existing temporary-password login
+rules; the minimum applies when setting a new password.

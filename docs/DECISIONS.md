@@ -1,5 +1,46 @@
 # Implementation decisions
 
+## D065 — Live screens recover missed broadcasts and sound acknowledges playback
+
+Gendy approved reliable foreground updates, sound diagnosis/recovery and both
+collapsible sound cards. Keep identifier-only broadcasts and permission-filtered
+RPC reads. Batch notifications within 250 ms without extending the window on each
+message. Every watched foreground event checks a small public update token every
+4–5 seconds, including while subscribed; unchanged tokens cause no screen refetch.
+The token contains current-event ID and event/global audit sequence markers, never
+audit contents, private roster information or scores. Failed probes back off to
+30 seconds; online/visibility recovery still refreshes immediately. Hidden/offline
+tabs skip probes. Current-event changes notify old/new event channels; admin role
+changes emit the existing roster signal. Staff profiles refresh on shared revisions.
+
+Fresh refresh requests bypass stale-first responses while offline cached reads and
+initial public snapshots remain supported. EventStore coalesces pending refreshes
+with one follow-up; cache notification is for background revalidation, avoiding
+fresh-read feedback loops. Setup detects changed server snapshots and preserves
+settings/nested-editor/form/sheet drafts behind an explicit refresh notice.
+Failed network reads request another refresh even if the token is unchanged;
+abandoned read markers expire after 30 seconds. Global audit counts also distinguish
+out-of-order commits to independent member records. Owner member/event lists use
+fresh reads after creation, deactivation and other completed actions.
+
+Round and selected-team result cues both verify fresh committed occurrences every
+two seconds after activation, independently of WebSocket status. Queued cues are
+marked heard only after source.start succeeds; cancelled/unavailable cues may retry
+within the existing ten-second freshness window. Explicit Test sound uses the same
+engine and requires activation; it is a local speaker test even when organizers
+disable automatic event cues. It does not mark event history heard. Native details
+disclosures keep sound settings compact, retain drafts and leave device actions,
+status and errors visible. Consent, mute, one audible event tab, foreground-only
+event playback and silent initial/history snapshots remain in effect.
+Gendy also requested 4 px more shared label/control and adjacent-card spacing, and
+localized inline password length/confirmation/required-field feedback. Reuse the
+existing input error/hint/ARIA contract; do not apply new-password length rules to
+temporary-password sign-in.
+
+Real localhost database-to-WebSocket acceptance supplements browser fixtures in
+the existing CI Auth runner. Physical Android/iPhone speaker and venue acceptance
+remain separate; a playback API call cannot establish audible hardware output.
+
 ## D064 — Team invites register guests once per event and support audited undo
 
 Gendy approved name-required/phone-optional registration through guide-shared team

@@ -6,6 +6,7 @@ import {
   effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -14,7 +15,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthStore } from '../../core/auth/auth.store';
 import { supabase } from '../../core/supabase/client';
 import { OpQueueService } from '../../core/offline/op-queue.service';
-import { ReadCacheService } from '../../core/offline/read-cache.service';
+import { ReadCacheService, stableJson } from '../../core/offline/read-cache.service';
 import {
   availableTeamCodes,
   newTeams,
@@ -38,6 +39,7 @@ import { startWith } from 'rxjs';
 import { LIFE_EMOJI_SUGGESTIONS } from '../../core/player/scoring';
 import { DsLivesMeter } from '../../shared/ui/lives-meter';
 import { ManageContext } from './manage-context';
+import { EventChannelService } from '../../core/realtime/event-channel.service';
 import { DsAvatar } from '../../shared/ui/avatar';
 import { teamImageUrl } from '../../shared/ui/team-image';
 import { OpeningAttachmentEditor } from './opening-attachment-editor';
@@ -182,6 +184,8 @@ export class EventSetupPage {
     return this.setup()?.eligible_members ?? [];
   });
   readonly notice = signal('');
+  readonly changesAvailable = signal(false);
+  private serverSignature = '';
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly previewCount = signal(2);
@@ -335,6 +339,16 @@ export class EventSetupPage {
 
   constructor() {
     const context = inject(ManageContext);
+    const channel = inject(EventChannelService);
+    const release = this.eventId ? channel.acquire(this.eventId) : () => {};
+    inject(DestroyRef).onDestroy(release);
+    effect(() => {
+      channel.revision();
+      untracked(() => {
+        if (!this.setup() || this.loading() || this.saving()) return;
+        void this.reload(true);
+      });
+    });
     // D057 fixes every hearts draw at -0.5; POINTS remains editable.
     const modeChanges = this.settingsForm.controls.scoring_mode.valueChanges.subscribe((mode) => {
       const value = this.settingsForm.getRawValue();
@@ -365,12 +379,12 @@ export class EventSetupPage {
     void this.reload();
   }
 
-  async reload() {
-    if (!this.eventId) return;
+  async reload(background = false) {
+    if (!this.eventId || this.loading()) return;
     this.loading.set(true);
     let data: SetupData;
     try {
-      data = await this.cache.read<SetupData>('get_event_setup', { p_event: this.eventId });
+      data = await this.cache.read<SetupData>('get_event_setup', { p_event: this.eventId }, true);
     } catch (error) {
       this.notice.set(`errors.${(error as { message?: string }).message || 'LOAD_FAILED'}`);
       this.loading.set(false);
@@ -378,6 +392,30 @@ export class EventSetupPage {
     }
     this.loading.set(false);
     const value = data as SetupData;
+    const signature = stableJson(value);
+    if (background) {
+      if (signature === this.serverSignature) return;
+      // Nested settings editors and open sheets own drafts too. Never remount
+      // or patch them underneath the operator.
+      if (
+        this.tab() === 'settings' ||
+        this.saving() ||
+        this.settingsForm.dirty ||
+        this.teamForm.dirty ||
+        this.gameForm.dirty ||
+        this.roundForm.dirty ||
+        this.matchForm.dirty ||
+        this.staffForm.dirty ||
+        this.bulk() ||
+        this.cell() ||
+        this.refereeSheet()
+      ) {
+        this.changesAvailable.set(true);
+        return;
+      }
+    }
+    this.serverSignature = signature;
+    this.changesAvailable.set(false);
     const teamCodes = new Map(value.teams.map((team) => [team.id, team.code]));
     const memberById = new Map((value.eligible_members ?? []).map((member) => [member.id, member]));
     const gamesByMember = new Map<string, string[]>();
@@ -420,6 +458,7 @@ export class EventSetupPage {
     this.settingsForm.controls.points_draw.setValue(
       value.event.scoring_mode === 'LIVES' ? -0.5 : value.event.points_draw,
     );
+    this.settingsForm.markAsPristine();
     for (const name of ['scoring_mode', 'initial_lives'] as const) {
       const control = this.settingsForm.controls[name];
       if (rounds.some((round) => !!round.started_at)) control.disable({ emitEvent: false });

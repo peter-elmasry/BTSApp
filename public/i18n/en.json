@@ -610,7 +610,8 @@
     "roundColumn": "Round",
     "activeRound": "Now",
     "endLateHint": "{{n}} matches still have no result. They stay open as late results: the referee or an admin can still enter them. Nothing is cancelled.",
-    "whoWon": "Who won?"
+    "whoWon": "Who won?",
+    "changesAvailable": "Updates are available. Your edits are preserved; save or reload when ready."
   },
   "errors.ROUND_NOT_DRAFT": "Only a draft round can be started.",
   "errors.ROUND_NOT_ACTIVE": "This round is no longer active. Refresh to see its current state.",
@@ -1090,7 +1091,9 @@
       "match-win": "Match win",
       "match-loss": "Match loss / forfeit",
       "match-draw": "Match draw"
-    }
+    },
+    "test": "Test sound",
+    "unsaved": "Unsaved sound settings. Expand to review and save."
   },
   "errors.INVALID_AUDIO_CONFIG": "Sound is unavailable. Reconnect or try Enable sound again.",
   "registration": {
@@ -1176,5 +1179,6 @@
       "OFFLINE": "Connect to the internet and try again. Registration changes require confirmation from the server.",
       "SAVE_FAILED": "Could not complete the request. Please try again."
     }
-  }
+  },
+  "auth.requiredField": "This field is required."
 }

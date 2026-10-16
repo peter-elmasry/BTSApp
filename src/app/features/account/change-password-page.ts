@@ -30,17 +30,38 @@ export class ChangePasswordPage {
     }),
     confirm: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
+  passwordValidation() {
+    const control = this.form.controls.password;
+    if (!control.touched && !control.dirty) return '';
+    if (control.invalid) return 'errors.INVALID_PASSWORD';
+    const username = this.auth.profile()?.username?.toLowerCase();
+    return username && control.value.toLowerCase().includes(username)
+      ? 'errors.PASSWORD_TOO_WEAK'
+      : '';
+  }
+  confirmValidation() {
+    const control = this.form.controls.confirm;
+    return (control.touched || control.dirty) && control.value !== this.form.controls.password.value
+      ? 'errors.PASSWORD_MISMATCH'
+      : '';
+  }
 
   async submit() {
     if (this.busy()) return;
+    this.form.markAllAsTouched();
     const { password, confirm } = this.form.getRawValue();
-    if (this.form.invalid || password.length < 12) {
+    if (this.form.controls.password.invalid || password.length < 12) {
       this.form.markAllAsTouched();
       this.error.set('INVALID_PASSWORD');
       return;
     }
     if (password !== confirm) {
+      this.form.controls.confirm.markAsTouched();
       this.error.set('PASSWORD_MISMATCH');
+      return;
+    }
+    if (this.passwordValidation()) {
+      this.error.set('PASSWORD_TOO_WEAK');
       return;
     }
     this.busy.set(true);

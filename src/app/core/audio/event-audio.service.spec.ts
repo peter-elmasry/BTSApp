@@ -166,6 +166,22 @@ describe('audio activation and private response lifetime', () => {
     expect(starts).toBe(1);
     expect(service.enabled()).toBe(false);
   });
+  it('recovers a fresh result without broadcasts while the socket reports subscribed', async () => {
+    await service.enable();
+    await flush();
+    result = { ...result, outcome: 'WIN', occurredAt: new Date().toISOString() };
+    await vi.waitFor(() => expect(starts).toBe(1), { timeout: 3500 });
+    immediate.next({ eventId: 'e1', event: 'match_changed', payload: {} });
+    await flush();
+    expect(starts).toBe(1);
+    expect(JSON.parse(localStorage.getItem('bts.audio.heard.v1')!)).toHaveLength(1);
+  });
+  it('plays an explicit local speaker test without replaying event history', async () => {
+    await service.testSound();
+    await flush();
+    expect(starts).toBe(1);
+    expect(localStorage.getItem('bts.audio.heard.v1')).toBeNull();
+  });
   it('discards an in-flight result when the followed team changes', async () => {
     await service.enable();
     await flush();

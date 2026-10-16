@@ -318,3 +318,36 @@ test('event master switch keeps the device silent without prompting', async ({ p
   await expect(page.getByTestId('audio-consent')).toHaveCount(0);
   expect(await starts(page)).toHaveLength(0);
 });
+
+test('subscribed viewers recover result sounds without broadcasts', async ({ page }) => {
+  const mock = await mockAudio(page, 'en', true);
+  const labels = JSON.parse(readFileSync('public/i18n/en.json', 'utf8'));
+  await page.goto('/home');
+  await page.getByRole('button', { name: labels.audio.enable, exact: true }).click();
+  await expect.poll(() => mock.backend.resultReads).toBeGreaterThan(0);
+  mock.backend.results = [
+    { matchId: 'missed-result', roundId, outcome: 'WIN', occurredAt: new Date().toISOString() },
+  ];
+  await expect.poll(() => starts(page), { timeout: 7000 }).toHaveLength(1);
+  await page.waitForTimeout(2200);
+  expect(await starts(page)).toHaveLength(1);
+});
+
+for (const lang of ['en', 'ar'] as const) {
+  test(`device sound options collapse and test playback in ${lang}`, async ({ page }) => {
+    await mockAudio(page, lang);
+    const labels = JSON.parse(readFileSync(`public/i18n/${lang}.json`, 'utf8'));
+    await page.goto('/choose-team');
+    await page.getByRole('button', { name: labels.audio.keepMuted, exact: true }).click();
+    const options = page.getByTestId('audio-options');
+    await expect(options).not.toHaveAttribute('open', '');
+    await options.locator('summary').click();
+    await page.getByRole('button', { name: labels.audio.test, exact: true }).click();
+    await expect.poll(() => starts(page)).toHaveLength(1);
+    await options.locator('summary').click();
+    await expect(page.getByRole('button', { name: labels.audio.mute, exact: true })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(
+      false,
+    );
+  });
+}

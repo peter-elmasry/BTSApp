@@ -8,17 +8,17 @@ export class LiveApi {
   private readonly cache = inject(ReadCacheService);
   private readonly queue = inject(OpQueueService);
   admin(eventId: string): Promise<LiveSnapshot> {
-    return this.cache.read('get_live_event', { p_event: eventId });
+    return this.cache.read('get_live_event', { p_event: eventId }, true);
   }
   board(eventId: string): Promise<LiveSnapshot> {
-    return this.cache.read('get_referee_board', { p_event: eventId });
+    return this.cache.read('get_referee_board', { p_event: eventId }, true);
   }
   /** Event administrators' contacts for guides, referees and admins of the event (D043). */
   contacts(eventId: string): Promise<StaffContact[]> {
     return this.cache.read('get_event_contacts', { p_event: eventId });
   }
   match(matchId: string): Promise<LiveSnapshot> {
-    return this.cache.read('get_match_entry', { p_match: matchId });
+    return this.cache.read('get_match_entry', { p_match: matchId }, true);
   }
   mutate<T = unknown>(
     name: LiveMutation,

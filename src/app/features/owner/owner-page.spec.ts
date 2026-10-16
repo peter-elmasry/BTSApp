@@ -5,6 +5,8 @@ import { OpQueueService } from '../../core/offline/op-queue.service';
 import { ReadCacheService } from '../../core/offline/read-cache.service';
 import { OwnerPage } from './owner-page';
 import { DirectionService } from '../../core/i18n/i18n.service';
+import { EventChannelService } from '../../core/realtime/event-channel.service';
+import { signal } from '@angular/core';
 
 describe('owner member operation reconciliation', () => {
   const member = {
@@ -18,17 +20,20 @@ describe('owner member operation reconciliation', () => {
     has_login: true,
   };
   let page: OwnerPage;
+  const read = vi.fn();
   const invoke = vi.fn();
   beforeEach(() => {
+    read.mockReset().mockResolvedValue([]);
     TestBed.configureTestingModule({
       providers: [
         { provide: DirectionService, useValue: { language: () => 'en' } },
+        { provide: EventChannelService, useValue: { revision: signal(0) } },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { routeConfig: { path: 'owner/members' } } },
         },
         { provide: OpQueueService, useValue: {} },
-        { provide: ReadCacheService, useValue: { read: async () => [] } },
+        { provide: ReadCacheService, useValue: { read } },
       ],
     });
     page = TestBed.runInInjectionContext(() => new OwnerPage());
@@ -50,6 +55,20 @@ describe('owner member operation reconciliation', () => {
     expect(page.pendingOperation()).toBe('operation-reference');
     expect(page.notice()).not.toBe('owner.memberSaved');
     expect(page.memberForm.controls.password.value).toBe('');
+  });
+  it('refreshes member lists from the server after creation and deactivation', async () => {
+    invoke.mockResolvedValue({ error: null, data: { ok: true } });
+    read.mockImplementation(async (name: string) => (name === 'list_members' ? [member] : []));
+    page.memberForm.patchValue({ username: 'guide', full_name_en: 'Guide' });
+    await page.saveMember();
+    expect(page.members()).toEqual([member]);
+    expect(read).toHaveBeenCalledWith('list_members', {}, true);
+    read.mockImplementation(async (name: string) =>
+      name === 'list_members' ? [{ ...member, is_active: false }] : [],
+    );
+    await page.toggleActive(member);
+    expect(page.members()[0].is_active).toBe(false);
+    expect(read).toHaveBeenCalledWith('list_events', {}, true);
   });
   it('shows a pending password reset without announcing success', async () => {
     page.openPassword(member);

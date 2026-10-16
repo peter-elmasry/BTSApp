@@ -153,6 +153,7 @@ export async function mockLiveEvent(
       }
     } else {
       if (name === 'get_my_profile') data = profile;
+      if (name === 'get_event_update_token') data = JSON.stringify([snapshot, profile]);
       if (name === 'server_now') data = new Date().toISOString();
       if (name === 'get_current_event') data = snapshot.event;
       if (name === 'get_bootstrap')

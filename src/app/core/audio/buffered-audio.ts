@@ -3,6 +3,8 @@ import { AUDIO_CUES, type AudioCue } from './audio-types';
 interface PendingSound {
   cue: AudioCue;
   allowed: () => boolean;
+  started: () => void;
+  discarded: () => void;
 }
 /** No audio context or asset request is created until enable() runs in a user gesture. */
 export class BufferedAudio {
@@ -40,11 +42,23 @@ export class BufferedAudio {
       await Promise.allSettled(
         AUDIO_CUES.map(async (cue) => {
           if (this.buffers.has(cue)) return;
-          const response = await fetch(`/sounds/${cue}.mp3`);
-          if (!response.ok) throw new Error('MISSING_AUDIO');
-          const buffer = await context.decodeAudioData(await response.arrayBuffer());
-          if (!buffer.duration) throw new Error('INVALID_AUDIO');
-          this.buffers.set(cue, buffer);
+          for (let attempt = 0; attempt < 2; attempt++) {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 5000);
+            try {
+              const response = await fetch(`/sounds/${cue}.mp3`, { signal: controller.signal });
+              if (!response.ok) throw new Error('MISSING_AUDIO');
+              const buffer = await context.decodeAudioData(await response.arrayBuffer());
+              if (!buffer.duration) throw new Error('INVALID_AUDIO');
+              this.buffers.set(cue, buffer);
+              return;
+            } catch (error) {
+              if (attempt === 1) throw error;
+              await new Promise((resolve) => setTimeout(resolve, 250));
+            } finally {
+              clearTimeout(timeout);
+            }
+          }
         }),
       );
       return AUDIO_CUES.filter((cue) => !this.buffers.has(cue));
@@ -57,23 +71,31 @@ export class BufferedAudio {
     this.volume = Math.min(1, Math.max(0, value));
     if (this.gain) this.gain.gain.value = this.volume;
   }
-  enqueue(cue: AudioCue, allowed: () => boolean) {
-    if (!this.running || (!this.preparing && !this.buffers.has(cue)) || !allowed()) return;
+  enqueue(cue: AudioCue, allowed: () => boolean, started = () => {}, discarded = () => {}) {
+    if (!this.running || (!this.preparing && !this.buffers.has(cue)) || !allowed()) return false;
     const round = cue.startsWith('round-');
     if (round) {
-      this.queue = this.queue.filter((item) => item.cue.startsWith('round-'));
+      this.queue = this.queue.filter((item) => {
+        if (item.cue.startsWith('round-')) return true;
+        item.discarded();
+        return false;
+      });
       if (this.current && !this.current.cue.startsWith('round-')) this.stopCurrent();
     }
-    if (this.queue.length >= 8) return;
-    this.queue.push({ cue, allowed });
+    if (this.queue.length >= 8) return false;
+    this.queue.push({ cue, allowed, started, discarded });
     this.pump();
+    return true;
   }
   private pump() {
     if (this.preparing || this.current || !this.running) return;
     while (this.queue.length) {
       const item = this.queue.shift()!;
       const buffer = this.buffers.get(item.cue);
-      if (!buffer || !item.allowed()) continue;
+      if (!buffer || !item.allowed()) {
+        item.discarded();
+        continue;
+      }
       const source = this.context!.createBufferSource();
       source.buffer = buffer;
       source.connect(this.gain!);
@@ -87,8 +109,10 @@ export class BufferedAudio {
       };
       try {
         source.start(0, 0, Math.min(buffer.duration, 4));
+        item.started();
       } catch {
         this.stopCurrent();
+        item.discarded();
         this.state(false);
       }
       return;
@@ -108,6 +132,7 @@ export class BufferedAudio {
     }
   }
   clear() {
+    this.queue.forEach((item) => item.discarded());
     this.queue = [];
     this.stopCurrent();
   }

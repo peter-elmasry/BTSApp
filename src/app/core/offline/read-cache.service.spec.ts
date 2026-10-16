@@ -57,6 +57,17 @@ describe('last-known RPC cache and privacy', () => {
     await cache.read('get_schedule', { p_event: 'e1' }, true);
     expect(cache.updates()).toBe(1);
   });
+  it('requests recovery after a failed read even when the server update token is unchanged', async () => {
+    const cache = TestBed.inject(ReadCacheService);
+    rpc.mockResolvedValue({ round: 1 });
+    await cache.read('get_schedule', { p_event: 'e1' }, true);
+    rpc.mockRejectedValue(new TypeError('Failed to fetch'));
+    expect(await cache.read('get_schedule', { p_event: 'e1' }, true)).toEqual({ round: 1 });
+    expect(cache.needsRecovery()).toBe(true);
+    rpc.mockResolvedValue({ round: 2 });
+    expect(await cache.read('get_schedule', { p_event: 'e1' }, true)).toEqual({ round: 2 });
+    expect(cache.needsRecovery()).toBe(false);
+  });
 
   it('never serves owner data to an anonymous or different signed-in user', async () => {
     session.set({ user: { id: 'owner-user' } });

@@ -2,6 +2,8 @@ import { DOCUMENT } from '@angular/common';
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { Subject } from 'rxjs';
 import type { RoundAudioCue } from '../audio/audio-types';
+import { RpcTransport } from '../offline/rpc-transport';
+import { ReadCacheService } from '../offline/read-cache.service';
 
 export function thinRoundAudioSignal(
   event: string,
@@ -51,7 +53,7 @@ export function thinEventSignal(event: string, payload: unknown): boolean {
   );
 }
 export function pollingDelay(random = Math.random()): number {
-  return 12000 + Math.floor(random * 6000);
+  return 4000 + Math.floor(random * 1000);
 }
 export interface ChannelHandle {
   close(): void;
@@ -59,6 +61,16 @@ export interface ChannelHandle {
 
 @Injectable({ providedIn: 'root' })
 export class EventChannelTransport {
+  private readonly rpc = inject(RpcTransport);
+  private readonly cache = inject(ReadCacheService);
+  needsRecovery() {
+    return this.cache.needsRecovery();
+  }
+  probe(eventId: string): Promise<string> {
+    return this.rpc.rpc('get_event_update_token', {
+      p_event: eventId === 'current' ? null : eventId,
+    });
+  }
   async connect(
     eventId: string,
     receive: (event: string, payload: unknown) => void,
@@ -83,9 +95,10 @@ interface WatchedChannel {
   disconnected: boolean;
   generation: number;
   handle?: ChannelHandle;
-  fallback?: ReturnType<typeof setTimeout>;
   poll?: ReturnType<typeof setTimeout>;
   debounce?: ReturnType<typeof setTimeout>;
+  token?: string;
+  failures: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -144,6 +157,7 @@ export class EventChannelService {
       this.document.removeEventListener('visibilitychange', visibility);
       this.document.defaultView?.removeEventListener('online', online);
     });
+    // A live socket does not prove delivery. Keep one recovery timer per watched event.
   }
   watch(eventId: string | null): void {
     if (eventId === this.shellEvent) return;
@@ -177,6 +191,7 @@ export class EventChannelService {
       subscribed: false,
       disconnected: true,
       generation: 0,
+      failures: 0,
     };
     this.channels.set(eventId, channel);
     if (this.document.visibilityState !== 'hidden') this.connect(eventId, channel);
@@ -191,14 +206,14 @@ export class EventChannelService {
     if (this.destroyed) return;
     const generation = ++channel.generation;
     channel.disconnected = false;
-    channel.fallback = setTimeout(() => {
-      if (!channel.subscribed && !channel.disconnected) this.poll(channel);
-    }, 10000);
+    this.revision.update((value) => value + 1);
+    channel.poll = setTimeout(() => this.poll(eventId, channel), pollingDelay());
     void this.transport
       .connect(
         eventId,
         (event, payload) => {
-          if (generation !== channel.generation) return;
+          if (generation !== channel.generation || this.document.visibilityState === 'hidden')
+            return;
           if (thinRoundAudioSignal(event, payload)) {
             this.immediateMessages.next({ eventId, event: 'round_audio', payload });
             return;
@@ -206,20 +221,18 @@ export class EventChannelService {
           if (!thinEventSignal(event, payload)) return;
           const type = (payload as { type?: string }).type ?? event;
           this.immediateMessages.next({ eventId, event: type, payload });
-          if (channel.debounce) clearTimeout(channel.debounce);
-          channel.debounce = setTimeout(() => this.revision.update((value) => value + 1), 500);
+          if (!channel.debounce)
+            channel.debounce = setTimeout(() => {
+              channel.debounce = undefined;
+              this.revision.update((value) => value + 1);
+            }, 250);
         },
         (status) => {
           if (generation !== channel.generation) return;
           const wasSubscribed = channel.subscribed;
           channel.subscribed = status === 'SUBSCRIBED';
-          if (channel.subscribed) {
-            if (channel.fallback) clearTimeout(channel.fallback);
-            if (channel.poll) clearTimeout(channel.poll);
-            channel.poll = undefined;
-            if (!wasSubscribed) this.revision.update((value) => value + 1);
-          } else if (wasSubscribed) {
-            channel.fallback = setTimeout(() => this.poll(channel), 10000);
+          if (channel.subscribed && !wasSubscribed) {
+            this.revision.update((value) => value + 1);
           }
         },
       )
@@ -228,13 +241,34 @@ export class EventChannelService {
         else channel.handle = handle;
       })
       .catch(() => {
-        /* The 10-second fallback also covers unavailable WebSocket transports. */
+        /* Recovery probes also cover unavailable WebSocket transports. */
       });
   }
-  private poll(channel: WatchedChannel) {
-    if (channel.subscribed || channel.disconnected || this.destroyed) return;
-    this.revision.update((value) => value + 1);
-    channel.poll = setTimeout(() => this.poll(channel), pollingDelay());
+  private async poll(eventId: string, channel: WatchedChannel) {
+    if (channel.disconnected || this.destroyed) return;
+    const generation = channel.generation;
+    if (
+      this.document.visibilityState !== 'hidden' &&
+      this.document.defaultView?.navigator.onLine !== false
+    ) {
+      try {
+        const token = await this.transport.probe(eventId);
+        if (generation !== channel.generation) return;
+        channel.failures = 0;
+        if (token !== channel.token || this.transport.needsRecovery()) {
+          channel.token = token;
+          this.revision.update((value) => value + 1);
+        }
+      } catch {
+        if (generation !== channel.generation) return;
+        channel.failures = Math.min(channel.failures + 1, 3);
+      }
+    }
+    if (generation === channel.generation)
+      channel.poll = setTimeout(
+        () => this.poll(eventId, channel),
+        Math.min(30000, pollingDelay() * 2 ** channel.failures),
+      );
   }
   private disconnect(channel: WatchedChannel) {
     ++channel.generation;
@@ -242,9 +276,8 @@ export class EventChannelService {
     channel.subscribed = false;
     channel.handle?.close();
     channel.handle = undefined;
-    if (channel.fallback) clearTimeout(channel.fallback);
     if (channel.poll) clearTimeout(channel.poll);
     if (channel.debounce) clearTimeout(channel.debounce);
-    channel.fallback = channel.poll = channel.debounce = undefined;
+    channel.poll = channel.debounce = undefined;
   }
 }

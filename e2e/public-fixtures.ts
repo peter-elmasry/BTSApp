@@ -126,6 +126,8 @@ export async function mockPublicEvent(
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
     const rpc = new URL(route.request().url()).pathname.split('/').at(-1);
     let data: unknown = null;
+    if (rpc === 'get_event_update_token')
+      data = JSON.stringify([options, event, bootstrap, matches]);
     if (rpc === 'get_current_event') data = options.noEvent ? null : event;
     if (rpc === 'get_bootstrap' && options.beforeStart)
       data = {

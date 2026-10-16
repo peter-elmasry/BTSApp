@@ -98,7 +98,19 @@ export class AppShell {
   constructor() {
     void this.auth.initialize().then(() => this.events.initialize());
     void this.clock.synchronize();
-    effect(() => this.channel.watch(this.events.event()?.id ?? null));
+    effect(() => this.channel.watch(this.events.event()?.id ?? 'current'));
+    let profileFlight = false;
+    effect(() => {
+      this.channel.revision();
+      if (!this.auth.session() || !this.auth.ready() || profileFlight) return;
+      profileFlight = true;
+      void this.auth
+        .loadProfile()
+        .catch(() => undefined)
+        .finally(() => {
+          profileFlight = false;
+        });
+    });
     let previousIdentity: string | undefined;
     effect(() => {
       if (!this.auth.ready()) return;
