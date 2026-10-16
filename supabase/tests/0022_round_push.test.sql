@@ -72,8 +72,8 @@ select is(public.round_push_admit(repeat('e',64)),false,'bounded shared-address 
 update public.round_push_admission set window_at=clock_timestamp()-interval '2 hours';
 select ok(public.round_push_admit(repeat('e',64)),'admission recovers after its window');
 set local role anon;
-select ok(not has_table_privilege('anon','net.http_request_queue','select'),'guest cannot read queued dispatch credentials');
-select ok(not has_table_privilege('authenticated','net.http_request_queue','select'),'staff cannot read queued dispatch credentials');
+select throws_ok($$select public.wake_round_push()$$,'42501',null,'guest cannot invoke the private queue wake RPC');
+select throws_ok($$select public.finish_round_push(gen_random_uuid(),gen_random_uuid(),201)$$,'42501',null,'guest cannot acknowledge another device delivery');
 select throws_ok($$select * from public.round_push_devices$$,'42501',null,'guest cannot read endpoints');
 select throws_ok($$select * from public.round_push_deliveries$$,'42501',null,'guest cannot read queue');
 select throws_ok($$select public.round_push_config()$$,'42501',null,'guest cannot read runtime keys');

@@ -18,6 +18,14 @@ if (!key && ref && process.env.SUPABASE_ACCESS_TOKEN) {
 }
 if (!key)
   throw new Error('Provide a service role key or the existing Supabase deployment credentials.');
+// Supabase's managed pg_net grants cannot be revoked per project. Its request
+// headers must remain unreachable through the Data API, regardless of caller role.
+const boundary = await fetch(`${projectUrl}/rest/v1/http_request_queue`, {
+  headers: { apikey: key, Authorization: `Bearer ${key}`, 'Accept-Profile': 'net' },
+  signal: AbortSignal.timeout(30000),
+});
+if (boundary.status !== 406 || (await boundary.json()).code !== 'PGRST106')
+  throw new Error('Remove net from the Data API exposed schemas before configuring push.');
 async function rpc(name, body = {}) {
   const response = await fetch(`${projectUrl}/rest/v1/rpc/${name}`, {
     method: 'POST',

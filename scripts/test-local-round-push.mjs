@@ -13,6 +13,19 @@ const url = values.API_URL;
 if (!url || !['localhost', '127.0.0.1'].includes(new URL(url).hostname))
   throw new Error('Push integration is restricted to localhost.');
 const client = createClient(url, values.SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+const boundary = await fetch(`${url}/rest/v1/http_request_queue`, {
+  headers: {
+    apikey: values.ANON_KEY,
+    Authorization: `Bearer ${values.ANON_KEY}`,
+    'Accept-Profile': 'net',
+  },
+});
+assert.equal(
+  boundary.status,
+  406,
+  'Networking request headers must not be exposed through the anonymous Data API.',
+);
+assert.equal((await boundary.json()).code, 'PGRST106');
 const functionUrl = `${url}/functions/v1/round-push`;
 const request = (action, secret) =>
   fetch(functionUrl, {

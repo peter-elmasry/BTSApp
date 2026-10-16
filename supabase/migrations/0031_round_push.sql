@@ -1,8 +1,8 @@
 -- D069: private device subscriptions and an expiring transactional delivery outbox.
 create extension if not exists pg_net with schema extensions;
 create extension if not exists pg_cron;
--- pg_net request headers contain the dispatch credential while a request is queued.
-revoke all on net.http_request_queue,net._http_response from public,anon,authenticated;
+-- Supabase owns pg_net's platform grants. Keep net out of Data API exposed schemas;
+-- provisioning and the real-runtime probe verify that API boundary before using Vault.
 
 create table public.round_push_devices (
   receipt_hash text primary key check(receipt_hash ~ '^[a-f0-9]{64}$'),

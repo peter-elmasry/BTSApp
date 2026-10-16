@@ -8,6 +8,12 @@ memory. It creates the VAPID identity once and retains it on subsequent releases
 No extra paid provider or frontend secret is required. Runtime private keys and
 dispatch secret live in the `round_push_runtime` Vault secret, never in Git/logs.
 
+Keep `net` out of Data API exposed schemas. Supabase owns pg_net's grants and
+does not support revoking them per project. Provisioning fails closed unless an
+explicit `Accept-Profile: net` API request is rejected with PGRST106; CI repeats
+that check using the anonymous key. Trusted database login roles can read queued
+HTTP headers. See the [Supabase platform constraint](https://supabase.com/docs/guides/troubleshooting/revoking-access-to-pg_net-objects-has-no-effect-0bbc16).
+
 The production workflow's `PUSH_APP_ORIGIN` variable defaults to the verified
 production host, `https://dst-scoring.vercel.app`. Set that variable when moving
 domains. For a separate project, supply `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`

@@ -302,6 +302,10 @@ await check(
       process.env.PUSH_APP_ORIGIN = config.origin;
       delete process.env.PUSH_VAPID_SUBJECT;
       globalThis.fetch = async (url, options) => {
+        if (url.endsWith('/rest/v1/http_request_queue')) {
+          assert.equal(options.headers['Accept-Profile'], 'net');
+          return Response.json({ code: 'PGRST106' }, { status: 406 });
+        }
         if (url.endsWith('/rpc/round_push_config')) return Response.json(stored);
         if (url.endsWith('/rpc/configure_round_push')) {
           stored = JSON.parse(options.body).p_config;
