@@ -1,5 +1,15 @@
 # Event-day runbook
 
+**Production release verified 2026-10-16:** PR #33 is merged as `743e7b1`.
+Master [CI 38814241798](https://github.com/peter-elmasry/BTSApp/actions/runs/38814241798)
+and [Supabase deployment 38814241643](https://github.com/peter-elmasry/BTSApp/actions/runs/38814241643)
+passed. Deployment logs confirm migration `0029_team_registration.sql` applied
+and login/members Edge Functions deployed. Vercel reports success for the same
+commit. Read-only mobile Chromium smoke checks on the public production domain
+passed in EN/AR: 12 teams render, invalid invite links are rejected, anonymous
+roster execution is denied, and no page errors or horizontal overflow occur.
+Physical-device and venue acceptance remain pending.
+
 ### Player invite registration (D064)
 
 - In the account menu, open **Players & invite links**. Guides see assigned teams;
@@ -178,8 +188,9 @@ Reconciliation is an operator procedure until an owner recovery UI is implemente
 
 ## Acceptance record before release
 
-The hearts/media/audio extensions in implementation plan §22 are implemented in
-stacked PRs; deployment and physical-device rehearsal remain pending. Rehearse exact half-heart draws,
+The hearts/media/audio extensions in implementation plan §22 and registration in
+§23 are merged and deployed through production commit `743e7b1`.
+Physical-device rehearsal remains pending. Rehearse exact half-heart draws,
 public opening image/PDF access without login/team selection, team photos and
 custom HEX workbook round trips. The supplied clips live in `public/sounds/`:
 `round-start.mp3`, `round-end.mp3`, `match-win.mp3`, `match-loss.mp3` and `match-draw.mp3`.
