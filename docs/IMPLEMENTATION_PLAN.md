@@ -960,11 +960,12 @@ password change and owner create/reset forms. Start masked, retain validation an
 autocomplete, support keyboard/touch and EN/AR accessible labels, and remask when
 forms reset or receive programmatic values.
 
-## 26. Clear save feedback — approved 2026-10-16
+## 25. Owner release information — approved 2026-10-16
 
-Every successful user save has a visible localized acknowledgment using the
-existing toast or retained modal status. Cover setup/settings/media, users/events,
-passwords/profiles, results/adjustments, import, standings and player management.
-Offline operations explicitly say queued until confirmed; failed/rejected or
-needs-review writes must not announce success. Reuse the existing dismissible
-five-second live toast and avoid one toast per row in bulk operations.
+Show owners, including gendui and masry, the loaded frontend release in their
+account/More menu. Automatically derive R<merged PR number> and short commit from
+build metadata for every merged-PR deployment. Mark Production, Preview and
+Development explicitly; fall back to exact revision when PR identity is absent.
+No release row for guests or non-owner members. EN/AR mobile layout and role
+coverage are required. D066 records build metadata and old-cache semantics.
+

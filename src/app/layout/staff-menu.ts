@@ -21,6 +21,7 @@ import type { StaffContact } from '../core/live/live-types';
 import { isEventAdmin } from './navigation';
 
 import { TeamSelectionStore } from '../core/player/team-selection.store';
+import { environment } from '../../environments/environment';
 
 /** Account and "More" sheet for signed-in members (UX plan §4.1, §4.4). */
 @Component({
@@ -30,6 +31,12 @@ import { TeamSelectionStore } from '../core/player/team-selection.store';
   templateUrl: './staff-menu.html',
 })
 export class StaffMenu {
+  // Generated `as const` version/hash literals intentionally differ in numbered builds.
+  readonly release: Readonly<{
+    version: string;
+    commit: string;
+    environment: 'production' | 'preview' | 'development';
+  }> = environment.release;
   readonly close = output<void>();
   readonly auth = inject(AuthStore);
   readonly selection = inject(TeamSelectionStore);
