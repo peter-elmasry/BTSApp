@@ -37,6 +37,7 @@ jobs:
           fi
           npx prettier --check "${changed_files[@]}"
       - run: npm run test:i18n
+      - run: npm run test:release
       - run: npm run test:edge
       - run: npm test
       - run: npm run build

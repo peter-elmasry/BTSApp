@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-16 — Owner release information — STARTED
+
+- **Scope/preflight:** Gendy requested an owner-only release number that updates after PR merges, a new PR and the expected label to verify deployment. Clean workspace; fetched master `a9828e4` (PR #35 merged) and branched `codex/owner-release-info`.
+- **Design/next:** Generate immutable build metadata from Vercel/Git identity; display R<merged PR number>, exact short commit and environment in the owner account menu using existing OWNER permission. Preview PR identity is explicitly marked; missing PR metadata falls back to the commit rather than a fabricated release. No runtime polling, credentials, extra database writes or release-counter commits. Add focused generator/role/browser tests, validate, publish a new PR and verify cloud CI.
+- **Implementation/checkpoint:** Metadata generation, npm build/watch hooks, owner menu row, EN/AR labels and five role/layout browser cases implemented; D066/plan §25/runbook updated. Four metadata tests, app/spec TypeScript, 1,124-key parity, changed-file formatting and whitespace passed. Corrected a synthetic test SHA to exactly 40 characters; malformed identities remain rejected. Local production build is pending under constrained workers; cloud full unit/build/browser/database acceptance follows publication.
+
 ## 2026-10-16 — Password visibility controls — HANDOFF
 
 - **Scope/preflight:** Gendy requested eye icons to reveal/hide passwords. Clean, fetched `codex/realtime-sound-reliability`; extend existing PR #35 without merging.
