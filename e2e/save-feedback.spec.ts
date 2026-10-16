@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { eventId } from './public-fixtures';
 import { mockStandingsEvent } from './standings-fixtures';
+import { mockOwner } from './owner-fixtures';
 
 test.use({ serviceWorkers: 'block' });
 const headers = {
@@ -11,6 +12,45 @@ const headers = {
 };
 for (const lang of ['en', 'ar'] as const) {
   const t = JSON.parse(readFileSync(`public/i18n/${lang}.json`, 'utf8'));
+  test(`save toast stays above a modal and survives its closing in ${lang}`, async ({ page }) => {
+    await mockOwner(page, lang);
+    let saved = false;
+    let release!: () => void;
+    const refresh = new Promise<void>((resolve) => (release = resolve));
+    await page.route('**/functions/v1/members', (route) => {
+      if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+      saved = true;
+      return route.fulfill({ headers, json: { ok: true } });
+    });
+    await page.route('**/rest/v1/rpc/list_members', async (route) => {
+      if (saved && route.request().method() !== 'OPTIONS') await refresh;
+      return route.fallback();
+    });
+    await page.goto('/owner/members');
+    await page.getByTestId('member-actions').first().click();
+    await page
+      .getByTestId('member-action-sheet')
+      .getByRole('button', { name: t.owner.setPassword })
+      .click();
+    const sheet = page.getByRole('dialog');
+    await sheet
+      .getByLabel(t['account.newPassword'], { exact: true })
+      .fill('synthetic-test-password');
+    await sheet
+      .getByLabel(t['account.confirmPassword'], { exact: true })
+      .fill('synthetic-test-password');
+    await sheet.getByRole('button', { name: t.owner.setPassword, exact: true }).click();
+    await expect(sheet.getByTestId('toast')).toHaveText(t.owner.passwordSaved);
+    await expect(page.getByTestId('toast')).toHaveCount(1);
+    const box = (await sheet.getByTestId('toast').boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+    await page.screenshot({ path: `artifacts/save-modal-${lang}.png`, fullPage: true });
+    release();
+    await expect(sheet).toBeHidden();
+    await expect(page.getByTestId('toast')).toHaveText(t.owner.passwordSaved);
+  });
+
   test(`settings save confirms only after server acknowledgment in ${lang}`, async ({ page }) => {
     await mockStandingsEvent(page, { role: 'EVENT_ADMIN', lang });
     let release!: () => void;

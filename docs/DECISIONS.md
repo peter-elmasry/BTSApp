@@ -6,8 +6,9 @@ Gendy requested clear confirmation whenever a save succeeds. Reuse ToastService'
 localized five-second dismissible live message at each acknowledged save boundary,
 including setup/settings/media, owner accounts/events/passwords, scoring and
 adjustments, import, standings and player corrections. Keep existing inline
-notices/errors and referee/profile toasts. Retained modal forms keep their inline
-acknowledgment; closing sheets expose the global toast. No generic success toast
+notices/errors and referee/profile toasts. The single active toast renders inside
+the open native dialog, then returns to the page when that dialog closes, avoiding
+inert/covered feedback and duplicate toast content. No generic success toast
 from the background queue or reads, and no duplicate referee result announcement.
 
 Queued writes say queued, never saved; failure, rejected import and needs-review

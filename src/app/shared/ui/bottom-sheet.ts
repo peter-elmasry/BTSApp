@@ -11,13 +11,15 @@ import {
   viewChild,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { DsToast, ToastService } from './toast';
 @Component({
   selector: 'ds-bottom-sheet',
-  imports: [TranslocoPipe],
+  imports: [TranslocoPipe, DsToast],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './bottom-sheet.html',
 })
 export class DsBottomSheet implements OnDestroy {
+  private readonly toast = inject(ToastService);
   readonly title = input.required<string>();
   /** `full` = near full-height sheet for drill-downs. */
   readonly size = input<'auto' | 'full'>('auto');
@@ -34,6 +36,7 @@ export class DsBottomSheet implements OnDestroy {
       this.previousOverflow = this.document.body.style.overflow;
       this.document.body.style.overflow = 'hidden';
       this.dialog().nativeElement.showModal();
+      this.toast.retarget();
     });
   }
   backdrop(event: MouseEvent) {
@@ -58,6 +61,7 @@ export class DsBottomSheet implements OnDestroy {
   ngOnDestroy() {
     this.destroyed = true;
     this.dialog().nativeElement.close();
+    this.toast.retarget();
     this.document.body.style.overflow = this.previousOverflow;
     this.previousFocus?.focus();
   }
