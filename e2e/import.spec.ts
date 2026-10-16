@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 
 // Keep RPC mocks on the page request path; the shell suite verifies the real service worker.
@@ -89,14 +89,60 @@ for (const lang of ['en', 'ar']) {
     await downloadButton.click();
     const download = await downloadPromise;
     const buffer = await readFile((await download.path())!);
+    await mkdir('artifacts', { recursive: true });
+    await writeFile(`artifacts/import-template-${lang}.xlsx`, buffer);
+    const ExcelJS = (await import('exceljs')).default;
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer);
+    // Realistic edited workbook: show one local error, with no duplicate server cascade.
+    const teams = workbook.getWorksheet('الفرق')!;
+    teams.getCell('C5').value = teams.getCell('C4').value;
+    await page.locator('input[type=file]').setInputFiles({
+      name: 'needs-correction.xlsx',
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      buffer: Buffer.from(await workbook.xlsx.writeBuffer()),
+    });
+    await expect(page.getByText(labels.issue.DUPLICATE_COLOR, { exact: true })).toBeVisible();
+    expect(calls).toHaveLength(0);
+    await expect(
+      page.getByRole('button', { name: labels.reviewImport, exact: true }),
+    ).toBeDisabled();
+    // Correct the file and exercise spelling resolution, blank emblem/half-heart defaults,
+    // and a visible warning about importing a workbook exported from another event.
+    teams.getCell('C5').value = 'أزرق';
+    teams.getCell('B4').value = 'إسماعيل يس';
+    teams.getCell('D4').value = null;
+    workbook.getWorksheet('الألعاب')!.getCell('B4').value = 'لعبة';
+    const schedule = workbook.getWorksheet('الجدول')!;
+    schedule.getCell('C5').value = 20;
+    schedule.getCell('D5').value = 'اسماعيل يس';
+    schedule.getCell('E5').value = teams.getCell('B5').value;
+    const settings = workbook.getWorksheet('الحدث')!;
+    settings.getCell('B6').value = null;
+    settings.getCell('B14').value = 'قلوب';
+    settings.getCell('B15').value = 7;
+    workbook.getWorksheet('_meta')!.getCell('B2').value = 'OTHER-EVENT';
     await page.locator('input[type=file]').setInputFiles({
       name: 'setup.xlsx',
       mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      buffer,
+      buffer: Buffer.from(await workbook.xlsx.writeBuffer()),
     });
     await expect.poll(() => calls.filter((call) => call.p_dry_run).length).toBe(1);
     const review = page.getByRole('button', { name: labels.reviewImport, exact: true });
     await expect(review).toBeEnabled();
+    await expect(page.getByTestId('import-target')).toContainText('IMPORT-DEMO');
+    await page.getByText(labels.automaticFixes, { exact: false }).click();
+    await expect(page.getByText(labels.defaultAvatarsWarning, { exact: true })).toBeVisible();
+    await expect(page.getByText(labels.normalizedNamesWarning, { exact: true })).toBeVisible();
+    await expect(page.getByText(labels.halfDrawWarning, { exact: true })).toBeVisible();
+    await expect(
+      page.getByText(
+        labels.sourceEventWarning
+          .replace('{{source}}', 'OTHER-EVENT')
+          .replace('{{target}}', 'IMPORT-DEMO'),
+        { exact: true },
+      ),
+    ).toBeVisible();
     expect(calls.filter((call) => !call.p_dry_run)).toHaveLength(0);
     expect(calls[0].p_payload.teams).toHaveLength(20);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(

@@ -338,7 +338,12 @@
       "Staff": "Staff",
       "Workbook": "Workbook"
     },
-    "halfDrawWarning": "Hearts draws in this workbook were changed to the fixed −0.5 rule."
+    "halfDrawWarning": "Hearts draws in this workbook were changed to the fixed −0.5 rule.",
+    "normalizedNamesWarning": "Equivalent Arabic spellings were matched to a unique team, game or member. Review the resolved names in the preview.",
+    "defaultAvatarsWarning": "Blank emblems keep each existing team's emblem, or use a default for new teams. Team photos are optional and can be uploaded from Setup → Teams.",
+    "targetEvent": "Import into event",
+    "automaticFixes": "Review automatic corrections",
+    "sourceEventWarning": "This workbook came from {{source}}. You are importing into {{target}}. Review event settings, including the event name, before confirming."
   },
   "app": {
     "title": "Demiana Sports Team"

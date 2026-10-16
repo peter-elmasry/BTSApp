@@ -591,6 +591,8 @@ Required fields; codes unique per sheet; references resolve (game/team/round cod
 
 ### 11.3 Flow & modes
 Upload → parse → client validation table (row-level errors, red) → `import_event_setup(dry_run=true)` → merged report → **Confirm** → `dry_run=false`. **All-or-nothing transaction.**
+
+Current import usability contract (D066): show the target event and flag workbooks exported from another event. Stop at local errors before server dry-run. Resolve only unique equivalent Arabic spellings; allow current staff usernames. Blank team emblems preserve existing catalog avatars or use defaults, and blank LIVES draws use -0.5, with reviewable correction notices. Explicit invalid values and ambiguous references still block import. Generated sheets with no frozen rows use normal views; downloaded files must also open in desktop Excel, beyond ExcelJS/browser round-trip acceptance.
 - `UPSERT` (default): match by `code` / `number`; never deletes.
 - `REPLACE`: wipes teams/games/rounds/matches/staff of the event then imports; allowed only while event `DRAFT` and no round ever started.
 

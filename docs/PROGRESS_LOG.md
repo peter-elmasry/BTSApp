@@ -2,6 +2,16 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-16 — Excel import recovery and validation UX — HANDOFF
+
+- **Request/preflight:** Investigate Excel removing worksheets from the supplied corrected workbook and improve the import experience. Clean master at a9828e4, refreshed origin; branch `fix/import-workbook-reliability`.
+- **Confirmed cause:** The externally repaired workbook lost XML namespace bindings required by Excel's markup-compatibility attributes. ExcelJS parsing alone did not catch this; Excel's recovery log identifies the five rewritten sheets. The original user workbook remains the recovery source. No production import has been applied through this chat.
+- **Scope:** Rebuild the user's workbook while preserving namespace bindings, formulas, styles and validation; verify all sheets and importer output. Improve ambiguous-name handling, actionable validation and safe defaults with regression coverage. Do not commit private workbook/staff data.
+- **App defect found/fixed:** The first template sheet emitted a zero-split frozen pane. ExcelJS/browser round trips accepted it, but normal desktop Excel open failed; repair logs named sheet1's view. Use a normal view for zero frozen rows. Both exact browser-downloaded EN/AR files now open normally in desktop Excel with 9 sheets and 20 populated default teams.
+- **UX delivered:** Safe, unambiguous Arabic spelling resolution and direct usernames; visible blank-emblem/half-heart defaults; compact correction review; fresh setup; explicit target name/code and source-event warning; stop local-invalid files before duplicate/cascading server errors. Server validation/permissions/atomicity unchanged. D066 and plan section 11.3 updated.
+- **Verification passed:** 29 focused unit tests, EN/AR 360 px browser download/edit/local-error/re-upload/server-validation/confirmation flows with accessibility/overflow checks, production build (459.82 kB initial), app/spec TypeScript, 1124-key translation parity and changed-file formatting. Rebuilt private workbook opened, recalculated and saved by desktop Excel; all 9 sheets/212 formulas/validations preserved, 12 teams each have 7 regular matches, and importer reads 12 teams/8 games/8 rounds/43 matches/37 staff with zero local errors. Output remains outside the repo.
+- **Environment/remaining:** Sandboxed unit temporary-file renames and local test-server communication failed; the same checks passed outside the sandbox. Chrome still denies automated file selection despite the user's earlier permission attempt, so live server acceptance and production import remain pending. Two games in the source have no referees specified; no assignments invented. Publish this branch/PR, verify cloud CI, and leave merge/deployment for explicit authorization.
+
 ## 2026-10-16 — Password visibility controls — HANDOFF
 
 - **Scope/preflight:** Gendy requested eye icons to reveal/hide passwords. Clean, fetched `codex/realtime-sound-reliability`; extend existing PR #35 without merging.
