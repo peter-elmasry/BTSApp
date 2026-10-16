@@ -205,6 +205,14 @@ Reconciliation is an operator procedure until an owner recovery UI is implemente
 
 ## Acceptance record before release
 
+Owners can open the account/More menu to check Release R<PR number>, short commit
+and deployment environment. Compare the number with the PR being released and
+confirm Production; Preview is a test build. The row identifies the frontend
+currently loaded. After a successful deployment, reload/reopen the app if it still
+shows the previous release. Do not infer database/Edge deployment from this row.
+Builds without PR metadata show the short revision; match that to the deployed
+commit. The release row is hidden from all non-owner roles and guests.
+
 The hearts/media/audio extensions in implementation plan §22 and registration in
 §23 are merged and deployed through production commit `743e7b1`.
 Physical-device rehearsal remains pending. Rehearse exact half-heart draws,

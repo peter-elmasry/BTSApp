@@ -1,3 +1,4 @@
+import { ToastService } from '../../shared/ui/toast';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -55,6 +56,7 @@ type Action = { kind: 'entry' | 'reset' | 'void'; match: LiveMatch };
   templateUrl: './results-page.html',
 })
 export class ResultsPage {
+  private readonly toast = inject(ToastService);
   readonly reader = inject(LiveReader);
   private readonly api = inject(LiveApi);
   private readonly auth = inject(AuthStore);
@@ -191,6 +193,7 @@ export class ResultsPage {
   }
   saved(status: 'sent' | 'queued') {
     this.notice.set(status === 'queued' ? 'live.queued' : 'live.resultSaved');
+    this.toast.show(this.notice());
     this.action.set(null);
     if (status === 'sent') this.reader.refresh();
   }
@@ -210,6 +213,7 @@ export class ResultsPage {
           : { p_match: action.match.id },
       );
       this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'live.saved');
+      this.toast.show(this.notice());
       this.action.set(null);
       if (receipt.status === 'sent') this.reader.refresh();
     } catch (error) {

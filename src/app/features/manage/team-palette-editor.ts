@@ -1,3 +1,4 @@
+import { ToastService } from '../../shared/ui/toast';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -78,6 +79,7 @@ import { normalizeTeamPalette, type TeamColour } from '../../shared/team-palette
   `,
 })
 export class TeamPaletteEditor {
+  private readonly toast = inject(ToastService);
   readonly eventId = input.required<string>();
   readonly palette = input<unknown>([]);
   readonly saved = output<void>();
@@ -118,6 +120,7 @@ export class TeamPaletteEditor {
       });
       this.entries.set(palette);
       this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'manage.saved');
+      this.toast.show(this.notice());
       this.saved.emit();
     } catch {
       this.notice.set('errors.SAVE_FAILED');

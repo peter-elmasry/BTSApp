@@ -1,3 +1,4 @@
+import { ToastService } from '../../shared/ui/toast';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -104,6 +105,7 @@ export interface OpeningRoundAttachment {
   `,
 })
 export class OpeningAttachmentEditor {
+  private readonly toast = inject(ToastService);
   readonly eventId = input.required<string>();
   readonly round = input.required<OpeningRoundAttachment>();
   readonly saved = output<void>();
@@ -209,6 +211,7 @@ export class OpeningAttachmentEditor {
       if (request !== this.request) return;
       if (attachment) this.stored.set({ ...attachment, title });
       this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'manage.saved');
+      this.toast.show(this.notice());
       this.saved.emit();
     } catch {
       if (request === this.request) this.notice.set('attachment.saveFailed');

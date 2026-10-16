@@ -1,12 +1,55 @@
 # Implementation decisions
 
-## D066 — Import previews recover safe omissions and stop error cascades
+## D068 — Import previews recover safe omissions and stop error cascades
 
 Workbook sheets with no frozen rows must use a normal view. ExcelJS accepts a zero-split frozen pane on readback, while desktop Excel rejects the generated template and repairs the first sheet's view. Native Excel opening of downloaded templates is separate from library round-trip and browser import acceptance.
 
 Import name references accept Unicode normalization, Arabic alef variants, Arabic vowel marks and whitespace differences only when the result identifies one entity; exact dropdown names still win and ambiguous variants remain errors. Staff can use a current directory username. Cached username formulas are never trusted as identity. A blank emblem preserves the existing avatar by team code during UPSERT, or uses a catalog default; uploaded team photos remain governed by the existing import contract. Blank hearts draws use the server's fixed -0.5 rule. All automatic resolutions are visible preview warnings; invalid explicit avatars, unknown references, duplicate colours and invalid POINTS scores remain errors.
 
 Show the target event name/code on the page and confirmation, and warn when workbook metadata names another source event. Request fresh setup on entry. Local errors stop before server dry-run, avoiding duplicate/cascading reports; locally valid payloads still require server dry-run and apply-time validation. Server permissions and all-or-nothing writes are unchanged. The independently repaired user workbook is outside the repository; Excel compatibility requires a native Excel open/recalculate/save check in addition to parser acceptance.
+
+## D067 — Visible acknowledgments for completed save actions
+
+Gendy requested clear confirmation whenever a save succeeds. Reuse ToastService's
+localized five-second dismissible live message at each acknowledged save boundary,
+including setup/settings/media, owner accounts/events/passwords, scoring and
+adjustments, import, standings and player corrections. Keep existing inline
+notices/errors and referee/profile toasts. The single active toast renders inside
+the open native dialog, then returns to the page when that dialog closes, avoiding
+inert/covered feedback and duplicate toast content. No generic success toast
+from the background queue or reads, and no duplicate referee result announcement.
+
+Queued writes say queued, never saved; failure, rejected import and needs-review
+account writes retain their error/review state without success. Bulk setup reports
+one final message and remains queued if any operation is queued. Confirmation means
+the server acknowledged the mutation, independently of a subsequent list refresh.
+
+## D066 — Owners identify the loaded frontend release from build metadata
+
+Owners (including the seeded masry/gendui accounts) see a compact release row in
+the account/More menu. Use the existing OWNER role, never a username allowlist;
+other roles and guests do not render it. Display R<PR number>, short Git revision
+and Production/Preview/Development with EN/AR labels and LTR identifiers.
+
+The build derives the PR number from the repository's squash or merge commit
+subject. Preview builds prefer their own Vercel PR ID and are explicitly labeled
+Preview. Vercel's documented [system metadata](https://vercel.com/docs/environment-variables/system-environment-variables)
+is preferred, with local Git/GitHub SHA fallback. A direct/rebase commit without a
+PR subject displays its revision; missing identity displays Unavailable rather
+than inventing a release number. Only validated identifiers and the environment
+name enter the bundle, never raw commit messages or environment contents.
+
+Generate through set-env before every npm production build/start/watch. No bot
+commits, database counters, API credentials or runtime polling. This identifies
+the frontend actually loaded, including an older offline/service-worker build;
+fetching a server's newest version would falsely imply that old code had updated.
+Production database/Edge deployment still needs its existing release checks.
+
+CI builds use numbered preview-shaped metadata (the PR number, or fixture 1 on
+push) to exercise a version that differs from its revision. Generated `as const`
+strings are widened at the component boundary: comparing distinct literal types
+otherwise raises TS2367 only for numbered builds. CI artifacts remain test builds;
+Vercel deployments continue to use their real metadata.
 
 ## D065 — Live screens recover missed broadcasts and sound acknowledges playback
 

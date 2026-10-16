@@ -592,7 +592,7 @@ Required fields; codes unique per sheet; references resolve (game/team/round cod
 ### 11.3 Flow & modes
 Upload → parse → client validation table (row-level errors, red) → `import_event_setup(dry_run=true)` → merged report → **Confirm** → `dry_run=false`. **All-or-nothing transaction.**
 
-Current import usability contract (D066): show the target event and flag workbooks exported from another event. Stop at local errors before server dry-run. Resolve only unique equivalent Arabic spellings; allow current staff usernames. Blank team emblems preserve existing catalog avatars or use defaults, and blank LIVES draws use -0.5, with reviewable correction notices. Explicit invalid values and ambiguous references still block import. Generated sheets with no frozen rows use normal views; downloaded files must also open in desktop Excel, beyond ExcelJS/browser round-trip acceptance.
+Current import usability contract (D068): show the target event and flag workbooks exported from another event. Stop at local errors before server dry-run. Resolve only unique equivalent Arabic spellings; allow current staff usernames. Blank team emblems preserve existing catalog avatars or use defaults, and blank LIVES draws use -0.5, with reviewable correction notices. Explicit invalid values and ambiguous references still block import. Generated sheets with no frozen rows use normal views; downloaded files must also open in desktop Excel, beyond ExcelJS/browser round-trip acceptance.
 - `UPSERT` (default): match by `code` / `number`; never deletes.
 - `REPLACE`: wipes teams/games/rounds/matches/staff of the event then imports; allowed only while event `DRAFT` and no round ever started.
 
@@ -961,3 +961,21 @@ Password fields include an eye button to show/hide their own value on sign-in,
 password change and owner create/reset forms. Start masked, retain validation and
 autocomplete, support keyboard/touch and EN/AR accessible labels, and remask when
 forms reset or receive programmatic values.
+
+## 25. Owner release information — approved 2026-10-16
+
+Show owners, including gendui and masry, the loaded frontend release in their
+account/More menu. Automatically derive R<merged PR number> and short commit from
+build metadata for every merged-PR deployment. Mark Production, Preview and
+Development explicitly; fall back to exact revision when PR identity is absent.
+No release row for guests or non-owner members. EN/AR mobile layout and role
+coverage are required. D066 records build metadata and old-cache semantics.
+
+## 26. Clear save feedback — approved 2026-10-16
+
+Every successful user save has a visible localized acknowledgment using the
+existing toast or retained modal status. Cover setup/settings/media, users/events,
+passwords/profiles, results/adjustments, import, standings and player management.
+Offline operations explicitly say queued until confirmed; failed/rejected or
+needs-review writes must not announce success. Reuse the existing dismissible
+five-second live toast and avoid one toast per row in bulk operations.

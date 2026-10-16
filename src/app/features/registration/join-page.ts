@@ -6,6 +6,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthStore } from '../../core/auth/auth.store';
 import { DirectionService } from '../../core/i18n/i18n.service';
 import { EventStore } from '../../core/player/event.store';
+import { ToastService } from '../../shared/ui/toast';
 import {
   RegistrationApi,
   registrationError,
@@ -23,6 +24,7 @@ import { DsAvatar } from '../../shared/ui/avatar';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JoinPage {
+  private readonly toast = inject(ToastService);
   readonly auth = inject(AuthStore);
   readonly registration = inject(RegistrationStore);
   readonly direction = inject(DirectionService);
@@ -106,7 +108,10 @@ export class JoinPage {
         this.opId,
       );
       if (generation !== this.generation || this.auth.session()) return;
-      if (receipt.status === 'ACTIVE') await this.router.navigateByUrl('/home');
+      if (receipt.status === 'ACTIVE') {
+        this.toast.show('registration.saved');
+        await this.router.navigateByUrl('/home');
+      }
     } catch (error) {
       if (generation === this.generation) this.error.set(registrationError(error));
     } finally {
