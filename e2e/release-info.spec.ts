@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { mockOwner } from './owner-fixtures';
 import { mockLiveEvent } from './live-fixtures';
 import { mockPublicEvent } from './public-fixtures';
+import { environment } from '../src/environments/environment';
 
 test.use({ serviceWorkers: 'block' });
 for (const lang of ['en', 'ar'] as const) {
@@ -13,7 +14,11 @@ for (const lang of ['en', 'ar'] as const) {
     await page.getByTestId('account-menu').click();
     const info = page.getByTestId('release-info');
     await expect(info).toContainText(t['release.label']);
-    await expect(page.getByTestId('release-version')).toHaveText(/^(R[1-9]\d*|[a-f0-9]{7})$/);
+    await expect(page.getByTestId('release-version')).toHaveText(environment.release.version);
+    await expect(info).toContainText(t['release.' + environment.release.environment]);
+    if (environment.release.version !== environment.release.commit) {
+      await expect(page.getByTestId('release-commit')).toHaveText(environment.release.commit);
+    }
     await expect(info.locator('bdi').first()).toHaveAttribute('dir', 'ltr');
     await page.screenshot({ path: `artifacts/owner-release-${lang}.png`, fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
