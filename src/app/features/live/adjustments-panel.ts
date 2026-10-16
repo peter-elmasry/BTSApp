@@ -1,3 +1,4 @@
+import { ToastService } from '../../shared/ui/toast';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -28,6 +29,7 @@ import { canEditLiveMatch, isLiveAdmin, liveErrorKey, remainingAllowance } from 
   templateUrl: './adjustments-panel.html',
 })
 export class AdjustmentsPanel {
+  private readonly toast = inject(ToastService);
   readonly snapshot = input.required<LiveSnapshot>();
   readonly matchId = input<string | null>(null);
   readonly disabled = input(false);
@@ -158,6 +160,7 @@ export class AdjustmentsPanel {
         p_reason: value.reason.trim(),
       });
       this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'live.saved');
+      this.toast.show(this.notice());
       this.form.controls.reason.reset('');
       if (receipt.status === 'sent') this.changed.emit();
     } catch (error) {
@@ -193,6 +196,7 @@ export class AdjustmentsPanel {
         p_reason: this.revokeReason.value.trim(),
       });
       this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'live.saved');
+      this.toast.show(this.notice());
       this.revokeTarget.set(null);
       if (receipt.status === 'sent') this.changed.emit();
     } catch (error) {

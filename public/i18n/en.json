@@ -774,6 +774,7 @@
     "offline": "Open your team and schedule online first. Offline pages show the last saved data; staff changes need a connection to reach the server."
   },
   "account.changePassword": "Change password",
+  "account.passwordSaved": "Password saved successfully.",
   "account.hint": "Choose a new password of at least 12 characters.",
   "account.forcedHint": "You signed in with a temporary password. Choose your own new password (at least 12 characters, not containing your username) to continue.",
   "account.newPassword": "New password",

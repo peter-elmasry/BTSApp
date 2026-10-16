@@ -1,3 +1,4 @@
+import { ToastService } from '../../shared/ui/toast';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -53,6 +54,7 @@ interface Confirmation {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayersPage {
+  private readonly toast = inject(ToastService);
   readonly auth = inject(AuthStore);
   readonly events = inject(EventStore);
   readonly direction = inject(DirectionService);
@@ -270,6 +272,7 @@ export class PlayersPage {
       this.confirmation.set(null);
       await this.load(team);
       this.notice.set('registration.saved');
+      this.toast.show(this.notice());
     } catch (error) {
       this.error.set(registrationError(error));
     } finally {

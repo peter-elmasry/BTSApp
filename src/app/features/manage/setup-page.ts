@@ -1,3 +1,4 @@
+import { ToastService } from '../../shared/ui/toast';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -105,6 +106,7 @@ export function singleNames(args: Record<string, unknown>): Record<string, unkno
   templateUrl: './setup-page.html',
 })
 export class EventSetupPage {
+  private readonly toast = inject(ToastService);
   readonly customPalette = computed(
     () => normalizeTeamPalette(this.setup()?.event?.team_palette) ?? [],
   );
@@ -479,6 +481,7 @@ export class EventSetupPage {
     try {
       const receipt = await this.queue.execute(fn, args);
       this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'manage.saved');
+      this.toast.show(this.notice());
       if (receipt.status === 'sent') await this.reload();
       return true;
     } catch (error) {
@@ -934,12 +937,15 @@ export class EventSetupPage {
     this.saving.set(true);
     this.bulkTotal.set(calls.length);
     this.bulkDone.set(0);
+    let queued = false;
     try {
       for (const [fn, args] of calls) {
-        await this.queue.execute(fn, args);
+        const receipt = await this.queue.execute(fn, args);
+        queued ||= receipt.status === 'queued';
         this.bulkDone.update((value) => value + 1);
       }
-      this.notice.set('setup.bulkDone');
+      this.notice.set(queued ? 'live.queued' : 'setup.bulkDone');
+      this.toast.show(this.notice());
       this.bulk.set(null);
     } catch (error) {
       const code = (error as { message?: string }).message;

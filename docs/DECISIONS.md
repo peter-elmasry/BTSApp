@@ -1,5 +1,21 @@
 # Implementation decisions
 
+## D067 — Visible acknowledgments for completed save actions
+
+Gendy requested clear confirmation whenever a save succeeds. Reuse ToastService's
+localized five-second dismissible live message at each acknowledged save boundary,
+including setup/settings/media, owner accounts/events/passwords, scoring and
+adjustments, import, standings and player corrections. Keep existing inline
+notices/errors and referee/profile toasts. The single active toast renders inside
+the open native dialog, then returns to the page when that dialog closes, avoiding
+inert/covered feedback and duplicate toast content. No generic success toast
+from the background queue or reads, and no duplicate referee result announcement.
+
+Queued writes say queued, never saved; failure, rejected import and needs-review
+account writes retain their error/review state without success. Bulk setup reports
+one final message and remains queued if any operation is queued. Confirmation means
+the server acknowledged the mutation, independently of a subsequent list refresh.
+
 ## D066 — Owners identify the loaded frontend release from build metadata
 
 Owners (including the seeded masry/gendui accounts) see a compact release row in

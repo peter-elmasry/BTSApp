@@ -1,3 +1,4 @@
+import { ToastService } from '../../shared/ui/toast';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -75,6 +76,7 @@ import {
   `,
 })
 export class AudioSettings {
+  private readonly toast = inject(ToastService);
   readonly eventId = input.required<string>();
   readonly initial = input<AudioConfig | undefined>();
   readonly saved = output<void>();
@@ -107,6 +109,7 @@ export class AudioSettings {
         p_config: this.config(),
       });
       this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'manage.saved');
+      this.toast.show(this.notice());
       if (receipt.status === 'sent') this.dirty.set(false);
       this.saved.emit();
     } catch {
