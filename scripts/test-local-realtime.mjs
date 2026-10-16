@@ -143,9 +143,10 @@ export async function verifyLocalRealtime(url, anonKey, admin, owner) {
       );
       assert.ok(
         Object.keys(message.payload).every((key) =>
-          ['type', 'roundId', 'matchId', 'cueId', 'cue', 'occurredAt'].includes(key),
+          ['type', 'roundId', 'matchId', 'cueId', 'cue', 'occurredAt', 'id'].includes(key),
         ),
       );
+      assert.match(message.payload.id, /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);
     }
     console.log(
       'Real local Realtime: anonymous subscriber receives committed round/audio/result signals; fresh standings and own-team audio agree.',

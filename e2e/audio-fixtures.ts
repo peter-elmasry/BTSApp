@@ -155,7 +155,14 @@ export async function mockAudio(
     backend,
     emit: async (name: string, payload: unknown) => {
       await expect.poll(() => !!socket).toBe(true);
-      const broadcast = { type: 'broadcast', event: name, payload };
+      const broadcast = {
+        type: 'broadcast',
+        event: name,
+        payload:
+          payload && typeof payload === 'object' && !Array.isArray(payload)
+            ? { ...payload, id: crypto.randomUUID() }
+            : payload,
+      };
       socket!.send(
         JSON.stringify(
           arrayFrames

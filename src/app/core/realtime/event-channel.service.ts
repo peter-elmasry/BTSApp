@@ -5,6 +5,8 @@ import type { RoundAudioCue } from '../audio/audio-types';
 import { RpcTransport } from '../offline/rpc-transport';
 import { ReadCacheService } from '../offline/read-cache.service';
 
+const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+
 export function thinRoundAudioSignal(
   event: string,
   payload: unknown,
@@ -17,7 +19,6 @@ export function thinRoundAudioSignal(
   )
     return false;
   const value = payload as Record<string, unknown>;
-  const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
   return (
     value['type'] === 'round_audio' &&
     (value['cue'] === 'round-start' || value['cue'] === 'round-end') &&
@@ -27,9 +28,10 @@ export function thinRoundAudioSignal(
     uuid.test(value['roundId']) &&
     typeof value['occurredAt'] === 'string' &&
     Number.isFinite(Date.parse(value['occurredAt'])) &&
-    Object.keys(value).length === 5 &&
+    (Object.keys(value).length === 5 || Object.keys(value).length === 6) &&
+    (!('id' in value) || (typeof value['id'] === 'string' && uuid.test(value['id']))) &&
     Object.keys(value).every((key) =>
-      ['type', 'cueId', 'roundId', 'cue', 'occurredAt'].includes(key),
+      ['type', 'cueId', 'roundId', 'cue', 'occurredAt', 'id'].includes(key),
     )
   );
 }
@@ -49,7 +51,11 @@ export function thinEventSignal(event: string, payload: unknown): boolean {
   return (
     changes.has(type) &&
     (event === type || event === '*') &&
-    Object.entries(value).every(([key, item]) => identifiers.has(key) && typeof item === 'string')
+    Object.entries(value).every(([key, item]) =>
+      key === 'id'
+        ? typeof item === 'string' && uuid.test(item)
+        : identifiers.has(key) && typeof item === 'string',
+    )
   );
 }
 export function pollingDelay(random = Math.random()): number {

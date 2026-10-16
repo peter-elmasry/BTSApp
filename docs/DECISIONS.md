@@ -13,6 +13,15 @@ audit contents, private roster information or scores. Failed probes back off to
 tabs skip probes. Current-event changes notify old/new event channels; admin role
 changes emit the existing roster signal. Staff profiles refresh on shared revisions.
 
+Request the server's database replication-ready system event before treating a
+channel as healthy, including after reconnect. Real integration identified a
+previously rejected broker field: Supabase's
+[send function](https://github.com/supabase/realtime/blob/master/priv/repo/tenant_schema/realtime/functions/send.sql)
+adds a message UUID `id` to the payload. Both thin-signal validators accept that
+optional UUID only; outcomes and other unrecognized fields remain rejected.
+Browser fixtures include this metadata, and real acceptance waits for the actual
+replication stream rather than equating socket subscription with delivery readiness.
+
 Fresh refresh requests bypass stale-first responses while offline cached reads and
 initial public snapshots remain supported. EventStore coalesces pending refreshes
 with one follow-up; cache notification is for background revalidation, avoiding

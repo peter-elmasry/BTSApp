@@ -68,6 +68,10 @@ describe('thin realtime signals', () => {
     };
     expect(thinRoundAudioSignal('round_audio', cue)).toBe(true);
     expect(thinRoundAudioSignal('*', cue)).toBe(true);
+    expect(
+      thinRoundAudioSignal('round_audio', { ...cue, id: '99000000-0000-0000-0000-000000000001' }),
+    ).toBe(true);
+    expect(thinRoundAudioSignal('round_audio', { ...cue, id: 'invalid' })).toBe(false);
     expect(thinRoundAudioSignal('round_audio', { ...cue, outcome: 'WIN' })).toBe(false);
     expect(thinRoundAudioSignal('round_audio', { ...cue, cue: 'match-win' })).toBe(false);
     expect(thinRoundAudioSignal('match_changed', cue)).toBe(false);
@@ -78,6 +82,13 @@ describe('thin realtime signals', () => {
       thinEventSignal('match_changed', { type: 'match_changed', matchId: 'm1', roundId: 'r1' }),
     ).toBe(true);
     expect(thinEventSignal('match_changed', { type: 'match_changed', outcome: 'WIN' })).toBe(false);
+    expect(
+      thinEventSignal('match_changed', {
+        type: 'match_changed',
+        id: '99000000-0000-0000-0000-000000000001',
+      }),
+    ).toBe(true);
+    expect(thinEventSignal('match_changed', { type: 'match_changed', id: 'invalid' })).toBe(false);
     expect(thinEventSignal('match_changed', { type: 'round_changed' })).toBe(false);
     expect(thinEventSignal('postgres_changes', { record: { result: 4 } })).toBe(false);
     expect(thinEventSignal('match_changed', null)).toBe(false);
