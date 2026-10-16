@@ -2,10 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-16 — Numbered release build repair — STARTED
+## 2026-10-16 — Numbered release build repair — HANDOFF
 
-- **Scope/preflight:** During approved save-feedback validation, a minimal TypeScript repro found TS2367 when generated literal version R36 is compared with a different literal commit. Clean `codex/owner-release-info` at `f86968d`; save feedback is separately checked/published in PR #37 (`ca74fac`, green CI/Vercel).
-- **Next:** Widen build metadata strings at the component boundary and make CI compile a numbered preview-shaped build, which previous GitHub SHA-only builds did not exercise. Verify PR #36 CI and real Vercel preview; no merge or production writes.
+- **Scope/preflight:** During approved save-feedback validation, a minimal TypeScript repro found TS2367 when generated literal version R36 is compared with a different literal commit. Clean `codex/owner-release-info` at `f86968d`; save feedback remains independently checked/published in PR #37 (`ca74fac`, 270 units / 149 browser tests / green CI and Vercel).
+- **Fixed:** Widen generated metadata strings at the component boundary. CI now compiles numbered preview-shaped metadata, exercising the version/hash difference that previous SHA-only builds missed. Four local metadata tests, formatting and whitespace passed; the minimal un-widened repro fails with TS2367 as expected. D066 records the regression contract.
+- **Acceptance passed:** [CI 38912791596](https://github.com/peter-elmasry/BTSApp/actions/runs/38912791596) on `4ca34f7`: four metadata tests, 267 units, 146 browser tests, all SQL/Auth/database/WebSocket checks, Edge checks, formatting, translations, numbered build and Lighthouse. Initial bundle 459.92 kB; accessibility 100 / best practices 96 / performance 67. Vercel preview DHcwQ3bQjWApQCkEAf9HF21FMncH succeeded on the same source; the earlier preview blocker is resolved without needing authenticated logs.
+- **Publication/next:** Fix committed/pushed to PR #36. This documentation-only record has separate follow-up CI; accepted runtime/test SHA is `4ca34f7`. Expected owner label after PR #36 merges/deploys is R36 plus the real short revision and Production. Both PR #36 and PR #37 remain unmerged; review/authorize release, then verify hosted deployment. Return the local workspace to `codex/save-feedback` for Gendy's current save-UX task. No production writes or merges performed.
 
 ## 2026-10-16 — Owner release information — HANDOFF
 
