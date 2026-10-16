@@ -13,6 +13,7 @@ artifacts/
 test-results/
 playwright-report/
 supabase/.temp/
+supabase/config.toml
 supabase/migrations/*.sql
 supabase/tests/*.sql
 docs/IMPLEMENTATION_PLAN.md

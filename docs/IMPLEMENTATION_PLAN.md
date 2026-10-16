@@ -853,7 +853,7 @@ Each phase = one branch + PR. Do not start a phase before the previous one's cri
 ---
 
 ## 19. Out of scope (v1)
-Automatic tie-break rules, multiple simultaneous events, SMS/OTP, push notifications, player accounts, chat.
+Automatic tie-break rules, multiple simultaneous events, SMS/OTP, player accounts, chat. Push notifications were subsequently approved in §27.
 
 ---
 
@@ -979,3 +979,18 @@ passwords/profiles, results/adjustments, import, standings and player management
 Offline operations explicitly say queued until confirmed; failed/rejected or
 needs-review writes must not announce success. Reuse the existing dismissible
 five-second live toast and avoid one toast per row in bulk operations.
+
+## 27. Background round notifications — approved 2026-10-16
+
+Offer optional device notifications for confirmed round start/end actions, including
+when the app is backgrounded or closed. Keep foreground sound controls independent.
+Provide enable, disable and server test actions, explicit permission/error states,
+EN/AR mobile layout and iPhone Home Screen installation guidance. OS settings control
+sound; custom audio and guaranteed simultaneous delivery are outside this feature.
+
+Deliver from a private transactional server queue, independent of active clients,
+with expiry, retries, revoked subscription cleanup and no hidden results or personal
+details in notifications. Test anonymous access boundaries, rollback/replay, event
+scope, worker visibility/expiry/click handling and failed subscription saves. Verify
+cloud database/Edge/frontend CI, and record production configuration and real-device
+locked-screen acceptance separately. D069 records architecture and security.

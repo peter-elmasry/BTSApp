@@ -2,6 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-16 — Background round notifications — STARTED
+
+- **Authorization/preflight:** Peter approved implementing background round alerts after discussing OS sound restrictions. Refreshed clean master `5f22810`; branch `feat/background-round-notifications`. Read collaboration, plan, decisions and Phase 0 records.
+- **Scope/plan:** Opt-in device subscriptions for committed round starts/closes, private server outbox with bounded retries/expiry, Web Push delivery, device enable/disable/test controls and EN/AR guidance. Preserve foreground MP3 cues; suppress ordinary push when a window is visible. No result notifications or account requirement. Add permission/privacy/queue/worker/UI coverage and a production configuration runbook, then publish a checked PR. Actual locked-device delivery requires configured production keys and device acceptance.
+- **Implementation milestone (2026-10-17):** Added D069/plan §27, private receipt-bound subscriptions, transactional fanout/leases/retries/expiry, Vault-backed runtime configuration, immediate pg_net wake plus pg_cron recovery, provider allowlisting and cleanup. Added opt-in EN/AR device controls, local/server revocation, logout-race protection, short-lived service-worker display/click handling and deployment provisioning that preserves existing VAPID identity. Existing foreground audio remains independent. Deployment needs no additional provider account.
+- **Local verification:** Production build, full 286-unit suite before the final two cases, then all 13 focused notification units, 13 Edge/worker/provisioning cases, existing login/member Edge checks, six notification/shell browser journeys, EN/AR accessibility/no-overflow screenshots (inspected), TypeScript, 1,152-key translation parity and whitespace checks passed. Browser work exposed fixture routing/permission problems and a startup-order experiment; retained the established registration strategy and corrected context/provider fixtures. Local Docker/Postgres unavailable: added pgTAP queue/privacy tests and an actual Edge runtime/Vault probe to cloud CI; do not claim those passed until CI finishes. No production notification or event writes.
+
 ## 2026-10-16 — Merge Gendy's outstanding PRs and import repair — HANDOFF
 
 - **Authorization/preflight:** User explicitly requested investigating and merging Gendy's latest open PRs, also authorizing import-fix PR #38. Clean workspace; refreshed origin. Only Gendy PRs #36 (release identity) and #37 (save acknowledgments) were open; both were mergeable with green CI/Vercel, not failed merges.

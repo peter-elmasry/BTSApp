@@ -1193,5 +1193,28 @@
       "SAVE_FAILED": "Could not complete the request. Please try again."
     }
   },
-  "auth.requiredField": "This field is required."
+  "auth.requiredField": "This field is required.",
+  "push": {
+    "heading": "Background notifications",
+    "on": "On",
+    "off": "Off",
+    "description": "Get round start and end notifications when the app is closed. Foreground sound is controlled separately.",
+    "event": "Event",
+    "phoneHelp": "On iPhone/iPad, first add this app to your Home Screen and open it there. Your phone’s notification and Focus settings control sound.",
+    "unsupported": "Notifications are unavailable here. Use a supported browser or the installed Home Screen app over HTTPS.",
+    "denied": "Notifications are blocked. Allow them in your browser or phone settings, then return here.",
+    "notReady": "Background notifications are not configured on the server yet. Try again after setup.",
+    "saveFailed": "Could not confirm notifications. Connect to the internet and try enabling them again.",
+    "removeFailed": "Could not fully disable notifications. Connect and try again.",
+    "dismissed": "Permission was not granted. Tap Enable when you are ready.",
+    "saved": "Notifications enabled for this event on this device.",
+    "disabled": "Notifications disabled on this device.",
+    "testQueued": "Test queued. Look for a phone/browser notification; delivery has not yet been confirmed.",
+    "testLimit": "Wait one minute between tests, or enable notifications again if this device subscription expired.",
+    "testFailed": "Could not queue the test. Connect and try again.",
+    "enable": "Enable notifications",
+    "disable": "Disable notifications",
+    "test": "Send test notification",
+    "retry": "Retry setup"
+  }
 }

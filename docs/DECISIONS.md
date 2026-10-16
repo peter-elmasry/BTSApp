@@ -1,5 +1,31 @@
 # Implementation decisions
 
+## D069 — Opt-in background round notifications
+
+Peter approved Web Push for committed DRAFT-to-ACTIVE and ACTIVE-to-CLOSED round
+actions. Timer expiry, extensions, reopening and results do not send notifications.
+Opt-in follows one event per browser subscription, including anonymous viewers;
+it does not imply player registration. Explicit device controls save only after
+server acknowledgment. Notification permission is requested only after a tap.
+An opaque device receipt authorizes subscription changes; endpoints and keys are
+private operational data accessible only to the service role, with bounded IP
+admission and device test limits. Subscription renewal expires after 90 days.
+
+Use a transactional per-device outbox, short-lived delivery leases, bounded retries,
+two-minute freshness and provider expiry cleanup. pg_net wakes the Edge dispatcher
+after commit; pg_cron retries every minute. Configuration lives in Vault, with only
+the VAPID public key exposed by the public Edge route. Dispatch requires its own
+secret; browser-supplied endpoints are restricted to known push providers. Delivery
+must not block scoring. Never log endpoint/receipt/key/payload secrets.
+
+A small service-worker wrapper suppresses ordinary push when a same-origin app
+window is visible, retaining existing foreground audio, and opens Home on tap.
+Test notifications also display in the foreground. OS notification sounds, Focus
+and permissions govern audibility; custom MP3 playback and exact delivery time
+are not promised. iOS/iPadOS requires Home Screen installation. Production key/
+scheduler configuration and actual locked-device delivery are separate acceptance
+checks; automated provider fixtures alone cannot establish them.
+
 ## D068 — Import previews recover safe omissions and stop error cascades
 
 Workbook sheets with no frozen rows must use a normal view. ExcelJS accepts a zero-split frozen pane on readback, while desktop Excel rejects the generated template and repairs the first sheet's view. Native Excel opening of downloaded templates is separate from library round-trip and browser import acceptance.

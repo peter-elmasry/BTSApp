@@ -33,7 +33,7 @@ export const appConfig: ApplicationConfig = {
       },
       loader: TranslationLoader,
     }),
-    provideServiceWorker('ngsw-worker.js', {
+    provideServiceWorker('push-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
     }),

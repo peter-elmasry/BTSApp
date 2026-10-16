@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { BrowserContext, Page } from '@playwright/test';
 import type {
   PublicBootstrap,
   PublicEvent,
@@ -114,7 +114,7 @@ export const matches: PublicMatch[] = [
 ];
 
 export async function mockPublicEvent(
-  page: Page,
+  page: Page | BrowserContext,
   options: { noEvent?: boolean; overtime?: boolean; beforeStart?: boolean } = {},
 ) {
   await page.route('http://127.0.0.1:54321/**', async (route) => {

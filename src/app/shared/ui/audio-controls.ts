@@ -8,10 +8,11 @@ import {
 } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { EventAudioService } from '../../core/audio/event-audio.service';
+import { RoundPushControls } from './round-push-controls';
 
 @Component({
   selector: 'app-audio-controls',
-  imports: [TranslocoDirective],
+  imports: [TranslocoDirective, RoundPushControls],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section
@@ -98,6 +99,7 @@ import { EventAudioService } from '../../core/audio/event-audio.service';
       @if (audio.missing().length) {
         <p role="status" class="text-sm text-error">{{ t('audio.missing') }}</p>
       }
+      <app-round-push-controls />
     </section>
   `,
 })

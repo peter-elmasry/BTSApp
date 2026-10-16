@@ -82,6 +82,14 @@ jobs:
           npx supabase status -o env > "$RUNNER_TEMP/btsapp-supabase.env"
           SUPABASE_ENV_FILE="$RUNNER_TEMP/btsapp-supabase.env" node scripts/test-local-auth.mjs
           rm -f "$RUNNER_TEMP/btsapp-supabase.env"
+      - name: Verify background push in the real local Edge runtime
+        shell: bash
+        run: |
+          npx supabase functions serve round-push --no-verify-jwt > "$RUNNER_TEMP/round-push-runtime.log" 2>&1 &
+          function_pid=$!
+          trap 'kill "$function_pid" 2>/dev/null || true; rm -f "$RUNNER_TEMP/round-push.env"' EXIT
+          npx supabase status -o env > "$RUNNER_TEMP/round-push.env"
+          SUPABASE_ENV_FILE="$RUNNER_TEMP/round-push.env" node scripts/test-local-round-push.mjs
       - run: npm run test:db
       - run: npx supabase stop
         if: always()

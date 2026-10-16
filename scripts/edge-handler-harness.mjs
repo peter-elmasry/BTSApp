@@ -4,10 +4,10 @@ import ts from 'typescript';
 
 // Run the actual handler with an injected Supabase transport. Offline tests use
 // mocks; the localhost integration runner supplies real Auth and database clients.
-export function loadEdgeHandler(name, createClient, env = {}) {
+export function loadEdgeHandler(name, createClient, env = {}, globals = {}) {
   let handler;
   const source = readFileSync(`supabase/functions/${name}/index.ts`, 'utf8').replace(
-    /^import .*createClient.*;\r?\n/m,
+    /^import .*(?:createClient|webpush).*;\r?\n/gm,
     '',
   );
   const code = ts.transpileModule(source, {
@@ -18,6 +18,9 @@ export function loadEdgeHandler(name, createClient, env = {}) {
     Response,
     Request,
     crypto: globalThis.crypto,
+    URL,
+    TextEncoder,
+    ...globals,
     Deno: { env: { get: (key) => env[key] ?? key }, serve: (callback) => (handler = callback) },
   });
   vm.runInContext(code, context);

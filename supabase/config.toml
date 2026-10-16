@@ -38,3 +38,7 @@ uri = "pg-functions://postgres/public/block_auth_email"
 
 [realtime]
 enabled = true
+
+# Guest subscription routes validate opaque device receipts; dispatch has its own secret.
+[functions.round-push]
+verify_jwt = false

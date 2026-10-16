@@ -10,7 +10,7 @@
     "test": "ng test --watch=false",
     "test:i18n": "node scripts/check-translations.mjs",
     "test:release": "node --test scripts/release-info.test.mjs",
-    "test:edge": "node scripts/test-login-edge.mjs && node scripts/test-member-edge.mjs",
+    "test:edge": "node scripts/test-login-edge.mjs && node scripts/test-member-edge.mjs && node scripts/test-round-push.mjs",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
     "brand": "node scripts/brand-assets.mjs && node scripts/avatars.mjs",
