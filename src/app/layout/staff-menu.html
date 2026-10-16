@@ -12,6 +12,19 @@
           </li>
         }
       </ul>
+      @if (owner()) {
+        <p class="break-words text-xs text-slate" data-testid="release-info">
+          {{ t('release.label') }}
+          <bdi dir="ltr" class="font-mono font-semibold" data-testid="release-version">{{
+            release.version || t('release.unavailable')
+          }}</bdi>
+          @if (release.commit && release.version !== release.commit) {
+            ·
+            <bdi dir="ltr" class="font-mono" data-testid="release-commit">{{ release.commit }}</bdi>
+          }
+          · {{ t('release.' + release.environment) }}
+        </p>
+      }
     </section>
     @if (admins().length) {
       <section class="ds-card space-y-1" data-testid="menu-admins">

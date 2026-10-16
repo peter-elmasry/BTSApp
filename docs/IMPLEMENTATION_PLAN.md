@@ -959,3 +959,12 @@ Password fields include an eye button to show/hide their own value on sign-in,
 password change and owner create/reset forms. Start masked, retain validation and
 autocomplete, support keyboard/touch and EN/AR accessible labels, and remask when
 forms reset or receive programmatic values.
+
+## 25. Owner release information — approved 2026-10-16
+
+Show owners, including gendui and masry, the loaded frontend release in their
+account/More menu. Automatically derive R<merged PR number> and short commit from
+build metadata for every merged-PR deployment. Mark Production, Preview and
+Development explicitly; fall back to exact revision when PR identity is absent.
+No release row for guests or non-owner members. EN/AR mobile layout and role
+coverage are required. D066 records build metadata and old-cache semantics.
