@@ -104,6 +104,8 @@
   "auth.staffOnly": "DST staff sign in here. Players do not need an account.",
   "auth.identifier": "Username or phone",
   "auth.password": "Password",
+  "auth.showPassword": "Show password",
+  "auth.hidePassword": "Hide password",
   "errors.INVALID_CREDENTIALS": "Wrong username/phone or password",
   "errors.LOCKED_OUT": "Too many attempts, try again in 10 minutes",
   "errors.AUTH_UNAVAILABLE": "Sign in is temporarily unavailable. Try again shortly.",

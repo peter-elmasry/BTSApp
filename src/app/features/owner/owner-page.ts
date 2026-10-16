@@ -18,6 +18,7 @@ import {
   type DsRowStatus,
 } from '../../shared/ui/data-table';
 import { DsPhoneLink } from '../../shared/ui/phone-link';
+import { DsInput } from '../../shared/ui/controls';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { supabase } from '../../core/supabase/client';
 import { DsButton } from '../../shared/ui/button';
@@ -62,6 +63,7 @@ type EventRow = {
     DsDataTable,
     DsCellDef,
     DsPhoneLink,
+    DsInput,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './owner-page.html',

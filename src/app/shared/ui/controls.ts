@@ -50,6 +50,11 @@ export class DsInput extends ValueControl<string> {
   readonly value = signal('');
   readonly type = input('text');
   readonly autocomplete = input('off');
+  readonly passwordVisible = signal(false);
+  override writeValue(value: string) {
+    super.writeValue(value);
+    this.passwordVisible.set(false);
+  }
 }
 
 @Component({

@@ -46,6 +46,12 @@ localized inline password length/confirmation/required-field feedback. Reuse the
 existing input error/hint/ARIA contract; do not apply new-password length rules to
 temporary-password sign-in.
 
+Password inputs share one eye-button implementation with localized show/hide
+labels, pressed state and a 44 px minimum touch target. Visibility is local to
+each field, starts masked and resets on programmatic value writes; it does not
+alter form values, validation, autocomplete or submit the form. Owner create/reset
+fields reuse the shared input rather than duplicating password control markup.
+
 Real localhost database-to-WebSocket acceptance supplements browser fixtures in
 the existing CI Auth runner. Physical Android/iPhone speaker and venue acceptance
 remain separate; a playback API call cannot establish audible hardware output.

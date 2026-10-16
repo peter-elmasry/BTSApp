@@ -67,10 +67,12 @@ for (const lang of ['ar', 'en'] as const) {
       .click();
     const sheet = page.getByRole('dialog');
     await expect(sheet).toBeVisible();
-    await expect(sheet.getByTestId('owner-new-password')).toHaveAttribute('type', 'password');
-    await expect(sheet.getByTestId('owner-confirm-password')).toHaveAttribute('type', 'password');
-    await sheet.getByTestId('owner-new-password').fill('short');
-    await sheet.getByTestId('owner-confirm-password').fill('short');
+    const password = sheet.getByLabel(t['account.newPassword'], { exact: true });
+    const confirm = sheet.getByLabel(t['account.confirmPassword'], { exact: true });
+    await expect(password).toHaveAttribute('type', 'password');
+    await expect(confirm).toHaveAttribute('type', 'password');
+    await password.fill('short');
+    await confirm.fill('short');
     await sheet.getByRole('button', { name: t.owner.setPassword }).click();
     await expect(sheet.getByRole('alert')).toHaveText(t.owner.passwordTooShort);
     expect(prompted).toBe(false);

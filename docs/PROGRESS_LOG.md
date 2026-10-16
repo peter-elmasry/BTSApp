@@ -2,6 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-16 — Password visibility controls — STARTED
+
+- **Scope/preflight:** Gendy requested the familiar eye icon to reveal/hide passwords. Clean, fetched `codex/realtime-sound-reliability`; PR #35 final CI and preview passed. Extend that existing UI PR without merging.
+- **Intended changes:** Add an accessible localized toggle to shared password inputs, reuse it for owner create/reset fields, and cover EN/AR login/change/create/reset behavior. Keep values, validation, autocomplete and submission behavior; start masked and reset visibility on programmatic writes.
+- **Next:** Implement, run relevant unit/browser/format/translation/build checks, then commit/push and verify cloud CI. No production writes.
+- **Implementation/checkpoint:** Shared eye/eye-slash controls now cover login, password change/confirmation and owner create/reset fields; keyboard/pressed-state/44 px touch targets use localized labels. Programmatic values remask. App/spec TypeScript, 1,119-key parity, changed-file formatting and whitespace passed. Local Angular unit/build processes ran out of Windows memory, including sequential Node 24 retry; no completed local browser result claimed. Publish for full cloud unit/build/browser acceptance, including six new EN/AR visibility journeys and reset regression.
+
 ## 2026-10-16 — Realtime and sound reliability — HANDOFF
 
 - **Scope/preflight:** Gendy approved live update/sound recovery and both collapsible sound cards, then requested inline password feedback, 4 px shared spacing and refreshed owner lists after actions. Clean branch `codex/realtime-sound-reliability` from master `3c3f5e5`; no other work overwritten.

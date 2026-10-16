@@ -954,3 +954,8 @@ Gendy additionally requested clear password validation feedback: show localized
 inline required-field, 12-character minimum and confirmation-mismatch messages,
 with accessible field associations. Preserve existing temporary-password login
 rules; the minimum applies when setting a new password.
+
+Password fields include an eye button to show/hide their own value on sign-in,
+password change and owner create/reset forms. Start masked, retain validation and
+autocomplete, support keyboard/touch and EN/AR accessible labels, and remask when
+forms reset or receive programmatic values.

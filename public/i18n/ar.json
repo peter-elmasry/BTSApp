@@ -104,6 +104,8 @@
   "auth.staffOnly": "دخول أعضاء فريق دميانة. اللاعبين مش محتاجين حساب.",
   "auth.identifier": "اسم المستخدم أو رقم الموبايل",
   "auth.password": "الباسورد",
+  "auth.showPassword": "إظهار كلمة المرور",
+  "auth.hidePassword": "إخفاء كلمة المرور",
   "errors.INVALID_CREDENTIALS": "البيانات مش مظبوطة",
   "errors.LOCKED_OUT": "محاولات كتير، جرّب تاني بعد 10 دقايق",
   "errors.AUTH_UNAVAILABLE": "تسجيل الدخول مش متاح مؤقتاً. جرّب كمان شوية.",
