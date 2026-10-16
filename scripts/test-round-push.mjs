@@ -291,19 +291,32 @@ await check(
       'SUPABASE_SERVICE_ROLE_KEY',
       'PUSH_APP_ORIGIN',
       'PUSH_VAPID_SUBJECT',
+      'SUPABASE_PROJECT_REF',
+      'SUPABASE_ACCESS_TOKEN',
     ];
     const before = Object.fromEntries(names.map((name) => [name, process.env[name]]));
     const beforeFetch = globalThis.fetch;
     let stored = null;
     let saves = 0;
+    let boundaryChecks = 0;
+    let exposed = false;
+    let keyRequests = 0;
     try {
       process.env.SUPABASE_URL = 'https://fixture.supabase.co';
       process.env.SUPABASE_SERVICE_ROLE_KEY = 'fixture-service-key';
       process.env.PUSH_APP_ORIGIN = config.origin;
       delete process.env.PUSH_VAPID_SUBJECT;
       globalThis.fetch = async (url, options) => {
+        if (url.startsWith('https://api.supabase.com/')) {
+          assert.equal(url, 'https://api.supabase.com/v1/projects/fixture/api-keys?reveal=true');
+          assert.equal(options.headers.Authorization, 'Bearer fixture-token');
+          keyRequests++;
+          return Response.json([{ name: 'service_role', api_key: 'fixture-service-key' }]);
+        }
         if (url.endsWith('/rest/v1/http_request_queue')) {
+          boundaryChecks++;
           assert.equal(options.headers['Accept-Profile'], 'net');
+          if (exposed) return Response.json([]);
           return Response.json({ code: 'PGRST106' }, { status: 406 });
         }
         if (url.endsWith('/rpc/round_push_config')) return Response.json(stored);
@@ -323,6 +336,17 @@ await check(
       await import('./configure-round-push.mjs?test=second');
       assert.deepEqual(stored, first);
       assert.equal(saves, 2);
+      assert.equal(boundaryChecks, 2);
+      delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+      process.env.SUPABASE_PROJECT_REF = 'fixture';
+      process.env.SUPABASE_ACCESS_TOKEN = 'fixture-token';
+      await import('./configure-round-push.mjs?test=management');
+      assert.equal(keyRequests, 1);
+      assert.deepEqual(stored, first);
+      assert.equal(saves, 3);
+      exposed = true;
+      await assert.rejects(import('./configure-round-push.mjs?test=exposed'), /Remove net/);
+      assert.equal(saves, 3, 'An exposed networking schema prevents configuration writes.');
     } finally {
       globalThis.fetch = beforeFetch;
       for (const name of names)

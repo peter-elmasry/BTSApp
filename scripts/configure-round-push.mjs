@@ -9,7 +9,7 @@ if (!projectUrl || !origin || !/^https:\/\/[a-zA-Z0-9.-]+$/.test(origin))
   throw new Error('Set SUPABASE_URL (or SUPABASE_PROJECT_REF) and PUSH_APP_ORIGIN.');
 let key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!key && ref && process.env.SUPABASE_ACCESS_TOKEN) {
-  const response = await fetch(`https://api.supabase.com/v1/projects/${ref}/api-keys`, {
+  const response = await fetch(`https://api.supabase.com/v1/projects/${ref}/api-keys?reveal=true`, {
     headers: { Authorization: `Bearer ${process.env.SUPABASE_ACCESS_TOKEN}` },
   });
   if (!response.ok) throw new Error('Unable to obtain the deployment service credential.');
