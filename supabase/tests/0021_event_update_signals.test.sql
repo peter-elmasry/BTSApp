@@ -14,8 +14,9 @@ select isnt(public.get_event_update_token('33000000-0030-0000-0000-000000000001'
 select ok(exists(select 1 from realtime.messages where topic='event:33000000-0030-0000-0000-000000000001'
  and event='settings_changed' and (payload-'id')='{"type":"settings_changed"}'::jsonb),
  'Selecting current event emits an identifier-only settings notification');
-update public.events set is_current=(id='33000000-0030-0000-0000-000000000002')
- where id in ('33000000-0030-0000-0000-000000000001','33000000-0030-0000-0000-000000000002');
+-- Release the immediate unique current-event slot before selecting its replacement.
+update public.events set is_current=false where id='33000000-0030-0000-0000-000000000001';
+update public.events set is_current=true where id='33000000-0030-0000-0000-000000000002';
 select ok(exists(select 1 from realtime.messages where topic='event:33000000-0030-0000-0000-000000000002'
  and event='settings_changed'), 'New current event viewers are notified');
 select ok((select count(*)>=2 from realtime.messages where topic='event:33000000-0030-0000-0000-000000000001'

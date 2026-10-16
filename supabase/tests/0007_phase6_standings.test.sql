@@ -65,6 +65,8 @@ insert into public.adjustments(id,event_id,scope,match_id,team_id,points,reason,
 (pg_temp.p6_id(8,4),pg_temp.p6_id(3,1),'EVENT',null,pg_temp.p6_id(4,3),-5,'Event penalty',pg_temp.p6_id(2,2),null,null),
 (pg_temp.p6_id(8,5),pg_temp.p6_id(3,1),'EVENT',null,pg_temp.p6_id(4,4),9,'Revoked bonus',pg_temp.p6_id(2,2),now(),'Correction');
 
+-- Measure visibility notifications independently of assignment setup notifications.
+truncate phase6_signals;
 set local role anon;
 select throws_ok($$select public.get_standings(pg_temp.p6_id(3,1))$$,'P0001','LEADERBOARD_HIDDEN','anonymous hidden standings denied');
 select throws_ok($$select public.get_standings(pg_temp.p6_id(3,99))$$,'P0001','NOT_FOUND','unknown event distinguished');
