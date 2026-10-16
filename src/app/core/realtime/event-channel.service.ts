@@ -77,10 +77,23 @@ export class EventChannelTransport {
     status: (value: string) => void,
   ): Promise<ChannelHandle> {
     const { supabase } = await import('../supabase/client');
-    const channel = supabase.channel(`event:${eventId}`, { config: { private: false } });
+    let joined = false;
+    let replicationReady = false;
+    const channel = supabase.channel(`event:${eventId}`, {
+      config: { private: false, broadcast: { replication_ready: true } },
+    });
     channel
       .on('broadcast', { event: '*' }, (message) => receive(message.event, message['payload']))
-      .subscribe((value) => status(value));
+      .on('system', {}, (message) => {
+        if (message.extension !== 'system') return;
+        replicationReady = message.status === 'ok';
+        status(replicationReady && joined ? 'SUBSCRIBED' : 'CHANNEL_ERROR');
+      })
+      .subscribe((value) => {
+        joined = value === 'SUBSCRIBED';
+        if (!joined) replicationReady = false;
+        status(joined && !replicationReady ? 'CONNECTING' : value);
+      });
     return {
       close: () => {
         void supabase.removeChannel(channel);

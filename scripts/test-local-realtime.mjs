@@ -20,11 +20,12 @@ export async function verifyLocalRealtime(url, anonKey, admin, owner) {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   let channel;
+  let replicationReady = false;
   const messages = [];
-  const waitFor = async (predicate) => {
-    const deadline = Date.now() + 10000;
+  const waitFor = async (predicate, description = 'Real database broadcast', timeout = 10000) => {
+    const deadline = Date.now() + timeout;
     while (!predicate()) {
-      if (Date.now() > deadline) throw new Error('Real database broadcast did not arrive');
+      if (Date.now() > deadline) throw new Error(`${description} did not arrive`);
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
   };
@@ -75,8 +76,13 @@ export async function verifyLocalRealtime(url, anonKey, admin, owner) {
       ),
     );
     channel = guest
-      .channel(`event:${eventId}`, { config: { private: false } })
-      .on('broadcast', { event: '*' }, (message) => messages.push(message));
+      .channel(`event:${eventId}`, {
+        config: { private: false, broadcast: { replication_ready: true } },
+      })
+      .on('broadcast', { event: '*' }, (message) => messages.push(message))
+      .on('system', {}, (message) => {
+        if (message.extension === 'system') replicationReady = message.status === 'ok';
+      });
     await new Promise((resolve, reject) => {
       const timer = setTimeout(
         () => reject(new Error('Anonymous channel subscription timed out')),
@@ -92,6 +98,7 @@ export async function verifyLocalRealtime(url, anonKey, admin, owner) {
         }
       });
     });
+    await waitFor(() => replicationReady, 'Database replication readiness', 20000);
     checked(await owner.rpc('start_round', { p_op_id: randomUUID(), p_round: roundId }));
     await waitFor(() => messages.some((message) => message.event === 'round_audio'));
     const beforeToken = checked(await guest.rpc('get_event_update_token', { p_event: eventId }));

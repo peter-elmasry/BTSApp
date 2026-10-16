@@ -1,4 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { supabase } from '../supabase/client';
+import { RpcTransport } from '../offline/rpc-transport';
+import { ReadCacheService } from '../offline/read-cache.service';
 import {
   EventChannelService,
   EventChannelTransport,
@@ -6,6 +9,53 @@ import {
   thinEventSignal,
   thinRoundAudioSignal,
 } from './event-channel.service';
+
+describe('database stream readiness', () => {
+  afterEach(() => {
+    TestBed.resetTestingModule();
+    vi.restoreAllMocks();
+  });
+  it('distinguishes socket join from database replication readiness, including reconnect', async () => {
+    let subscribed!: (value: string) => void;
+    let system!: (payload: { extension: string; status: string }) => void;
+    const fake = {
+      on: vi.fn((type: string, _filter: unknown, callback: typeof system) => {
+        if (type === 'system') system = callback;
+        return fake;
+      }),
+      subscribe: vi.fn((callback: typeof subscribed) => {
+        subscribed = callback;
+        return fake;
+      }),
+    };
+    const channel = vi.spyOn(supabase, 'channel').mockReturnValue(fake as never);
+    const remove = vi.spyOn(supabase, 'removeChannel').mockResolvedValue('ok');
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: RpcTransport, useValue: { rpc: vi.fn() } },
+        { provide: ReadCacheService, useValue: { needsRecovery: () => false } },
+      ],
+    });
+    const states: string[] = [];
+    const handle = await TestBed.inject(EventChannelTransport).connect(
+      'event',
+      () => {},
+      (value) => states.push(value),
+    );
+    subscribed('SUBSCRIBED');
+    expect(states.at(-1)).toBe('CONNECTING');
+    system({ extension: 'system', status: 'ok' });
+    expect(states.at(-1)).toBe('SUBSCRIBED');
+    subscribed('CHANNEL_ERROR');
+    subscribed('SUBSCRIBED');
+    expect(states.at(-1)).toBe('CONNECTING');
+    expect(channel).toHaveBeenCalledWith('event:event', {
+      config: { private: false, broadcast: { replication_ready: true } },
+    });
+    handle.close();
+    expect(remove).toHaveBeenCalledOnce();
+  });
+});
 
 describe('thin realtime signals', () => {
   it('allows only fresh-cue identifiers, with no result data', () => {
