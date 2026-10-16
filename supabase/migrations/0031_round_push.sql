@@ -1,6 +1,8 @@
 -- D069: private device subscriptions and an expiring transactional delivery outbox.
 create extension if not exists pg_net with schema extensions;
 create extension if not exists pg_cron;
+-- pg_net request headers contain the dispatch credential while a request is queued.
+revoke all on net.http_request_queue,net._http_response from public,anon,authenticated;
 
 create table public.round_push_devices (
   receipt_hash text primary key check(receipt_hash ~ '^[a-f0-9]{64}$'),
@@ -64,7 +66,7 @@ end $$;
 create function public.round_push_admit(p_bucket text) returns boolean
 language plpgsql security definer set search_path=public,pg_temp
 as $$ declare v_count int; begin
-  if p_bucket !~ '^[a-f0-9]{64}$' then return false; end if;
+  if p_bucket is null or p_bucket !~ '^[a-f0-9]{64}$' then return false; end if;
   delete from public.round_push_admission where window_at<clock_timestamp()-interval '1 hour';
   insert into public.round_push_admission values(p_bucket,clock_timestamp(),1)
     on conflict(bucket) do update set attempts=round_push_admission.attempts+1
@@ -157,7 +159,7 @@ as $$ declare v_rows jsonb; begin
   with picked as (
     select q.id from public.round_push_deliveries q join public.events e on e.id=q.event_id
     where not q.completed and q.available_at<=clock_timestamp() and q.expires_at>clock_timestamp()
-      and q.attempts<4 and e.is_current and e.status in ('DRAFT','LIVE')
+      and q.attempts<4 and e.is_current and e.status in ('DRAFT','LIVE','FINISHED')
     order by q.occurred_at,q.id for update of q skip locked limit greatest(1,least(p_limit,100))
   ), leased as (
     update public.round_push_deliveries q set attempts=attempts+1,lease=gen_random_uuid(),
