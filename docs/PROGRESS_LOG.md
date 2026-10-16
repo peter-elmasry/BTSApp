@@ -2,6 +2,11 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-16 — Numbered release build repair — STARTED
+
+- **Scope/preflight:** During approved save-feedback validation, a minimal TypeScript repro found TS2367 when generated literal version R36 is compared with a different literal commit. Clean `codex/owner-release-info` at `f86968d`; save feedback is separately checked/published in PR #37 (`ca74fac`, green CI/Vercel).
+- **Next:** Widen build metadata strings at the component boundary and make CI compile a numbered preview-shaped build, which previous GitHub SHA-only builds did not exercise. Verify PR #36 CI and real Vercel preview; no merge or production writes.
+
 ## 2026-10-16 — Owner release information — HANDOFF
 
 - **Scope/preflight:** Gendy requested an owner-only release number that updates after PR merges, a new PR and the expected label to verify deployment. Clean workspace; fetched master `a9828e4` (PR #35 merged) and branched `codex/owner-release-info`.

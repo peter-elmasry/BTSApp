@@ -21,6 +21,12 @@ the frontend actually loaded, including an older offline/service-worker build;
 fetching a server's newest version would falsely imply that old code had updated.
 Production database/Edge deployment still needs its existing release checks.
 
+CI builds use numbered preview-shaped metadata (the PR number, or fixture 1 on
+push) to exercise a version that differs from its revision. Generated `as const`
+strings are widened at the component boundary: comparing distinct literal types
+otherwise raises TS2367 only for numbered builds. CI artifacts remain test builds;
+Vercel deployments continue to use their real metadata.
+
 ## D065 — Live screens recover missed broadcasts and sound acknowledges playback
 
 Gendy approved reliable foreground updates, sound diagnosis/recovery and both

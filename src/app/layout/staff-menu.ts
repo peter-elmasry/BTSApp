@@ -31,7 +31,12 @@ import { environment } from '../../environments/environment';
   templateUrl: './staff-menu.html',
 })
 export class StaffMenu {
-  readonly release = environment.release;
+  // Generated `as const` version/hash literals intentionally differ in numbered builds.
+  readonly release: Readonly<{
+    version: string;
+    commit: string;
+    environment: 'production' | 'preview' | 'development';
+  }> = environment.release;
   readonly close = output<void>();
   readonly auth = inject(AuthStore);
   readonly selection = inject(TeamSelectionStore);

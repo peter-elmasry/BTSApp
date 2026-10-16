@@ -40,7 +40,11 @@ jobs:
       - run: npm run test:release
       - run: npm run test:edge
       - run: npm test
-      - run: npm run build
+      - name: Build with numbered preview metadata
+        env:
+          VERCEL_ENV: preview
+          VERCEL_GIT_PULL_REQUEST_ID: ${{ github.event.pull_request.number || '1' }}
+        run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - name: Lighthouse shell acceptance
