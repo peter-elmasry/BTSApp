@@ -140,4 +140,32 @@ describe('activated buffered audio', () => {
     expect(sources).toHaveLength(1);
     audio.destroy();
   });
+  it('acknowledges only started playback and releases cancelled queued cues', async () => {
+    const audio = new BufferedAudio(vi.fn());
+    const started = vi.fn();
+    const discarded = vi.fn();
+    await audio.enable();
+    audio.enqueue('round-end', () => true);
+    audio.enqueue('round-start', () => true, started, discarded);
+    expect(started).not.toHaveBeenCalled();
+    audio.clear();
+    expect(discarded).toHaveBeenCalledOnce();
+    expect(started).not.toHaveBeenCalled();
+    audio.enqueue('round-start', () => true, started);
+    expect(started).toHaveBeenCalledOnce();
+    audio.destroy();
+  });
+  it('retries a transient clip failure before reporting it missing', async () => {
+    const original = fetch;
+    let attempts = 0;
+    vi.stubGlobal('fetch', async (url: string) => {
+      if (url.includes('round-start') && attempts++ === 0) throw new TypeError('Failed to fetch');
+      return original(url);
+    });
+    const audio = new BufferedAudio(vi.fn());
+    expect(await audio.enable()).toEqual([]);
+    audio.enqueue('round-start', () => true);
+    expect(sources).toHaveLength(1);
+    audio.destroy();
+  });
 });

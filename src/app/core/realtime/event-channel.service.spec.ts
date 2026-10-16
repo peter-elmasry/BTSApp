@@ -1,4 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { supabase } from '../supabase/client';
+import { RpcTransport } from '../offline/rpc-transport';
+import { ReadCacheService } from '../offline/read-cache.service';
 import {
   EventChannelService,
   EventChannelTransport,
@@ -6,6 +9,53 @@ import {
   thinEventSignal,
   thinRoundAudioSignal,
 } from './event-channel.service';
+
+describe('database stream readiness', () => {
+  afterEach(() => {
+    TestBed.resetTestingModule();
+    vi.restoreAllMocks();
+  });
+  it('distinguishes socket join from database replication readiness, including reconnect', async () => {
+    let subscribed!: (value: string) => void;
+    let system!: (payload: { extension: string; status: string }) => void;
+    const fake = {
+      on: vi.fn((type: string, _filter: unknown, callback: typeof system) => {
+        if (type === 'system') system = callback;
+        return fake;
+      }),
+      subscribe: vi.fn((callback: typeof subscribed) => {
+        subscribed = callback;
+        return fake;
+      }),
+    };
+    const channel = vi.spyOn(supabase, 'channel').mockReturnValue(fake as never);
+    const remove = vi.spyOn(supabase, 'removeChannel').mockResolvedValue('ok');
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: RpcTransport, useValue: { rpc: vi.fn() } },
+        { provide: ReadCacheService, useValue: { needsRecovery: () => false } },
+      ],
+    });
+    const states: string[] = [];
+    const handle = await TestBed.inject(EventChannelTransport).connect(
+      'event',
+      () => {},
+      (value) => states.push(value),
+    );
+    subscribed('SUBSCRIBED');
+    expect(states.at(-1)).toBe('CONNECTING');
+    system({ extension: 'system', status: 'ok' });
+    expect(states.at(-1)).toBe('SUBSCRIBED');
+    subscribed('CHANNEL_ERROR');
+    subscribed('SUBSCRIBED');
+    expect(states.at(-1)).toBe('CONNECTING');
+    expect(channel).toHaveBeenCalledWith('event:event', {
+      config: { private: false, broadcast: { replication_ready: true } },
+    });
+    handle.close();
+    expect(remove).toHaveBeenCalledOnce();
+  });
+});
 
 describe('thin realtime signals', () => {
   it('allows only fresh-cue identifiers, with no result data', () => {
@@ -18,6 +68,10 @@ describe('thin realtime signals', () => {
     };
     expect(thinRoundAudioSignal('round_audio', cue)).toBe(true);
     expect(thinRoundAudioSignal('*', cue)).toBe(true);
+    expect(
+      thinRoundAudioSignal('round_audio', { ...cue, id: '99000000-0000-0000-0000-000000000001' }),
+    ).toBe(true);
+    expect(thinRoundAudioSignal('round_audio', { ...cue, id: 'invalid' })).toBe(false);
     expect(thinRoundAudioSignal('round_audio', { ...cue, outcome: 'WIN' })).toBe(false);
     expect(thinRoundAudioSignal('round_audio', { ...cue, cue: 'match-win' })).toBe(false);
     expect(thinRoundAudioSignal('match_changed', cue)).toBe(false);
@@ -28,10 +82,17 @@ describe('thin realtime signals', () => {
       thinEventSignal('match_changed', { type: 'match_changed', matchId: 'm1', roundId: 'r1' }),
     ).toBe(true);
     expect(thinEventSignal('match_changed', { type: 'match_changed', outcome: 'WIN' })).toBe(false);
+    expect(
+      thinEventSignal('match_changed', {
+        type: 'match_changed',
+        id: '99000000-0000-0000-0000-000000000001',
+      }),
+    ).toBe(true);
+    expect(thinEventSignal('match_changed', { type: 'match_changed', id: 'invalid' })).toBe(false);
     expect(thinEventSignal('match_changed', { type: 'round_changed' })).toBe(false);
     expect(thinEventSignal('postgres_changes', { record: { result: 4 } })).toBe(false);
     expect(thinEventSignal('match_changed', null)).toBe(false);
-    expect([0, 0.5, 0.99999].map(pollingDelay)).toEqual([12000, 15000, 17999]);
+    expect([0, 0.5, 0.99999].map(pollingDelay)).toEqual([4000, 4500, 4999]);
   });
 });
 
@@ -41,19 +102,24 @@ describe('realtime fallback and channel lifecycle', () => {
   let visible: DocumentVisibilityState;
   const close = vi.fn();
   const connect = vi.fn();
+  const probe = vi.fn();
+  const needsRecovery = vi.fn();
   beforeEach(() => {
     vi.useFakeTimers();
     visible = 'visible';
     vi.spyOn(document, 'visibilityState', 'get').mockImplementation(() => visible);
     vi.spyOn(Math, 'random').mockReturnValue(0.5);
     close.mockReset();
+    let token = 0;
+    probe.mockReset().mockImplementation(async () => String(++token));
+    needsRecovery.mockReset().mockReturnValue(false);
     connect.mockReset().mockImplementation(async (_id, onSignal, onStatus) => {
       receive = onSignal;
       status = onStatus;
       return { close };
     });
     TestBed.configureTestingModule({
-      providers: [{ provide: EventChannelTransport, useValue: { connect } }],
+      providers: [{ provide: EventChannelTransport, useValue: { connect, probe, needsRecovery } }],
     });
   });
   afterEach(() => {
@@ -75,51 +141,72 @@ describe('realtime fallback and channel lifecycle', () => {
     receive('round_audio', { ...cue, cue: 'round-end' });
     receive('round_audio', { ...cue, cue: 'round-start' });
     expect(seen).toEqual(['round-end', 'round-start']);
-    expect(service.revision()).toBe(0);
+    expect(service.revision()).toBe(1);
   });
 
-  it('polls after ten seconds without WebSocket subscription, then stops polling when subscribed', async () => {
+  it('recovers while subscribed, disconnected or without a socket', async () => {
     const service = TestBed.inject(EventChannelService);
     service.watch('e1');
-    await vi.advanceTimersByTimeAsync(9999);
-    expect(service.revision()).toBe(0);
-    await vi.advanceTimersByTimeAsync(1);
-    expect(service.revision()).toBe(1);
-    await vi.advanceTimersByTimeAsync(15000);
-    expect(service.revision()).toBe(2);
+    const before = service.revision();
+    await vi.advanceTimersByTimeAsync(4500);
+    expect(service.revision()).toBe(before + 1);
     status('SUBSCRIBED');
-    const revision = service.revision();
-    await vi.advanceTimersByTimeAsync(30000);
-    expect(service.revision()).toBe(revision);
+    const subscribed = service.revision();
+    await vi.advanceTimersByTimeAsync(9000);
+    expect(service.revision()).toBe(subscribed + 2);
     status('CHANNEL_ERROR');
-    await vi.advanceTimersByTimeAsync(10000);
-    expect(service.revision()).toBe(revision + 1);
+    await vi.advanceTimersByTimeAsync(4500);
+    expect(service.revision()).toBe(subscribed + 3);
   });
-
-  it('keeps polling available when creating a WebSocket channel itself fails', async () => {
+  it('keeps recovery available when socket creation fails', async () => {
     connect.mockRejectedValue(new Error('WebSocket unavailable'));
     const service = TestBed.inject(EventChannelService);
     service.watch('e1');
-    await vi.advanceTimersByTimeAsync(10000);
-    expect(service.revision()).toBe(1);
-    await vi.advanceTimersByTimeAsync(15000);
-    expect(service.revision()).toBe(2);
+    const before = service.revision();
+    await vi.advanceTimersByTimeAsync(9000);
+    expect(service.revision()).toBe(before + 2);
   });
-
-  it('debounces thin broadcasts for five hundred milliseconds and ignores result payloads', async () => {
+  it('bounds batching during sustained broadcasts and ignores result payloads', async () => {
     const service = TestBed.inject(EventChannelService);
     service.watch('e1');
-    await Promise.resolve();
-    status('SUBSCRIBED');
     const before = service.revision();
     receive('match_changed', { type: 'match_changed', matchId: 'm1' });
-    await vi.advanceTimersByTimeAsync(300);
+    await vi.advanceTimersByTimeAsync(200);
     receive('round_changed', { type: 'round_changed', roundId: 'r1' });
     receive('match_changed', { type: 'match_changed', outcome: 'WIN' });
-    await vi.advanceTimersByTimeAsync(499);
-    expect(service.revision()).toBe(before);
-    await vi.advanceTimersByTimeAsync(1);
+    await vi.advanceTimersByTimeAsync(50);
     expect(service.revision()).toBe(before + 1);
+  });
+  it('does not refresh while hidden and recovers immediately on return', async () => {
+    const service = TestBed.inject(EventChannelService);
+    service.watch('e1');
+    const before = service.revision();
+    visible = 'hidden';
+    document.dispatchEvent(new Event('visibilitychange'));
+    await vi.advanceTimersByTimeAsync(13500);
+    expect(service.revision()).toBe(before);
+    visible = 'visible';
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(service.revision()).toBe(before + 1);
+  });
+  it('does not refetch unchanged data and backs off failed probes', async () => {
+    probe.mockResolvedValue('same');
+    const service = TestBed.inject(EventChannelService);
+    service.watch('e1');
+    await vi.advanceTimersByTimeAsync(4500);
+    const before = service.revision();
+    await vi.advanceTimersByTimeAsync(9000);
+    expect(service.revision()).toBe(before);
+    needsRecovery.mockReturnValueOnce(true);
+    await vi.advanceTimersByTimeAsync(4500);
+    expect(service.revision()).toBe(before + 1);
+    probe.mockRejectedValue(new Error('network'));
+    await vi.advanceTimersByTimeAsync(4500);
+    const calls = probe.mock.calls.length;
+    await vi.advanceTimersByTimeAsync(8999);
+    expect(probe).toHaveBeenCalledTimes(calls);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(probe).toHaveBeenCalledTimes(calls + 1);
   });
 
   it('deduplicates view acquisitions, retains the shell channel and releases noncurrent event channels', async () => {
@@ -154,7 +241,7 @@ describe('realtime fallback and channel lifecycle', () => {
     visible = 'visible';
     document.dispatchEvent(new Event('visibilitychange'));
     expect(connect).toHaveBeenCalledTimes(2);
-    expect(service.revision()).toBe(previous + 1);
+    expect(service.revision()).toBe(previous + 2);
     TestBed.resetTestingModule();
     const stopped = service.revision();
     await vi.advanceTimersByTimeAsync(60000);

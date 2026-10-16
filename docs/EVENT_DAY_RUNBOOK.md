@@ -10,6 +10,23 @@ passed in EN/AR: 12 teams render, invalid invite links are rejected, anonymous
 roster execution is denied, and no page errors or horizontal overflow occur.
 Physical-device and venue acceptance remain pending.
 
+### Realtime and sound recovery (D065)
+
+After deploying migration 0030 and its matching frontend, verify a result entered
+on one device appears on a second foreground device without Refresh. Healthy
+broadcast delivery targets two seconds; recovery from a silently missed broadcast
+targets seven seconds on the test network. Recovery checks use a small update token,
+not repeated full score downloads. Offline/hidden devices resume when connected and
+visible; network failures back off. Setup shows changes available rather than
+replacing unsaved settings or editor drafts.
+
+Expand **Event sound** to adjust volume or use **Test sound**. The test plays on
+this device after activation, even when automatic event sounds are disabled by the
+organizer. Confirm audible output, then test actual round start/end and selected-team
+win/loss/draw events from another device. After a reload or browser interruption,
+use Enable sound when asked. Collapsing either sound card does not mute playback
+or discard settings. Local browser/API tests do not replace checking actual speakers.
+
 ### Player invite registration (D064)
 
 - In the account menu, open **Players & invite links**. Guides see assigned teams;

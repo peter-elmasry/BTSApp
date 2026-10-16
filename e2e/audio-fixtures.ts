@@ -132,6 +132,21 @@ export async function mockAudio(
               : reply,
           ),
         );
+        if (frame.event === 'phx_join') {
+          const payload = {
+            extension: 'system',
+            status: 'ok',
+            message: 'Replication connection established',
+            channel: frame.topic,
+          };
+          ws.send(
+            JSON.stringify(
+              Array.isArray(data)
+                ? [frame.join_ref, null, frame.topic, 'system', payload]
+                : { topic: frame.topic, event: 'system', payload },
+            ),
+          );
+        }
       }
     });
   });
@@ -140,7 +155,14 @@ export async function mockAudio(
     backend,
     emit: async (name: string, payload: unknown) => {
       await expect.poll(() => !!socket).toBe(true);
-      const broadcast = { type: 'broadcast', event: name, payload };
+      const broadcast = {
+        type: 'broadcast',
+        event: name,
+        payload:
+          payload && typeof payload === 'object' && !Array.isArray(payload)
+            ? { ...payload, id: crypto.randomUUID() }
+            : payload,
+      };
       socket!.send(
         JSON.stringify(
           arrayFrames

@@ -6,6 +6,7 @@ import {
   input,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
@@ -23,40 +24,50 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section *transloco="let t" class="ds-card space-y-3" data-testid="audio-settings">
-      <h2 class="text-lg font-bold">{{ t('audio.settings') }}</h2>
-      <p class="text-sm text-slate">{{ t('audio.settingsHelp') }}</p>
-      <fieldset class="space-y-2" [disabled]="saving()">
-        <label class="flex min-h-11 items-center gap-2"
-          ><input
-            type="checkbox"
-            [ngModel]="config().enabled"
-            (ngModelChange)="set('enabled', $event)"
-          />{{ t('audio.master') }}</label
-        >
-        @for (cue of cues; track cue) {
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <label class="flex min-h-11 items-center gap-2"
-              ><input
-                type="checkbox"
-                [ngModel]="config()[key(cue)]"
-                (ngModelChange)="set(key(cue), $event)"
-              />{{ t('audio.cue.' + cue) }}</label
-            >
-            <button
-              type="button"
-              class="ds-button ghost sm"
-              [disabled]="!audio.enabled() || !audio.leader() || audio.loading()"
-              (click)="audio.preview(cue)"
-              [attr.aria-label]="t('audio.preview') + ': ' + t('audio.cue.' + cue)"
-            >
-              {{ t('audio.preview') }}
-            </button>
-          </div>
-        }
-        <button type="button" class="ds-button primary" (click)="save()">
-          {{ t('common.save') }}
-        </button>
-      </fieldset>
+      <details data-testid="admin-audio-options">
+        <summary class="min-h-11 cursor-pointer py-2 text-lg font-bold">
+          {{ t('audio.settings') }}
+          <span class="ms-2 text-sm font-normal">{{
+            t(config().enabled ? 'audio.enabled' : 'audio.muted')
+          }}</span>
+        </summary>
+        <p class="text-sm text-slate">{{ t('audio.settingsHelp') }}</p>
+        <fieldset class="space-y-2" [disabled]="saving()">
+          <label class="flex min-h-11 items-center gap-2"
+            ><input
+              type="checkbox"
+              [ngModel]="config().enabled"
+              (ngModelChange)="set('enabled', $event)"
+            />{{ t('audio.master') }}</label
+          >
+          @for (cue of cues; track cue) {
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <label class="flex min-h-11 items-center gap-2"
+                ><input
+                  type="checkbox"
+                  [ngModel]="config()[key(cue)]"
+                  (ngModelChange)="set(key(cue), $event)"
+                />{{ t('audio.cue.' + cue) }}</label
+              >
+              <button
+                type="button"
+                class="ds-button ghost sm"
+                [disabled]="!audio.enabled() || !audio.leader() || audio.loading()"
+                (click)="audio.preview(cue)"
+                [attr.aria-label]="t('audio.preview') + ': ' + t('audio.cue.' + cue)"
+              >
+                {{ t('audio.preview') }}
+              </button>
+            </div>
+          }
+          <button type="button" class="ds-button primary" (click)="save()">
+            {{ t('common.save') }}
+          </button>
+        </fieldset>
+      </details>
+      @if (dirty()) {
+        <p role="status" class="text-sm">{{ t('audio.unsaved') }}</p>
+      }
       @if (notice()) {
         <p role="status">{{ t(notice()) }}</p>
       }
@@ -69,17 +80,22 @@ export class AudioSettings {
   readonly saved = output<void>();
   readonly config = signal<AudioConfig>({ ...DEFAULT_AUDIO_CONFIG });
   readonly saving = signal(false);
+  readonly dirty = signal(false);
   readonly notice = signal('');
   readonly audio = inject(EventAudioService);
   private readonly queue = inject(OpQueueService);
   readonly cues = AUDIO_CUES;
   constructor() {
-    effect(() => this.config.set({ ...DEFAULT_AUDIO_CONFIG, ...this.initial() }));
+    effect(() => {
+      const initial = this.initial();
+      if (untracked(() => !this.dirty())) this.config.set({ ...DEFAULT_AUDIO_CONFIG, ...initial });
+    });
   }
   key(cue: AudioCue) {
     return cue.replaceAll('-', '_') as Exclude<keyof AudioConfig, 'enabled'>;
   }
   set(key: keyof AudioConfig, value: boolean) {
+    this.dirty.set(true);
     this.config.update((config) => ({ ...config, [key]: value }));
   }
   async save() {
@@ -91,6 +107,7 @@ export class AudioSettings {
         p_config: this.config(),
       });
       this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'manage.saved');
+      if (receipt.status === 'sent') this.dirty.set(false);
       this.saved.emit();
     } catch {
       this.notice.set('errors.SAVE_FAILED');

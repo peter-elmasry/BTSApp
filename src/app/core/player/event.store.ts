@@ -1,5 +1,6 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { ReadCacheService } from '../offline/read-cache.service';
+import { isNetworkFailure } from '../offline/rpc-errors';
 import { EventChannelService } from '../realtime/event-channel.service';
 import { AuthStore } from '../auth/auth.store';
 import { PublicApi } from './public-api';
@@ -55,6 +56,8 @@ export class EventStore {
   });
   private generation = 0;
   private pending?: Promise<void>;
+  private refreshAgain = false;
+  private pendingContext = '';
 
   constructor() {
     const cache = inject(ReadCacheService);
@@ -65,7 +68,7 @@ export class EventStore {
       if (version === previous) return;
       previous = version;
       untracked(() => {
-        if (this.loaded()) void this.refresh();
+        if (this.loaded() || !this.loading()) void this.refresh();
       });
     });
   }
@@ -73,12 +76,17 @@ export class EventStore {
   initialize(): Promise<void> {
     if (this.pending) return this.pending;
     if (this.loaded() && this.responseContext() === this.authContext()) return Promise.resolve();
-    return this.refresh();
+    return this.refresh(false);
   }
 
-  refresh(): Promise<void> {
+  refresh(fresh = true): Promise<void> {
+    if (this.pending && this.pendingContext === this.authContext()) {
+      this.refreshAgain = true;
+      return this.pending;
+    }
     const generation = ++this.generation;
     let context = this.authContext();
+    this.pendingContext = context;
     this.loading.set(true);
     this.error.set(null);
     // A refresh for the same viewer keeps the shown schedule until fresh data arrives,
@@ -90,7 +98,7 @@ export class EventStore {
         await this.auth.initialize();
         if (generation !== this.generation) return;
         context = this.authContext();
-        const event = await this.api.currentEvent();
+        const event = await this.api.currentEvent(fresh);
         if (!current()) return;
         if (!event) {
           this.clear();
@@ -99,8 +107,8 @@ export class EventStore {
           return;
         }
         const [bootstrap, schedule] = await Promise.all([
-          this.api.bootstrap(event.id),
-          this.api.schedule(event.id),
+          this.api.bootstrap(event.id, fresh),
+          this.api.schedule(event.id, fresh),
         ]);
         if (!current()) return;
         this.teams.set(bootstrap.teams);
@@ -110,15 +118,23 @@ export class EventStore {
         this.responseContext.set(context);
         this.matches.set(schedule);
         this.loaded.set(true);
-      } catch {
+      } catch (error) {
         if (!current()) return;
-        this.clear();
-        this.loaded.set(false);
-        this.error.set('LOAD_FAILED');
+        // Keep the confirmed snapshot on transient failures; permission checks
+        // and viewer changes still redact data through responseContext.
+        if (!isNetworkFailure(error) || this.responseContext() !== context) this.clear();
+        if (!this.event()) {
+          this.loaded.set(false);
+          this.error.set('LOAD_FAILED');
+        }
       } finally {
         if (generation === this.generation) {
           this.loading.set(false);
           this.pending = undefined;
+          if (this.refreshAgain) {
+            this.refreshAgain = false;
+            void this.refresh();
+          }
         }
       }
     });

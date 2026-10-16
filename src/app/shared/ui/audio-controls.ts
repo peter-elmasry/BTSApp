@@ -20,52 +20,23 @@ import { EventAudioService } from '../../core/audio/event-audio.service';
       [attr.aria-label]="t('audio.heading')"
       data-testid="audio-controls"
     >
-      @if (audio.config().enabled) {
-        @if (audio.prompt()) {
-          <div class="ds-card space-y-3" data-testid="audio-consent">
-            <h2 class="font-bold">{{ t('audio.permission') }}</h2>
-            <p class="text-sm">{{ t('audio.permissionHelp') }}</p>
-            <div class="ds-actions">
-              <button type="button" class="ds-button primary" (click)="audio.enable()">
-                {{ t('audio.enable') }}</button
-              ><button type="button" class="ds-button ghost" (click)="audio.mute()">
-                {{ t('audio.keepMuted') }}
-              </button>
-            </div>
-          </div>
-        } @else {
-          <div class="flex flex-wrap items-center gap-3 rounded-xl border border-mist bg-white p-3">
-            @if (!audio.enabled() || audio.needsGesture()) {
-              <button
-                type="button"
-                class="ds-button secondary sm"
-                [disabled]="audio.loading()"
-                (click)="audio.enable()"
-              >
-                {{ t('audio.enable') }}
-              </button>
-            } @else {
-              <button type="button" class="ds-button ghost sm" (click)="audio.mute()">
-                {{ t('audio.mute') }}
-              </button>
-            }
-            <label class="flex min-h-11 items-center gap-2 text-sm"
-              >{{ t('audio.volume') }}
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                [value]="audio.volume()"
-                (input)="audio.setVolume(+$any($event.target).value)"
-              />
-            </label>
-            <span role="status" class="text-sm text-slate">
-              @if (audio.loading()) {
+      <div
+        class="flex items-start gap-2 rounded-xl border border-mist bg-white p-3"
+        [attr.data-testid]="audio.prompt() ? 'audio-consent' : null"
+      >
+        <details class="min-w-0 flex-1" [open]="audio.prompt()" data-testid="audio-options">
+          <summary class="min-h-11 cursor-pointer py-2 font-bold">
+            {{ t('audio.heading') }}
+            <span role="status" class="ms-2 text-sm font-normal text-slate">
+              @if (!audio.config().enabled) {
+                {{ t('audio.organizerMuted') }}
+              } @else if (audio.loading()) {
                 {{ t('audio.preparing') }}
               } @else if (audio.failed()) {
                 {{ t('audio.unavailable') }}
-              } @else if (audio.needsGesture()) {
+              } @else if (
+                audio.needsGesture() || (!audio.enabled() && audio.decision() === 'enabled')
+              ) {
                 {{ t('audio.resume') }}
               } @else if (audio.enabled() && !audio.leader()) {
                 {{ t('audio.otherTab') }}
@@ -75,13 +46,57 @@ import { EventAudioService } from '../../core/audio/event-audio.service';
                 {{ t('audio.muted') }}
               }
             </span>
-            @if (audio.missing().length) {
-              <span role="status" class="text-sm text-error">{{ t('audio.missing') }}</span>
+          </summary>
+          <div class="space-y-3 pt-2">
+            @if (audio.prompt()) {
+              <p class="text-sm">{{ t('audio.permissionHelp') }}</p>
             }
+            <label class="flex min-h-11 flex-wrap items-center gap-2 text-sm">
+              {{ t('audio.volume') }}
+              <input
+                class="max-w-full"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                [value]="audio.volume()"
+                (input)="audio.setVolume(+$any($event.target).value)"
+              />
+            </label>
+            <button
+              type="button"
+              class="ds-button secondary sm"
+              [disabled]="audio.loading()"
+              (click)="audio.testSound()"
+            >
+              {{ t('audio.test') }}
+            </button>
           </div>
-        }
-      } @else {
-        <p class="text-sm text-slate">{{ t('audio.organizerMuted') }}</p>
+        </details>
+        <div class="flex shrink-0 flex-col gap-2">
+          @if (!audio.enabled() || audio.needsGesture()) {
+            <button
+              type="button"
+              class="ds-button secondary sm"
+              [disabled]="audio.loading()"
+              (click)="audio.enable()"
+            >
+              {{ t('audio.enable') }}
+            </button>
+          } @else {
+            <button type="button" class="ds-button ghost sm" (click)="audio.mute()">
+              {{ t('audio.mute') }}
+            </button>
+          }
+          @if (audio.prompt()) {
+            <button type="button" class="ds-button ghost sm" (click)="audio.mute()">
+              {{ t('audio.keepMuted') }}
+            </button>
+          }
+        </div>
+      </div>
+      @if (audio.missing().length) {
+        <p role="status" class="text-sm text-error">{{ t('audio.missing') }}</p>
       }
     </section>
   `,

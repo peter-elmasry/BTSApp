@@ -46,6 +46,13 @@ export class ReadCacheService {
   readonly lastUpdated = signal<number | null>(null);
   readonly stale = signal(false);
   readonly updates = signal(0);
+  private readonly failedReads = new Map<string, number>();
+  needsRecovery() {
+    // An abandoned screen must not keep every active view refreshing forever.
+    for (const [key, failedAt] of this.failedReads)
+      if (Date.now() - failedAt > 30000) this.failedReads.delete(key);
+    return this.failedReads.size > 0;
+  }
   private readonly fetching = new Map<string, Promise<unknown>>();
   private previousScope: string | undefined;
   private generation = 0;
@@ -54,6 +61,7 @@ export class ReadCacheService {
     effect(() => {
       const scope = this.scope();
       if (this.previousScope !== undefined && this.previousScope !== scope) {
+        this.failedReads.clear();
         this.lastUpdated.set(null);
         this.stale.set(false);
         void this.database.clearCache(this.previousScope, true).catch(() => {});
@@ -68,11 +76,11 @@ export class ReadCacheService {
     const key = stableJson([scope, name, args]);
     const cached = await this.database.cached(key).catch(() => undefined);
     if (scope !== this.scope()) throw { code: 'ACTOR_CHANGED' };
-    if (cached && !fresh) {
+    if (cached && (!fresh || (typeof navigator !== 'undefined' && !navigator.onLine))) {
       this.lastUpdated.set(cached.updatedAt);
       this.stale.set(true);
       if (typeof navigator === 'undefined' || navigator.onLine)
-        void this.fetch<T>(name, args, key, scope, cached).catch(() => {});
+        void this.fetch<T>(name, args, key, scope, cached, true).catch(() => {});
       return cached.data as T;
     }
     try {
@@ -98,6 +106,7 @@ export class ReadCacheService {
     key: string,
     scope: string,
     cached?: CachedRead,
+    notify = false,
   ): Promise<T> {
     const current = this.fetching.get(key);
     if (current) return current as Promise<T>;
@@ -118,12 +127,15 @@ export class ReadCacheService {
         if (generation !== this.generation) throw { code: 'STALE_RESPONSE' };
         this.lastUpdated.set(updatedAt);
         this.stale.set(false);
-        if (cached && stableJson(cached.data) !== stableJson(data))
+        this.failedReads.delete(key);
+        if (notify && cached && stableJson(cached.data) !== stableJson(data))
           this.updates.update((value) => value + 1);
         return data;
       })
       .catch(async (error: unknown) => {
         if (generation !== this.generation || scope !== this.scope()) throw error;
+        if (isNetworkFailure(error)) this.failedReads.set(key, Date.now());
+        else this.failedReads.delete(key);
         if (!isNetworkFailure(error)) {
           await this.database.removeCache(key).catch(() => {});
           if (cached && scope === this.scope()) this.updates.update((value) => value + 1);

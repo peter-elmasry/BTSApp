@@ -1,17 +1,54 @@
 <label [for]="id" class="mb-2 block font-semibold">{{ label() }}</label>
 <div class="flex items-center gap-2">
-  <ng-content select="[prefix]" /><input
-    class="ds-control min-w-0 flex-1"
-    [id]="id"
-    [type]="type()"
-    [value]="value()"
-    [disabled]="disabled()"
-    [attr.autocomplete]="autocomplete()"
-    [attr.aria-invalid]="!!error()"
-    [attr.aria-describedby]="hint() || error() ? id + '-help' : null"
-    (input)="update($any($event.target).value)"
-    (blur)="touched()"
-  /><ng-content select="[suffix]" />
+  <ng-content select="[prefix]" />
+  <div class="relative min-w-0 flex-1">
+    <input
+      class="ds-control w-full"
+      [class.pe-12]="type() === 'password'"
+      [id]="id"
+      [type]="type() === 'password' && passwordVisible() ? 'text' : type()"
+      [value]="value()"
+      [disabled]="disabled()"
+      [attr.autocomplete]="autocomplete()"
+      [attr.aria-invalid]="!!error()"
+      [attr.aria-describedby]="hint() || error() ? id + '-help' : null"
+      (input)="update($any($event.target).value)"
+      (blur)="touched()"
+    />
+    @if (type() === 'password') {
+      <button
+        type="button"
+        class="absolute end-1 bottom-0 flex h-12 w-11 items-center justify-center rounded-lg text-navy"
+        [disabled]="disabled()"
+        [attr.aria-controls]="id"
+        [attr.aria-pressed]="passwordVisible()"
+        [attr.aria-label]="
+          (passwordVisible() ? 'auth.hidePassword' : 'auth.showPassword') | transloco
+        "
+        [title]="(passwordVisible() ? 'auth.hidePassword' : 'auth.showPassword') | transloco"
+        (click)="passwordVisible.set(!passwordVisible())"
+      >
+        <svg
+          aria-hidden="true"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+          <circle cx="12" cy="12" r="3" />
+          @if (passwordVisible()) {
+            <path d="m3 3 18 18" />
+          }
+        </svg>
+      </button>
+    }
+  </div>
+  <ng-content select="[suffix]" />
 </div>
 @if (hint() || error()) {
   <p [id]="id + '-help'" class="mt-1 text-sm" [class.text-error]="!!error()">

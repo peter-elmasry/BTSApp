@@ -203,25 +203,26 @@
       (close)="closePassword()"
     >
       <form class="space-y-4" [formGroup]="passwordForm" (ngSubmit)="savePassword()">
-        <label class="block space-y-1"
-          ><span>{{ t('account.newPassword') }}</span
-          ><input
-            class="ds-control w-full"
-            type="password"
-            autocomplete="new-password"
-            formControlName="password"
-            data-testid="owner-new-password"
-          /><small class="block text-slate">{{ t('owner.passwordHint') }}</small></label
-        >
-        <label class="block space-y-1"
-          ><span>{{ t('account.confirmPassword') }}</span
-          ><input
-            class="ds-control w-full"
-            type="password"
-            autocomplete="new-password"
-            formControlName="confirm"
-            data-testid="owner-confirm-password"
-        /></label>
+        <ds-input
+          [label]="t('account.newPassword')"
+          type="password"
+          autocomplete="new-password"
+          formControlName="password"
+          data-testid="owner-new-password"
+          [hint]="t('owner.passwordHint')"
+          [error]="
+            passwordForm.controls.password.touched && passwordForm.controls.password.invalid
+              ? 'owner.passwordTooShort'
+              : ''
+          "
+        />
+        <ds-input
+          [label]="t('account.confirmPassword')"
+          type="password"
+          autocomplete="new-password"
+          formControlName="confirm"
+          data-testid="owner-confirm-password"
+        />
         @if (passwordError()) {
           <p role="alert" class="text-sm text-error">{{ t(passwordError()) }}</p>
         }
@@ -251,15 +252,14 @@
           ><input class="ds-control w-full" formControlName="full_name_en" dir="auto"
         /></label>
         @if (!editing()) {
-          <label class="space-y-1 sm:col-span-2"
-            ><span>{{ t('owner.initialPassword') }}</span
-            ><input
-              class="ds-control w-full"
-              formControlName="password"
-              type="password"
-              autocomplete="new-password"
-            /><small class="block text-slate">{{ t('owner.passwordHint') }}</small></label
-          >
+          <ds-input
+            class="sm:col-span-2"
+            [label]="t('owner.initialPassword')"
+            formControlName="password"
+            type="password"
+            autocomplete="new-password"
+            [hint]="t('owner.passwordHint')"
+          />
         }
         <div class="ds-actions sm:col-span-2">
           <ds-button type="submit" [loading]="busy()">{{

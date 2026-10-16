@@ -83,22 +83,20 @@ describe('public event state', () => {
     expect(store.loaded()).toBe(true);
   });
 
-  it('discards older refresh responses when a newer event has loaded', async () => {
+  it('coalesces refreshes and follows an in-flight request with one fresh read', async () => {
     const older = deferred<PublicEvent | null>();
-    const newer = deferred<PublicEvent | null>();
-    api.currentEvent.mockReturnValueOnce(older.promise).mockReturnValueOnce(newer.promise);
+    api.currentEvent.mockReturnValueOnce(older.promise).mockResolvedValue(event('new'));
     const store = TestBed.inject(EventStore);
     const first = store.refresh();
     await settle();
-    const second = store.refresh();
-    await settle();
-    newer.resolve(event('new'));
-    await second;
+    store.refresh();
+    store.refresh();
+    expect(api.currentEvent).toHaveBeenCalledTimes(1);
     older.resolve(event('old'));
     await first;
+    await settle();
+    expect(api.currentEvent).toHaveBeenCalledTimes(2);
     expect(store.event()?.id).toBe('new');
-    expect(api.bootstrap).toHaveBeenCalledOnce();
-    expect(store.loading()).toBe(false);
   });
 
   it('hides permission-dependent schedule immediately on logout and rejects its in-flight response', async () => {

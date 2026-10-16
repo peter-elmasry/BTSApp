@@ -2,9 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   OnInit,
   signal,
+  untracked,
 } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
@@ -16,6 +18,7 @@ import {
   type DsRowStatus,
 } from '../../shared/ui/data-table';
 import { DsPhoneLink } from '../../shared/ui/phone-link';
+import { DsInput } from '../../shared/ui/controls';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { supabase } from '../../core/supabase/client';
 import { DsButton } from '../../shared/ui/button';
@@ -23,6 +26,7 @@ import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
 import { OpQueueService } from '../../core/offline/op-queue.service';
 import { ReadCacheService } from '../../core/offline/read-cache.service';
 import { DirectionService } from '../../core/i18n/i18n.service';
+import { EventChannelService } from '../../core/realtime/event-channel.service';
 import { entityLabel } from '../../core/i18n/entity-label';
 
 type Member = {
@@ -59,11 +63,21 @@ type EventRow = {
     DsDataTable,
     DsCellDef,
     DsPhoneLink,
+    DsInput,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './owner-page.html',
 })
 export class OwnerPage implements OnInit {
+  constructor() {
+    const channel = inject(EventChannelService);
+    let initialized = false;
+    effect(() => {
+      channel.revision();
+      if (initialized) untracked(() => void this.reload());
+      initialized = true;
+    });
+  }
   private readonly direction = inject(DirectionService);
   label(row: Member | EventRow, field = 'name') {
     return entityLabel(row, this.direction.language(), field);
@@ -140,8 +154,8 @@ export class OwnerPage implements OnInit {
   async reload() {
     try {
       const [members, events] = await Promise.all([
-        this.cache.read<Member[]>('list_members', {}),
-        this.cache.read<EventRow[]>('list_events', {}),
+        this.cache.read<Member[]>('list_members', {}, true),
+        this.cache.read<EventRow[]>('list_events', {}, true),
       ]);
       this.members.set(members ?? []);
       this.events.set(events ?? []);
@@ -248,6 +262,7 @@ export class OwnerPage implements OnInit {
     if (!member || this.busy()) return;
     const { password, confirm } = this.passwordForm.getRawValue();
     if (this.passwordForm.invalid) {
+      this.passwordForm.markAllAsTouched();
       this.passwordError.set('owner.passwordTooShort');
       return;
     }

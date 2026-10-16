@@ -79,6 +79,8 @@ export class EventAudioService {
   private resultAgain = false;
   private roundFailed = false;
   private resultFailed = false;
+  private readonly pendingCues = new Map<string, () => boolean>();
+  private readonly queuedCues = new Set<string>();
   constructor() {
     const destroy = inject(DestroyRef);
     effect(() => {
@@ -101,6 +103,7 @@ export class EventAudioService {
         profile?.system_role,
         profile?.roles,
         this.enabled(),
+        this.running(),
         this.leader(),
         this.foreground(),
         this.config(),
@@ -124,14 +127,18 @@ export class EventAudioService {
     // Successful local writes invalidate the read cache, even without a broadcast.
     effect(() => {
       this.cache.updates();
-      untracked(() => void this.readRounds());
+      untracked(() => {
+        void this.readRounds();
+        void this.readResults();
+      });
     });
     const poll = setInterval(() => {
       if (this.eventId && this.canListen()) {
         // A subscribed socket can silently miss a database broadcast. Verify fresh
         // occurrences independently; IDs/server timestamps still prevent replays.
         void this.readRounds();
-        if (!this.channel.isSubscribed(this.eventId) || this.failed()) void this.readResults();
+        void this.readResults();
+        this.retryCues();
       }
     }, 2000);
     const visibility = () => this.foreground.set(this.document.visibilityState !== 'hidden');
@@ -208,6 +215,12 @@ export class EventAudioService {
   preview(cue: AudioCue) {
     if (this.canListen()) this.audio.enqueue(cue, () => this.canListen());
   }
+  async testSound() {
+    // Explicit local test also diagnoses speaker/activation issues when an
+    // organizer has disabled event announcements. It never marks an event heard.
+    await this.enable();
+    this.audio.enqueue('round-start', () => this.enabled() && this.running() && this.foreground());
+  }
   private canListen() {
     return (
       this.enabled() &&
@@ -221,6 +234,8 @@ export class EventAudioService {
   private reset(eventId: string | null, teamCode: string | null) {
     this.generation++;
     this.audio.clear();
+    this.pendingCues.clear();
+    this.queuedCues.clear();
     this.eventId = eventId;
     this.teamCode = teamCode;
     this.roundBaseline = false;
@@ -343,16 +358,34 @@ export class EventAudioService {
     config: AudioConfig,
     generation: number,
   ) {
-    if (!cueEnabled(config, cue) || this.heard(id)) return;
-    this.remember(id);
-    this.audio.enqueue(
-      cue,
-      () =>
-        generation === this.generation &&
-        this.canListen() &&
-        cueEnabled(this.config(), cue) &&
-        freshAudio(occurred, now + performance.now() - received),
-    );
+    if (!cueEnabled(config, cue) || this.heard(id) || this.pendingCues.has(id)) return;
+    const allowed = () =>
+      generation === this.generation &&
+      this.canListen() &&
+      cueEnabled(this.config(), cue) &&
+      freshAudio(occurred, now + performance.now() - received);
+    this.pendingCues.set(id, () => {
+      if (!allowed() || this.heard(id)) return false;
+      if (!this.queuedCues.has(id)) {
+        this.queuedCues.add(id);
+        const accepted = this.audio.enqueue(
+          cue,
+          allowed,
+          () => {
+            this.remember(id);
+            this.pendingCues.delete(id);
+            this.queuedCues.delete(id);
+          },
+          () => this.queuedCues.delete(id),
+        );
+        if (!accepted) this.queuedCues.delete(id);
+      }
+      return true;
+    });
+    this.retryCues();
+  }
+  private retryCues() {
+    for (const [id, retry] of this.pendingCues) if (!retry()) this.pendingCues.delete(id);
   }
   private heard(id: string) {
     try {

@@ -8,12 +8,24 @@
     (ngSubmit)="submit()"
     class="space-y-5 rounded-card bg-white p-5 shadow-card"
   >
-    <ds-input formControlName="identifier" [label]="t('auth.identifier')" autocomplete="username" />
+    <ds-input
+      formControlName="identifier"
+      [label]="t('auth.identifier')"
+      autocomplete="username"
+      [error]="
+        form.controls.identifier.touched && form.controls.identifier.invalid
+          ? 'auth.requiredField'
+          : ''
+      "
+    />
     <ds-input
       formControlName="password"
       [label]="t('auth.password')"
       type="password"
       autocomplete="current-password"
+      [error]="
+        form.controls.password.touched && form.controls.password.invalid ? 'auth.requiredField' : ''
+      "
     />
     @if (error()) {
       <p role="alert" class="rounded-xl bg-gold-soft p-3 text-sm">{{ t('errors.' + error()) }}</p>
