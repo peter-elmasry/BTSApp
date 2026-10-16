@@ -6,6 +6,7 @@
     >
       <p class="flex-1" data-testid="toast">{{ toast.message() | transloco: toast.params() }}</p>
       <button
+        type="button"
         class="min-h-11 min-w-11 rounded-lg"
         [attr.aria-label]="'common.dismiss' | transloco"
         (click)="toast.dismiss()"

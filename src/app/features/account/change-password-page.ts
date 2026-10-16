@@ -8,6 +8,7 @@ import { landingFor } from '../../core/auth/landing';
 import { EventStore } from '../../core/player/event.store';
 import { DsButton } from '../../shared/ui/button';
 import { DsInput } from '../../shared/ui/controls';
+import { ToastService } from '../../shared/ui/toast';
 
 @Component({
   selector: 'app-change-password-page',
@@ -16,6 +17,7 @@ import { DsInput } from '../../shared/ui/controls';
   templateUrl: './change-password-page.html',
 })
 export class ChangePasswordPage {
+  private readonly toast = inject(ToastService);
   readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -75,6 +77,7 @@ export class ChangePasswordPage {
     }
     this.form.reset();
     // Back to the page that asked for the new password (e.g. My station), else the start page.
+    this.toast.show('account.passwordSaved');
     const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
     if (
       returnUrl?.startsWith('/') &&

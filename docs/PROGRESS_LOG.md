@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-16 — Clear save feedback — STARTED
+
+- **Scope/preflight:** Gendy requested a toast or clear confirmation whenever a save succeeds. Clean workspace; fetched master `a9828e4` and created `codex/save-feedback`, independent of unmerged owner-release PR #36.
+- **Design/next:** Reuse ToastService for acknowledged saves across setup/settings, owner/member/password, scoring/adjustments, import, standings and player management. Preserve inline errors and existing referee/profile feedback; queued operations must say queued, and failed/needs-review writes must never announce success. One final acknowledgment per bulk action. Add regressions, run checks, commit/publish and verify cloud CI.
+- **Implementation/checkpoint:** Added explicit success/queued toasts at existing acknowledged save boundaries, including password/join navigation. Bulk setup and close/start preserve queued status; errors/review states and rejected imports do not toast success. Added EN/AR delayed-acknowledgment, failure and offline-bulk browser cases plus owner error/review regressions. Formatting, 1,120-key parity and whitespace passed. Corrected bulk queued-state variable scope after TypeScript caught it; rerun TypeScript/Angular tests hit Windows out-of-memory failures, so no local runtime pass claimed. Publish for complete cloud acceptance. Reserve D066/plan §25 for unmerged PR #36; this slice uses D067/§26.
+
 ## 2026-10-16 — Password visibility controls — HANDOFF
 
 - **Scope/preflight:** Gendy requested eye icons to reveal/hide passwords. Clean, fetched `codex/realtime-sound-reliability`; extend existing PR #35 without merging.

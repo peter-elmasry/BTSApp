@@ -1,3 +1,4 @@
+import { ToastService } from '../../shared/ui/toast';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -69,6 +70,7 @@ type EventRow = {
   templateUrl: './owner-page.html',
 })
 export class OwnerPage implements OnInit {
+  private readonly toast = inject(ToastService);
   constructor() {
     const channel = inject(EventChannelService);
     let initialized = false;
@@ -191,6 +193,7 @@ export class OwnerPage implements OnInit {
     }
     this.notice.set('owner.memberSaved');
     this.cancelEdit();
+    this.toast.show('owner.memberSaved');
     await this.reload();
   }
   /** Add/edit happens in a sheet so the member list comes first (product owner, 2026-10-13). */
@@ -288,6 +291,7 @@ export class OwnerPage implements OnInit {
     this.notice.set(
       error || data?.error ? `errors.${data?.error || 'SAVE_FAILED'}` : 'owner.passwordSaved',
     );
+    if (!error && !data?.error) this.toast.show('owner.passwordSaved');
     await this.reload();
   }
   async toggleActive(member: Member) {
@@ -305,6 +309,7 @@ export class OwnerPage implements OnInit {
     this.notice.set(
       error || data?.error ? `errors.${data?.error || 'SAVE_FAILED'}` : 'owner.memberSaved',
     );
+    if (!error && !data?.error) this.toast.show('owner.memberSaved');
     await this.reload();
   }
   async createEvent() {
@@ -357,6 +362,7 @@ export class OwnerPage implements OnInit {
     try {
       const receipt = await this.queue.execute(name, args);
       this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'owner.eventSaved');
+      this.toast.show(this.notice());
       if (receipt.status === 'sent') await this.reload();
       return true;
     } catch (error) {

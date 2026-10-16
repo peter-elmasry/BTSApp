@@ -1,3 +1,4 @@
+import { ToastService } from '../../shared/ui/toast';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -65,6 +66,7 @@ type Sheet =
   templateUrl: './live-page.html',
 })
 export class LiveControlPage {
+  private readonly toast = inject(ToastService);
   readonly reader = inject(LiveReader);
   private readonly standings = inject(StandingsReader);
   private readonly api = inject(LiveApi);
@@ -313,9 +315,15 @@ export class LiveControlPage {
       const args = this.startArgs(sheet.nextId);
       const ended = await this.run('close_round', { p_round: sheet.roundId }, false);
       if (!ended) return;
+      const endedQueued = this.notice() === 'live.queued';
       const started = await this.run('start_round', args, true);
       if (started) {
-        this.notice.set('control.endedAndStarted');
+        this.notice.set(
+          endedQueued || this.notice() === 'live.queued'
+            ? 'live.queued'
+            : 'control.endedAndStarted',
+        );
+        this.toast.show(this.notice());
         this.selectedId.set(sheet.nextId);
       } else this.retryStart.set(sheet.nextId);
     }
@@ -337,6 +345,7 @@ export class LiveControlPage {
     try {
       const receipt = await this.api.mutate(name, args);
       this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'live.saved');
+      if (closeSheet) this.toast.show(this.notice());
       if (closeSheet) this.sheet.set(null);
       if (receipt.status === 'sent') this.reader.refresh();
       return true;
@@ -349,6 +358,7 @@ export class LiveControlPage {
   }
   saved(status: 'sent' | 'queued') {
     this.notice.set(status === 'queued' ? 'live.queued' : 'live.resultSaved');
+    this.toast.show(this.notice());
     this.sheet.set(null);
     if (status === 'sent') this.reader.refresh();
   }

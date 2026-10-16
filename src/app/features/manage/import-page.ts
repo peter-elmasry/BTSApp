@@ -1,3 +1,4 @@
+import { ToastService } from '../../shared/ui/toast';
 import {
   afterNextRender,
   ChangeDetectionStrategy,
@@ -26,6 +27,7 @@ import { ImportWorkbookService } from './import-workbook-service';
   templateUrl: './import-page.html',
 })
 export class EventImportPage {
+  private readonly toast = inject(ToastService);
   private readonly api = inject(EventImportService);
   private readonly workbook = inject(ImportWorkbookService);
   private readonly injector = inject(Injector);
@@ -209,6 +211,7 @@ export class EventImportPage {
       this.notice.set(
         report.queued ? 'live.queued' : report.applied ? 'import.success' : 'import.applyRejected',
       );
+      if (report.queued || report.applied) this.toast.show(this.notice());
       if (report.applied) {
         afterNextRender(() => this.reviewSetupLink()?.nativeElement.focus(), {
           injector: this.injector,

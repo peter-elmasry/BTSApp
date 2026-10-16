@@ -43,6 +43,7 @@ for (const lang of ['en', 'ar'] as const) {
       .filter((call) => call.name === 'upsert_team')
       .map((call) => call.args['p_team'].code);
     expect(codes).toEqual(['T03', 'T04']);
+    await expect(page.getByTestId('toast')).toHaveText(t.setup.bulkDone);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );

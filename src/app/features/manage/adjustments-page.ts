@@ -1,3 +1,4 @@
+import { ToastService } from '../../shared/ui/toast';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -63,6 +64,7 @@ export function filterAdjustments(items: readonly LiveAdjustment[], filter: Adju
   templateUrl: './adjustments-page.html',
 })
 export class AdjustmentsPage {
+  private readonly toast = inject(ToastService);
   readonly reader = inject(LiveReader);
   private readonly standings = inject(StandingsReader);
   private readonly api = inject(LiveApi);
@@ -181,6 +183,7 @@ export class AdjustmentsPage {
         p_reason: this.revokeReason.value.trim(),
       });
       this.notice.set(receipt.status === 'queued' ? 'live.queued' : 'live.saved');
+      this.toast.show(this.notice());
       this.revokeTarget.set(null);
       if (receipt.status === 'sent') this.changed();
     } catch (error) {

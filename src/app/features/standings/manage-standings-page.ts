@@ -1,3 +1,4 @@
+import { ToastService } from '../../shared/ui/toast';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -70,6 +71,7 @@ export function standingsAdminError(error: unknown) {
   templateUrl: './manage-standings-page.html',
 })
 export class ManageStandingsPage {
+  private readonly toast = inject(ToastService);
   private readonly api = inject(StandingsApi);
   private readonly auth = inject(AuthStore);
   private readonly realtime = inject(EventChannelService);
@@ -287,6 +289,7 @@ export class ManageStandingsPage {
       if (version !== this.actionVersion || context !== this.context() || !this.allowed()) return;
       this.action.set(null);
       this.notice.set(receipt.status === 'queued' ? 'phase6.queued' : 'phase6.saved');
+      this.toast.show(this.notice());
       if (receipt.status === 'sent') this.refresh();
     } catch (error) {
       if (version === this.actionVersion && context === this.context()) {
