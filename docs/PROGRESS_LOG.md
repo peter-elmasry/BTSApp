@@ -2,11 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-16 — Merge Gendy's outstanding PRs and import repair — STARTED
+## 2026-10-16 — Merge Gendy's outstanding PRs and import repair — HANDOFF
 
 - **Authorization/preflight:** User explicitly requested investigating and merging Gendy's latest open PRs, also authorizing import-fix PR #38. Clean workspace; refreshed origin. Only Gendy PRs #36 (release identity) and #37 (save acknowledgments) were open; both were mergeable with green CI/Vercel, not failed merges.
 - **Review/integration:** Reviewed release metadata generation/owner gating and save/queued/error/modal behavior. Merged PR #36 at verified head `6195996` into master (`f6b65b3`). Integrated that master into PR #37, preserving both independent documentation additions and all existing history; no source conflicts. A local documentation resolution dropped trailing history; reconstructed all three documents from both merge parents before publishing, with line-count and complete-section checks. Re-run combined tests before pushing/merging #37. PR #38 will absorb the combined master, preserving imports/save toasts and renumbering the colliding import decision to D068.
 - **Combined milestone:** PR #37 integration `28558dc` passed 14 focused toast/owner/import unit tests, all four metadata tests, build, formatting/translation/whitespace checks and is pushed for fresh cloud CI. Integrated it into PR #38 without source conflicts, preserving the import acknowledgment toast and all import safety checks. Import decision is now D068; D066 remains owner release metadata and D067 remains save feedback. Validate/publish the complete combination while PR #37's checks run.
+- **Merge/acceptance:** PR #37's fresh [CI 38962516710](https://github.com/peter-elmasry/BTSApp/actions/runs/38962516710) and Vercel preview passed; merged verified head `28558dc` into master at `08d5a68`. No Gendy-authored open PRs remain from the initial audit. The complete PR #38 integration `d1311a0` passed 37 local focused units, all 15 EN/AR release/save/import browser journeys, build, formatting and 1130-key translation parity; preview succeeded. Combined cloud acceptance is [CI 38962698403](https://github.com/peter-elmasry/BTSApp/actions/runs/38962698403). This documentation-only update records the audit; no source changes after those tests.
+- **Release handoff:** User explicitly authorized PR #38's merge as part of this sequence. Final release acceptance is its green combined runtime CI, successful merge and production Vercel status, then a clean local master matching origin. Preserve frontend release information, save acknowledgments and import recovery together. No event setup/data writes or new database migrations are part of these PR merges; the Excel upload remains a separate task.
 
 ## 2026-10-16 — Numbered release build repair — HANDOFF
 
