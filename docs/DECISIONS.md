@@ -21,6 +21,24 @@ Configured match gains, starting hearts and existing half-heart draw rules are
 unchanged. Migration 0034 and test 0025 reserve 0033/test 0024 for the independent
 shared-notification PR; D072 is likewise reserved for that feature.
 
+## D072 — Event-wide notification test for administrators
+
+Peter requested Test with others beside the existing local Test sound action.
+Owners and current-event administrators can send a clearly labeled shared test;
+referees, guides and guests cannot initiate it. Enforce current DRAFT/LIVE event,
+authorization, idempotency and an event-wide one-minute cooldown on the server.
+Queue the existing private test push for unexpired event subscriptions and record
+one private latest-test marker plus an audited thin settings-change signal.
+
+Foreground viewers receive a localized test toast independently of sound consent.
+The existing audio service plays the round-start sample only when device sound,
+organizer master setting, foreground activation and cross-tab ownership permit it.
+Use the existing channel recovery revisions to recover missed broadcasts; initial
+snapshots and return-from-background reads are silent, and stale/duplicate or
+wrong-event responses are ignored. Keep public reads to occurrence/time, retain
+sender operation ID across ambiguous errors and distinguish queued push counts
+from actual delivery. Do not queue this action offline or change rounds/results.
+
 ## D071 — Ask proactively for background notification permission
 
 Peter clarified that viewers must be guided automatically rather than expected

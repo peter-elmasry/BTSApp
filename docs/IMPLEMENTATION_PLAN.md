@@ -1020,7 +1020,18 @@ Verify EN/AR narrow layouts, sequential sheets, no automatic native request,
 successful enable/retry, reload, denied permission and installation-to-consent
 transition. D071 records the UX and remembered-choice contract.
 
-## 30. Decimal bonuses and penalties — approved 2026-10-17
+## 30. Test with others — approved 2026-10-17
+
+Place Test with others beside Test sound for owners and current-event admins.
+Send a localized test to foreground viewers and enabled event notification devices,
+respecting mute/browser permission. Enforce server permissions, current/open event,
+one-minute event cooldown, transactional fanout, idempotency and audit. Keep the
+test independent of rounds/results. Show pending, queued device count and failure
+feedback without claiming arrival. Verify anonymous/cross-event denial, expired
+subscriptions, rollback/retry, missed-broadcast recovery, stale/duplicate suppression,
+muted guests, role gating and EN/AR mobile accessibility. D072 records the design.
+
+## 31. Decimal bonuses and penalties — approved 2026-10-17
 
 Accept signed nonzero bonuses/penalties with up to two decimal places at match
 and event scope, including 0.5 and 0.25 hearts. Hearts-mode buttons step by 0.25;
