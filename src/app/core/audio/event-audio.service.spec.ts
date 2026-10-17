@@ -166,6 +166,14 @@ describe('audio activation and private response lifetime', () => {
     expect(starts).toBe(1);
     expect(service.enabled()).toBe(false);
   });
+  it('shares activation so an immediate test waits for prepared audio', async () => {
+    const activation = service.enable();
+    expect(service.enable()).toBe(activation);
+    await Promise.all([activation, service.testSound()]);
+    expect(constructors).toBe(1);
+    expect(fetch).toHaveBeenCalledTimes(5);
+    expect(starts).toBe(1);
+  });
   it('recovers a fresh result without broadcasts while the socket reports subscribed', async () => {
     await service.enable();
     await flush();

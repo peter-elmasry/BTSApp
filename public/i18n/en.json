@@ -1081,7 +1081,7 @@
   "audio": {
     "heading": "Event sound",
     "permission": "Enable event sounds?",
-    "permissionHelp": "Hear round announcements and results for your team on this device. You can mute them at any time.",
+    "permissionHelp": "Enable round announcements and your team’s result sounds on this device? Your choice is remembered. On future visits, sound resumes when you first tap or use the keyboard. You can mute it at any time.",
     "enable": "Enable sound",
     "keepMuted": "Keep muted",
     "mute": "Mute sound",

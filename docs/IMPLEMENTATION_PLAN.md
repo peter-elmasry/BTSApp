@@ -994,3 +994,16 @@ details in notifications. Test anonymous access boundaries, rollback/replay, eve
 scope, worker visibility/expiry/click handling and failed subscription saves. Verify
 cloud database/Edge/frontend CI, and record production configuration and real-device
 locked-screen acceptance separately. D069 records architecture and security.
+
+## 28. Remembered sound and older-event activation — approved 2026-10-17
+
+Show a first-visit sound sheet with explicit enable/mute; remember either choice,
+including dismissal. Saved consent resumes on the next trusted interaction after
+reopening without another consent prompt. Respect organizer mute, device mute,
+browser activation and cross-tab ownership. Background notification consent stays
+separate. Verify EN/AR, first visit, reload, ordinary interaction and mute persistence.
+
+Owner activation must switch between newer and older events without transient
+unique-key errors, including retries and invalid targets. Preserve one current
+event, transactional visibility, permissions, audit and realtime signals. D070
+records implementation and regression requirements.

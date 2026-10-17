@@ -1,10 +1,57 @@
 import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { mockAudio, starts } from './audio-fixtures';
 import { eventId } from './public-fixtures';
 import type { RoundAudioCue } from '../src/app/core/audio/audio-types';
 test.use({ serviceWorkers: 'block' });
 const roundId = '66000000-0000-0000-0000-000000000001';
+
+for (const lang of ['en', 'ar'] as const) {
+  test(`sound consent is remembered and restored on ordinary interaction in ${lang}`, async ({
+    page,
+  }) => {
+    await mockAudio(page, lang);
+    const labels = JSON.parse(readFileSync(`public/i18n/${lang}.json`, 'utf8'));
+    await page.goto('/choose-team');
+    await expect(page.getByRole('dialog', { name: labels.audio.heading })).toBeVisible();
+    expect((await new AxeBuilder({ page }).include('dialog[open]').analyze()).violations).toEqual(
+      [],
+    );
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(
+      false,
+    );
+    await page.screenshot({ path: `artifacts/audio-consent-${lang}.png`, fullPage: true });
+    await page.getByRole('button', { name: labels.audio.enable, exact: true }).click();
+    await expect(page.getByTestId('audio-consent')).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByTestId('team-card-T01')).toBeVisible();
+    await expect(page.getByTestId('audio-consent')).toHaveCount(0);
+    expect(await page.evaluate(() => (window as any).__audioContexts.length)).toBe(0);
+    if (lang === 'ar') await page.keyboard.press('a');
+    else await page.getByTestId('audio-options').locator('summary').click();
+    await expect(page.getByRole('button', { name: labels.audio.mute, exact: true })).toBeVisible();
+    await expect
+      .poll(() => page.evaluate(() => (window as any).__audioContexts[0]?.state))
+      .toBe('running');
+    await page.getByRole('button', { name: labels.audio.mute, exact: true }).click();
+    await page.reload();
+    await page.getByTestId('audio-options').locator('summary').click();
+    expect(await page.evaluate(() => (window as any).__audioContexts.length)).toBe(0);
+    await expect(page.getByTestId('audio-consent')).toHaveCount(0);
+  });
+}
+
+test('closing first-visit sound consent remembers mute', async ({ page }) => {
+  await mockAudio(page);
+  await page.goto('/choose-team');
+  await expect(page.getByTestId('audio-consent')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.reload();
+  await expect(page.getByTestId('team-card-T01')).toBeVisible();
+  await expect(page.getByTestId('audio-consent')).toHaveCount(0);
+  expect(await starts(page)).toHaveLength(0);
+});
 test('admin hears committed close/start actions without any websocket broadcast', async ({
   page,
 }) => {

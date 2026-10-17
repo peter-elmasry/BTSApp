@@ -1,5 +1,22 @@
 # Implementation decisions
 
+## D070 — First-visit sound consent and safe current-event switching
+
+Peter requested a first-visit in-app sound modal and no repeated enable step.
+Reuse the accessible sheet with explicit Enable sound / Keep muted choices;
+closing also remembers mute. Existing enabled preferences remain valid. Later
+visits resume Web Audio on the first trusted click or keydown, subject to the
+event sound setting, foreground state and browser activation. Do not request
+notification permission automatically: background push remains a separate opt-in.
+No audio assets are fetched before consent and an activation gesture.
+
+The owner current-event RPC previously changed both flags in one UPDATE. The
+partial unique index can reject this when the target row is updated first.
+Serialize switches with a transaction-scoped table lock, validate the target,
+then clear the old flag before setting the new one. Keep the index, owner check,
+operation receipt, audit and change signals. Both writes commit atomically;
+invalid targets preserve the existing current event. No event setup is deleted.
+
 ## D069 — Opt-in background round notifications
 
 Peter approved Web Push for committed DRAFT-to-ACTIVE and ACTIVE-to-CLOSED round

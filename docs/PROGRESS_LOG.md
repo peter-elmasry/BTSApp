@@ -2,6 +2,13 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-17 — Event activation and remembered sound — STARTED
+
+- **Request/preflight:** Peter reports a duplicate error when activating an older event and requests automatic sound restoration or a one-time first-visit modal. Clean `feat/background-round-notifications` at `31cdecf`; read collaboration/plan/decisions/Phase 0 and prior handoff. PR #39 is published with green runtime CI, not merged/deployed. Remote refresh was unavailable after automatic approval review hit its usage limit; preserve current branch/history.
+- **Plan:** Replace the order-dependent single event-switch update with a serialized atomic deactivate/activate transaction, preserving owner enforcement, idempotency, auditing and broadcasts. Add SQL regression coverage. Reuse the existing accessible sheet for first-visit sound consent and resume saved consent on the first trusted interaction in later sessions. Keep explicit mute and browser gesture requirements. Add focused unit/browser checks and record exact release status.
+- **Implementation/local milestone:** Added migration 0032 and nine SQL assertions for older/newer switching, operation replay, missing-target preservation, one-current invariant and owner enforcement. Added D070/plan §28, first-visit EN/AR sheet, remembered enable/mute/dismissal and trusted click/keyboard restoration with teardown. Browser fixtures explicitly distinguish returning-muted viewers from first-visit sound tests. Remote fetch now succeeds and confirms unchanged master/PR branch. Build, TypeScript, 10 audio units, 23 audio/push browser journeys, translation parity and formatting passed; Windows sandbox blocked Vitest's temporary-file rename, then the approved external run passed. New SQL assertions await cloud Supabase; no local Docker/database or production writes.
+- **Publication check:** Final source additionally passes 11 audio units (shared activation/Test sound regression), build, TypeScript, five EN/AR modal/keyboard/mute/options journeys, modal axe checks and inspected 360px screenshots. Enable is the primary action; initial options stay collapsed behind the sheet. Publish both logical fixes to PR #39 and require fresh complete CI before release acceptance.
+
 ## 2026-10-16 — Background round notifications — HANDOFF
 
 - **Authorization/preflight:** Peter approved implementing background round alerts after discussing OS sound restrictions. Refreshed clean master `5f22810`; branch `feat/background-round-notifications`. Read collaboration, plan, decisions and Phase 0 records.
