@@ -583,6 +583,12 @@
           </ng-template>
           <ng-template dsCell="actions" let-game>
             <span class="inline-flex flex-wrap justify-end gap-1">
+              <app-neutral-game-control
+                [eventId]="eventId"
+                [game]="game"
+                [disabled]="saving()"
+                (changed)="reload()"
+              />
               <button type="button" class="ds-button ghost sm" (click)="editGame(game)">
                 {{ t('common.edit') }}
               </button>

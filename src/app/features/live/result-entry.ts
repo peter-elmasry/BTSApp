@@ -64,8 +64,14 @@ export class ResultEntry {
   readonly round = computed(() =>
     this.snapshot().rounds.find((round) => round.id === this.match().round_id),
   );
-  readonly canEdit = computed(() =>
-    canEditLiveMatch(this.snapshot(), this.match(), this.auth.profile()),
+  readonly canEdit = computed(
+    () => !this.neutral() && canEditLiveMatch(this.snapshot(), this.match(), this.auth.profile()),
+  );
+  readonly neutral = computed(
+    () =>
+      this.match().status !== 'VOID' &&
+      (!!this.match().is_neutral ||
+        !!this.snapshot().games.find((game) => game.id === this.match().game_id)?.is_neutral),
   );
   readonly teams = computed(() =>
     this.match().participants.map((participant) => ({

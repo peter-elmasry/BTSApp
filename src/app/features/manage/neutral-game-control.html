@@ -1,0 +1,52 @@
+<span *transloco="let t" class="inline-flex flex-wrap items-center gap-2">
+  @if (game().is_neutral) {
+    <span class="text-sm font-bold text-teal">{{ t('neutral.label') }}</span>
+  }
+  <button
+    type="button"
+    class="ds-button ghost sm"
+    data-testid="neutral-open"
+    [disabled]="busy() || disabled()"
+    (click)="open()"
+  >
+    {{ t(busy() ? 'live.saving' : game().is_neutral ? 'neutral.disable' : 'neutral.enable') }}
+  </button>
+  @if (notice() && !preview()) {
+    <span role="status" class="text-sm">{{ t(notice()) }}</span>
+  }
+  @if (preview(); as item) {
+    <ds-bottom-sheet
+      [title]="t(item.neutral ? 'neutral.disable' : 'neutral.enable')"
+      (close)="!busy() && preview.set(null)"
+    >
+      <div class="space-y-4" data-testid="neutral-confirmation">
+        <p class="text-lg font-bold">{{ item.name }}</p>
+        <p>{{ t(item.neutral ? 'neutral.restoreHint' : 'neutral.enableHint') }}</p>
+        <p class="font-bold">{{ t('neutral.impact', { n: item.count }) }}</p>
+        <p class="text-sm text-slate">{{ t('neutral.preserveHint') }}</p>
+        @if (notice()) {
+          <p role="alert" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
+        }
+        <div class="ds-actions">
+          <button
+            type="button"
+            class="ds-button ghost"
+            [disabled]="busy()"
+            (click)="preview.set(null)"
+          >
+            {{ t('common.cancel') }}
+          </button>
+          <button
+            type="button"
+            class="ds-button primary"
+            data-testid="neutral-confirm"
+            [disabled]="busy()"
+            (click)="confirm()"
+          >
+            {{ t('common.save') }}
+          </button>
+        </div>
+      </div>
+    </ds-bottom-sheet>
+  }
+</span>

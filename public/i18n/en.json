@@ -1234,5 +1234,19 @@
     "disable": "Disable notifications",
     "test": "Send test notification",
     "retry": "Retry setup"
-  }
+  },
+  "neutral": {
+    "label": "Neutral game · automatic wins",
+    "enable": "Make neutral",
+    "disable": "Restore normal scoring",
+    "resultHint": "Neutral game: every participating team is a winner. Manual result entry is disabled.",
+    "enableHint": "All participating teams will immediately count as winners in this game across past, current and future scheduled rounds.",
+    "restoreHint": "Restore the original recorded results. Matches without recorded results will need referee entry again.",
+    "impact": "Affected non-void matches: {{n}}",
+    "preserveHint": "Voided matches and bonuses/penalties stay unchanged. Original results are preserved. In hearts mode, a win uses the event’s configured win gain.",
+    "online": "Connect to the internet to change neutral scoring. This change cannot be queued.",
+    "failed": "Could not confirm the change. Check your connection and try again.",
+    "changed": "The game or schedule changed. Close this sheet and reopen it to review the latest impact."
+  },
+  "errors.NEUTRAL_GAME": "Neutral game: every participating team is a winner. Manual result entry is disabled."
 }

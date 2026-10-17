@@ -47,6 +47,7 @@ import { OpeningAttachmentEditor } from './opening-attachment-editor';
 import { TeamPaletteEditor } from './team-palette-editor';
 import { AudioSettings } from './audio-settings';
 import { normalizeTeamPalette } from '../../shared/team-palette';
+import { NeutralGameControl } from './neutral-game-control';
 
 type Row = any;
 type SetupData = {
@@ -97,6 +98,7 @@ export function singleNames(args: Record<string, unknown>): Record<string, unkno
     OpeningAttachmentEditor,
     TeamPaletteEditor,
     AudioSettings,
+    NeutralGameControl,
     DsBottomSheet,
     DsDataTable,
     DsCellDef,

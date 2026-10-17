@@ -1,5 +1,37 @@
 # Implementation decisions
 
+## D074 — Reversible neutral games, including immediate future wins
+
+Peter requested neutral games during an ongoing production event and explicitly
+chose immediate wins for all scheduled rounds, including future DRAFT rounds.
+Every participant of a non-VOID match of a neutral game has effective WIN and
+COMPLETED status. Wins use the current event win gain in either scoring mode;
+neutral does not invent extra hearts when the configured win gain is zero.
+Keep VOID exclusion and all existing adjustment rules. Only scheduled participants
+receive a win; teams without a match at that game receive nothing.
+
+Use a default-off games flag and private read projections rather than rewriting
+stored results, actors, timestamps or schedules. Disabling restores the original
+results and pending matches immediately. Newly scheduled matches inherit the
+flag. Standings, breakdowns, public/live reads, exports, pending/late counts and
+referee history use the same projections while retaining visibility boundaries.
+Do not create result timestamps or play historical result audio for projected
+wins. Manual result submissions/resets are rejected server-side while neutral;
+existing operation replay returns its receipt without changing results. Admin
+void remains available. Referee bonuses/penalties retain existing permissions.
+
+An online-only admin control fetches fresh impact data and confirms the number of
+non-VOID matches, including past/current/future effects and reversal. The RPC
+checks permissions again under the event lock, expected flag and match count,
+audits the change, clears manual tiebreaks and emits refresh signals. It uses a
+stable operation UUID for retries and never enters the offline mutation queue.
+Legacy game edits/import UPSERT omit and preserve the flag.
+
+Migration 0035/test 0026 reserve earlier numbers for independent PRs #41/#42.
+Deploy those migrations first; the current deployment workflow does not include
+out-of-order migrations. No production configuration or release is authorized by
+the implementation request; verify the PR before seeking release authorization.
+
 ## D073 — Exact decimal bonuses and penalties
 
 Peter requested fractional bonuses and explicitly confirmed 0.5 and 0.25. Accept
