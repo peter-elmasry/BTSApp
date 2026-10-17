@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-17 — Shared notification test — STARTED
+
+- **Request/preflight:** Peter requested Test with others beside Test sound to try notifications with everyone using the app. Refreshed clean master; read collaboration/plan/decisions/Phase 0. Branch `feat/shared-notification-test`.
+- **Plan:** Add an owner/current-event-admin action with server permission enforcement, atomic one-minute event cooldown, idempotent online-only request, audit and thin realtime signal. Open viewers receive a test message and consent-respecting sound; enabled devices receive queued test push through the existing dispatcher. Reuse existing recovery probes, avoid stale/duplicate replay and never alter rounds/results. Verify SQL boundaries, foreground/recovery and EN/AR UI, then publish/deploy under the existing notification release authorization. Do not send an actual production group test.
+- **Implementation/local checks:** Added D072/plan §30/runbook, migration 0033/private latest-test marker, admin-only idempotent RPC with serialized cooldown/transactional queue fanout and anonymous thin read. Added client receiver using existing channel recovery revisions, baseline/stale/duplicate/event-change guards, bounded failed-read retries, retained operation ID, visible queued count/errors and cooldown. Added adjacent mobile EN/AR buttons and explicit test wording in push payloads. Build, TypeScript, 17 audio/shared units, 13 Edge/worker/provisioning checks, eight notification/shared browser journeys, final 22 audio/shared browser journeys, axe/layout/same-row assertions, inspected 360px screenshots, 1,169-key parity and formatting passed. Two isolated browser sessions prove a muted guest sees the toast without sound and the enabled sender hears one sample, recovering without broadcasts. New SQL fanout/permissions/replay/rollback suite awaits cloud Supabase; no local Docker/database or production group send.
+
 ## 2026-10-17 — Proactive notification permission onboarding — DONE
 
 - **Request/preflight:** Peter requests automatic enablement or an explicit first-use request rather than expecting viewers to find notification settings. Clean master `8f434d0`; refreshed origin and read collaboration/plan/decisions/Phase 0. Branch `feat/notification-permission-onboarding`.
