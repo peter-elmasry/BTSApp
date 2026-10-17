@@ -149,6 +149,63 @@ test('match adjustment shows giver, remaining cap and revoked history', async ({
 });
 
 for (const lang of ['en', 'ar'] as const) {
+  test(`quarter and half hearts save and revoke exactly in ${lang}`, async ({ page }) => {
+    const fixture = await mockLiveEvent(page, { lang });
+    fixture.snapshot.event.scoring_mode = 'LIVES';
+    const t = labels(lang);
+    await page.goto('/ref/match/match-1');
+    await page.getByTestId('toggle-adjustments').click();
+    const amount = page.getByRole('spinbutton', { name: t.live.points, exact: true });
+    await page.getByRole('button', { name: t.live.decreasePoints, exact: true }).click();
+    await expect(amount).toHaveValue('0.75');
+    await page.getByRole('button', { name: t.live.decreasePoints, exact: true }).click();
+    await expect(amount).toHaveValue('0.5');
+    await page.getByRole('textbox', { name: t.live.reason, exact: true }).fill('Half heart bonus');
+    await page.getByRole('button', { name: t.live.addAdjustment, exact: true }).click();
+    await expect.poll(() => fixture.snapshot.adjustments.length).toBe(1);
+    expect(fixture.snapshot.adjustments[0].points).toBe(0.5);
+    await expect(page.getByText(`${t.live.remaining}: 2.5`, { exact: true })).toBeVisible();
+    await amount.fill('0.25');
+    await page
+      .getByRole('textbox', { name: t.live.reason, exact: true })
+      .fill('Quarter heart bonus');
+    await page.getByRole('button', { name: t.live.addAdjustment, exact: true }).click();
+    await expect.poll(() => fixture.snapshot.adjustments.length).toBe(2);
+    expect(fixture.snapshot.adjustments[1].points).toBe(0.25);
+    await expect(page.getByText(`${t.live.remaining}: 2.25`, { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: t.live.revoke, exact: true }).first().click();
+    await page.locator('dialog').getByRole('textbox').fill('Entered by mistake');
+    await page.locator('dialog').getByRole('button', { name: t.live.revoke, exact: true }).click();
+    await expect(page.getByText(`${t.live.remaining}: 2.75`, { exact: true })).toBeVisible();
+    await amount.fill('-0.25');
+    await page
+      .getByRole('textbox', { name: t.live.reason, exact: true })
+      .fill('Quarter heart penalty');
+    await page.getByRole('button', { name: t.live.addAdjustment, exact: true }).click();
+    await expect.poll(() => fixture.snapshot.adjustments.length).toBe(3);
+    expect(fixture.snapshot.adjustments[2].points).toBe(-0.25);
+    await expect(page.getByText(`${t.live.remaining}: 1.75`, { exact: true })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  });
+}
+
+test('invalid precision cannot submit an adjustment', async ({ page }) => {
+  const fixture = await mockLiveEvent(page);
+  const t = labels('en');
+  await page.goto('/ref/match/match-1');
+  await page.getByTestId('toggle-adjustments').click();
+  await page.getByRole('spinbutton', { name: t.live.points, exact: true }).fill('0.001');
+  await page.getByRole('textbox', { name: t.live.reason, exact: true }).fill('Invalid precision');
+  await page.getByRole('button', { name: t.live.addAdjustment, exact: true }).click();
+  expect(fixture.calls.filter((c) => c.name === 'add_adjustment')).toHaveLength(0);
+  await page.getByRole('spinbutton', { name: t.live.points, exact: true }).fill('0.25');
+  await page.getByRole('button', { name: t.live.addAdjustment, exact: true }).click();
+  await expect.poll(() => fixture.snapshot.adjustments.length).toBe(1);
+});
+
+for (const lang of ['en', 'ar'] as const) {
   test(`referee station shows guides, late results and admin phones in ${lang}`, async ({
     page,
   }) => {

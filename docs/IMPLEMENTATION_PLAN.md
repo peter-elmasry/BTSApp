@@ -1030,3 +1030,14 @@ test independent of rounds/results. Show pending, queued device count and failur
 feedback without claiming arrival. Verify anonymous/cross-event denial, expired
 subscriptions, rollback/retry, missed-broadcast recovery, stale/duplicate suppression,
 muted guests, role gating and EN/AR mobile accessibility. D072 records the design.
+
+## 31. Decimal bonuses and penalties — approved 2026-10-17
+
+Accept signed nonzero bonuses/penalties with up to two decimal places at match
+and event scope, including 0.5 and 0.25 hearts. Hearts-mode buttons step by 0.25;
+typed hundredths are allowed in both modes. Explain decimal input in EN/AR.
+Preserve exact values through RPC validation, storage, cap consumption, replay,
+revocation, standings, team breakdown and score animation. Reject extra precision
+without rounding. Keep permissions, audit, void exclusion and tie invalidation.
+Existing integer submissions and configured match gains remain valid. D073
+records the numeric contract and independence from the shared-notification PR.
