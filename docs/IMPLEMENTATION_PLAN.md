@@ -1019,3 +1019,14 @@ activation before server confirmation. Do not bypass browser or OS consent.
 Verify EN/AR narrow layouts, sequential sheets, no automatic native request,
 successful enable/retry, reload, denied permission and installation-to-consent
 transition. D071 records the UX and remembered-choice contract.
+
+## 30. Decimal bonuses and penalties — approved 2026-10-17
+
+Accept signed nonzero bonuses/penalties with up to two decimal places at match
+and event scope, including 0.5 and 0.25 hearts. Hearts-mode buttons step by 0.25;
+typed hundredths are allowed in both modes. Explain decimal input in EN/AR.
+Preserve exact values through RPC validation, storage, cap consumption, replay,
+revocation, standings, team breakdown and score animation. Reject extra precision
+without rounding. Keep permissions, audit, void exclusion and tie invalidation.
+Existing integer submissions and configured match gains remain valid. D073
+records the numeric contract and independence from the shared-notification PR.

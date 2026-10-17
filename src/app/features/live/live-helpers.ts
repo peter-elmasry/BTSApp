@@ -68,6 +68,17 @@ export function validOutcomes(
   );
 }
 
+/** Match the server's exact hundredths without accepting a rounded extra decimal. */
+export function validAdjustmentAmount(value: number): boolean {
+  return (
+    Number.isFinite(value) &&
+    value !== 0 &&
+    value >= -2147483648 &&
+    value <= 2147483647 &&
+    Number(value.toFixed(2)) === value
+  );
+}
+
 export function remainingAllowance(
   cap: number | null,
   adjustments: LiveAdjustment[],
@@ -86,8 +97,8 @@ export function remainingAllowance(
         (scope === 'EVENT' || item.match_id === matchId) &&
         (positive ? item.points > 0 : item.points < 0),
     )
-    .reduce((sum, item) => sum + Math.abs(item.points), 0);
-  return Math.max(0, cap - used);
+    .reduce((sum, item) => sum + Math.round(Math.abs(item.points) * 100), 0);
+  return Math.max(0, Math.round(cap * 100) - used) / 100;
 }
 
 export function liveErrorKey(error: unknown) {

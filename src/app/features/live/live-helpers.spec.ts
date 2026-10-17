@@ -1,7 +1,38 @@
 import { describe, expect, it } from 'vitest';
 import type { StaffProfile } from '../../core/auth/auth.store';
 import type { LiveAdjustment, LiveMatch, LiveSnapshot } from '../../core/live/live-types';
-import { canEditLiveMatch, remainingAllowance, validOutcomes } from './live-helpers';
+import {
+  canEditLiveMatch,
+  remainingAllowance,
+  validOutcomes,
+  validAdjustmentAmount,
+} from './live-helpers';
+
+describe('decimal adjustment amounts', () => {
+  it('accepts signed hundredths, quarters, halves and old integer submissions', () => {
+    for (const amount of [0.25, 0.5, -0.25, -0.5, 0.01, 1.23, 1, -2, 2147483647]) {
+      expect(validAdjustmentAmount(amount)).toBe(true);
+    }
+  });
+  it('rejects zero, extra decimals, nonfinite and out-of-range amounts', () => {
+    for (const amount of [0, -0, 0.001, 0.251, NaN, Infinity, -Infinity, 2147483648]) {
+      expect(validAdjustmentAmount(amount)).toBe(false);
+    }
+  });
+  it('uses exact hundredths when consuming or restoring caps', () => {
+    const adjustments = [0.1, 0.2, 0.25, -0.5].map((points) => ({
+      team_id: 'a',
+      scope: 'MATCH',
+      match_id: 'm',
+      revoked_at: null,
+      points,
+    })) as LiveAdjustment[];
+    expect(remainingAllowance(1, adjustments, 'a', 'MATCH', 'm', true)).toBe(0.45);
+    expect(remainingAllowance(1, adjustments, 'a', 'MATCH', 'm', false)).toBe(0.5);
+    adjustments[2].revoked_at = '2026-10-17';
+    expect(remainingAllowance(1, adjustments, 'a', 'MATCH', 'm', true)).toBe(0.7);
+  });
+});
 
 describe('live result combinations', () => {
   const ids = ['a', 'b'];

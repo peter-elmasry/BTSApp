@@ -1,11 +1,16 @@
 import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
 
-/** Ease-out cubic interpolation, preserving half units for fractional endpoints. */
+/** Ease-out cubic interpolation, preserving hundredths for decimal adjustments. */
 export function countUpValue(from: number, to: number, progress: number): number {
   const clamped = Math.min(1, Math.max(0, progress));
   if (clamped === 1) return to;
-  const units = Number.isInteger(from) && Number.isInteger(to) ? 1 : 2;
+  const units =
+    Number.isInteger(from) && Number.isInteger(to)
+      ? 1
+      : Number.isInteger(from * 2) && Number.isInteger(to * 2)
+        ? 2
+        : 100;
   return Math.round((from + (to - from) * (1 - Math.pow(1 - clamped, 3))) * units) / units;
 }
 
