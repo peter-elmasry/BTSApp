@@ -2,11 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-17 — Decimal bonuses and quarter hearts — STARTED
+## 2026-10-17 — Decimal bonuses and quarter hearts — HANDOFF
 
 - **Request/preflight:** Peter requests decimal bonuses and confirms both 0.5 and 0.25 must work. Refreshed clean master `8d1aa95`; read collaboration/plan/decisions/Phase 0. Branch `fix/decimal-bonus-adjustments`. PR #41 remains separate and approval-blocked; reserve migration 0033/D072/test 0024 for that PR and use 0034/D073/test 0025 here.
 - **Plan:** Store and validate adjustment amounts as exact numeric values with up to two decimal places, preserve permission/cap/idempotency/audit rules and old integer clients. Remove integer truncation from cap sums, standings and team breakdowns. Accept signed decimals in the form, use quarter-heart stepping, keep projections/caps/count-up accurate and verify revoke/void/tie behavior with fractional adjustments. Do not alter configured match outcome gains or existing scores. Publish a checked PR; merge/deployment requires explicit approval.
 - **Implementation/local validation:** Added migration 0034, D073/plan section 30 and pgTAP test 0025. Decimal input and EN/AR guidance, quarter-heart stepping, exact cap/projection sums and decimal count-up are implemented. Focused unit tests 11/11 and live/hearts browser regressions 20/20 pass, including EN/AR quarter/half save, revoke, negative penalty and invalid precision. TypeScript, 1,160 translation keys, formatting and production build pass with existing RouterLink/CommonJS warnings. Local Docker/PostgreSQL unavailable; database migration/security/cap/replay/void/tie tests require cloud CI. Next: publish branch/PR and verify full CI before handoff; production is unchanged.
+- **Publication blocker/handoff:** Runtime implementation committed locally as `93cb3fe` on `fix/decimal-bonus-adjustments`. Automatic approval review rejected the fetch/push command before execution because publishing private repository code requires explicit authorization for this change. No push or PR creation occurred; no workaround attempted. Next: obtain Peter's approval to push/open the PR, verify full cloud frontend/database CI, then obtain explicit merge/deployment authorization. PR #41 remains separate; neither feature is deployed.
 
 ## 2026-10-17 — Proactive notification permission onboarding — DONE
 
