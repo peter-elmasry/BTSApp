@@ -22,6 +22,11 @@ export async function mockAudio(
   await page.addInitScript(
     ({ lang, team, eventId }) => {
       localStorage.setItem('bts.lang', lang);
+      if (!sessionStorage.getItem('audio-fixture-initialized')) {
+        if (localStorage.getItem('bts.audio.preference.v1') === 'muted')
+          localStorage.removeItem('bts.audio.preference.v1');
+        sessionStorage.setItem('audio-fixture-initialized', 'true');
+      }
       if (team) localStorage.setItem(`bts.team.${eventId}`, 'T01');
       const buffers = new WeakMap<AudioBuffer, string>();
       const bytes = new WeakMap<ArrayBuffer, string>();

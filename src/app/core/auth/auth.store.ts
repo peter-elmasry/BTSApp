@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { OfflineDb } from '../offline/offline-db';
 import { clearDeviceData } from './device-data';
+import { revokePushDevice } from '../pwa/round-push-api';
 import { isNetworkFailure } from '../offline/rpc-errors';
 import { environment } from '../../../environments/environment';
 
@@ -117,6 +118,7 @@ export class AuthStore {
   }
 
   async logout() {
+    await revokePushDevice();
     const supabase = await this.client();
     const userId = this.session()?.user.id;
     await supabase.auth.signOut();

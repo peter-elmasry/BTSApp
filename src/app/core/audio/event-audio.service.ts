@@ -61,13 +61,16 @@ export class EventAudioService {
       ? Math.min(100, Math.max(0, Number(read(VOLUME))))
       : 70,
   );
-  readonly prompt = computed(() => this.config().enabled && !this.decision());
+  readonly prompt = computed(
+    () => !!this.events.event() && this.config().enabled && !this.decision(),
+  );
   readonly needsGesture = computed(() => this.enabled() && !this.running());
   private readonly audio = new BufferedAudio((running) => this.running.set(running));
   private readonly ownership = new AudioLeader((leader) => this.leader.set(leader));
   private readonly results = new ResultAudioTracker();
   private generation = 0;
   private activation = 0;
+  private activationFlight?: Promise<void>;
   private context = '';
   private eventId: string | null = null;
   private teamCode: string | null = null;
@@ -142,6 +145,19 @@ export class EventAudioService {
       }
     }, 2000);
     const visibility = () => this.foreground.set(this.document.visibilityState !== 'hidden');
+    // Saved consent survives reloads, while Web Audio still starts in a gesture.
+    // Capture runs before navigation handlers; never override an explicit mute.
+    const resume = (event: Event) => {
+      if (
+        event.isTrusted &&
+        this.decision() === 'enabled' &&
+        this.config().enabled &&
+        this.foreground() &&
+        !this.running() &&
+        !this.loading()
+      )
+        void this.enable();
+    };
     const online = () => {
       this.reset(this.eventId, this.teamCode);
     };
@@ -158,6 +174,8 @@ export class EventAudioService {
       if (event.key === VOLUME) this.setVolume(Number(read(VOLUME) ?? 70), false);
     };
     this.document.addEventListener('visibilitychange', visibility);
+    this.document.addEventListener('click', resume, true);
+    this.document.addEventListener('keydown', resume, true);
     this.document.defaultView?.addEventListener('online', online);
     this.document.defaultView?.addEventListener('storage', storage);
     destroy.onDestroy(() => {
@@ -168,11 +186,17 @@ export class EventAudioService {
       subscription.unsubscribe();
       clearInterval(poll);
       this.document.removeEventListener('visibilitychange', visibility);
+      this.document.removeEventListener('click', resume, true);
+      this.document.removeEventListener('keydown', resume, true);
       this.document.defaultView?.removeEventListener('online', online);
       this.document.defaultView?.removeEventListener('storage', storage);
     });
   }
-  async enable() {
+  enable(): Promise<void> {
+    if (this.loading()) return this.activationFlight ?? Promise.resolve();
+    return (this.activationFlight = this.activate());
+  }
+  private async activate() {
     const activation = ++this.activation;
     this.decision.set('enabled');
     write(PREFERENCE, 'enabled');
