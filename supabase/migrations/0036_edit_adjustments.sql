@@ -130,4 +130,3 @@ as $$ declare v_result jsonb; begin
       from public.event_roles er join public.members mb on mb.id=er.member_id left join public.teams t on t.id=er.team_id where er.event_id=p_event),'[]'::jsonb)) into v_result;
   return v_result;
 end $$;
-
