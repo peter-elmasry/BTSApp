@@ -37,6 +37,19 @@ export function canEditLiveMatch(
   );
 }
 
+/** Owners, this event's administrators and the original active issuer only. */
+export function canManageAdjustment(
+  profile: StaffProfile | null,
+  eventId: string,
+  item: LiveAdjustment,
+) {
+  return (
+    !!profile &&
+    !item.revoked_at &&
+    (isLiveAdmin(profile, eventId) || item.given_by.id === profile.id)
+  );
+}
+
 export function validOutcomes(
   type: 'REGULAR' | 'OPENING',
   teamIds: string[],
@@ -126,6 +139,7 @@ export function liveErrorKey(error: unknown) {
     'START_BEFORE_PREVIOUS_ROUND_END',
     'MATCH_VOID',
     'ADJUSTMENT_REVOKED',
+    'ADJUSTMENT_CHANGED',
     'INVALID_POINTS',
     'INVALID_ADJUSTMENT',
     'INVALID_ROUND_MATCHES',

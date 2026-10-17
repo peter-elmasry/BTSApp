@@ -225,7 +225,7 @@ select is((select x->>'bucket'||':'||(x->>'editable') from jsonb_array_elements(
 select is(jsonb_array_length(public.get_match_entry('75000000-0000-0000-0000-000000000001')->'matches'),1,'referee may still view assigned closed match');
 select throws_ok($$select public.submit_match_result(gen_random_uuid(),'75000000-0000-0000-0000-000000000001',(select payload from phase5_payloads where kind='regular-valid' limit 1))$$,'P0001','ROUND_NOT_ACTIVE','referee cannot correct closed match');
 select is(public.submit_match_result('95000000-0000-0000-0000-000000000003','75000000-0000-0000-0000-000000000001',(select payload from phase5_payloads where kind='regular-valid' and payload->0->>'outcome'='WIN' and payload->1->>'outcome'='LOSS'))->>'status','COMPLETED','prior acknowledged result can replay after closure');
-select throws_ok($$select public.revoke_adjustment(gen_random_uuid(),(select (a->>'id')::uuid from jsonb_array_elements(public.get_match_entry('75000000-0000-0000-0000-000000000001')->'adjustments') a where a->>'reason'='Last bonus'),'Closed revoke')$$,'P0001','ROUND_NOT_ACTIVE','referee cannot revoke after close');
+select lives_ok($$select public.revoke_adjustment(gen_random_uuid(),(select (a->>'id')::uuid from jsonb_array_elements(public.get_match_entry('75000000-0000-0000-0000-000000000001')->'adjustments') a where a->>'reason'='Last bonus'),'Closed revoke')$$,'original issuer can revoke after close (D075)');
 reset role;
 delete from public.referee_games where event_id='35000000-0000-0000-0000-000000000001' and member_id='25000000-0000-0000-0000-000000000003';
 set local role authenticated;
@@ -239,7 +239,7 @@ select is(public.start_round(gen_random_uuid(),'65000000-0000-0000-0000-00000000
 select is(public.submit_match_result(gen_random_uuid(),'75000000-0000-0000-0000-000000000099','[{"team_id":"45000000-0000-0000-0000-000000000099","outcome":"WIN"},{"team_id":"45000000-0000-0000-0000-000000000098","outcome":"LOSS"}]')->>'status','COMPLETED','owner submits another event result');
 select set_config('request.jwt.claim.sub','15000000-0000-0000-0000-000000000002',true);
 select lives_ok($$select public.submit_match_result(gen_random_uuid(),'75000000-0000-0000-0000-000000000001',(select payload from phase5_payloads where kind='regular-valid' limit 1))$$,'admin can correct closed round');
-select is(public.revoke_adjustment(gen_random_uuid(),(select (a->>'id')::uuid from jsonb_array_elements(public.get_match_entry('75000000-0000-0000-0000-000000000001')->'adjustments') a where a->>'reason'='Last bonus'),'Admin closed correction')->>'revoked','true','admin can revoke another giver adjustment after close');
+select is(public.revoke_adjustment(gen_random_uuid(),(select (a->>'id')::uuid from jsonb_array_elements(public.get_match_entry('75000000-0000-0000-0000-000000000001')->'adjustments') a where a->>'reason'='Other team bonus'),'Admin closed correction')->>'revoked','true','admin can revoke another giver adjustment after close');
 select throws_ok($$select public.reopen_round(gen_random_uuid(),'65000000-0000-0000-0000-000000000001','x')$$,'P0001','INVALID_REASON','reopen requires a meaningful reason');
 select is(public.reopen_round('95000000-0000-0000-0000-000000000016','65000000-0000-0000-0000-000000000001','Review results')->>'status','ACTIVE','admin reopens closed round');
 select is(public.reopen_round('95000000-0000-0000-0000-000000000016','65000000-0000-0000-0000-000000000001','Review results')->>'status','ACTIVE','reopen replay succeeds after transition');

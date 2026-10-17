@@ -1056,3 +1056,18 @@ explicit confirmation and stale-state detection for the bulk effect. Verify
 permissions, replay, both scoring modes, reversal, new schedules and EN/AR mobile
 flows. D074 records the contract. Section 31 records decimal bonuses
 in the independent PR #42; release must follow verified migration ordering.
+
+## 33. Edit existing bonuses and show quarter hearts — approved 2026-10-17
+
+Add a pen button on existing staff bonus/penalty lines for app admins, event
+moderators and the original issuer. Edit the amount on the same record; preserve
+issuer/date/original reason and append actor/time/old/new value/correction reason
+to a visible history. Apply the same permissions to revoke, including original
+issuer corrections after round closure. Enforce permissions, exact decimals,
+caps, revoked state, stale revisions, locking, retry receipts, audit and normal
+standings refresh on the server. Retain all history after revoke. Keep public
+reads unchanged and avoid new direct table grants. Add matching quarter-heart
+SVG artwork, distinguish quarter/half/three-quarter/full meter states and preserve
+exact decimal totals. D075 records the implementation contract. Validate EN/AR
+mobile/accessibility, permission matrix, replay/stale/revoke/cap/history behavior
+and existing live-scoring regressions before release.

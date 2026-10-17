@@ -25,7 +25,8 @@ import {
   type DsRowStatus,
 } from '../../shared/ui/data-table';
 import { AdjustmentsPanel } from '../live/adjustments-panel';
-import { isLiveAdmin, liveErrorKey } from '../live/live-helpers';
+import { AdjustmentEditor } from '../live/adjustment-editor';
+import { canManageAdjustment, isLiveAdmin, liveErrorKey } from '../live/live-helpers';
 import { LiveReader } from '../live/live-reader';
 import { localizedName } from '../public/public-helpers';
 import { TeamBreakdownSheet } from '../standings/team-breakdown-sheet';
@@ -56,6 +57,7 @@ export function filterAdjustments(items: readonly LiveAdjustment[], filter: Adju
     DsDataTable,
     DsCellDef,
     AdjustmentsPanel,
+    AdjustmentEditor,
     TeamBreakdownSheet,
     DsSearchSelect,
   ],
@@ -166,12 +168,13 @@ export class AdjustmentsPage {
     this.standings.refresh();
   }
   openRevoke(item: LiveAdjustment) {
+    if (!this.canManage(item)) return;
     this.revokeReason.reset('');
     this.revokeTarget.set(item);
   }
   async revoke() {
     const item = this.revokeTarget();
-    if (!item || !this.canAdmin() || this.saving()) return;
+    if (!item || !this.canManage(item) || this.saving()) return;
     if (this.revokeReason.invalid || this.revokeReason.value.trim().length < 3) {
       this.revokeReason.markAsTouched();
       return;
@@ -191,5 +194,8 @@ export class AdjustmentsPage {
     } finally {
       this.saving.set(false);
     }
+  }
+  canManage(item: LiveAdjustment) {
+    return canManageAdjustment(this.auth.profile(), this.eventId(), item);
   }
 }

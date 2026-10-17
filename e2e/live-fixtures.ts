@@ -138,6 +138,23 @@ export async function mockLiveEvent(
             revoked_at: null,
             revoke_reason: null,
           });
+        if (name === 'edit_adjustment') {
+          const adjustment = snapshot.adjustments.find((a) => a.id === args.p_adjustment)!;
+          const revision = (adjustment.revision ?? 0) + 1;
+          adjustment.history = [
+            ...(adjustment.history ?? []),
+            {
+              revision,
+              old_points: adjustment.points,
+              new_points: args.p_points,
+              reason: args.p_reason,
+              changed_at: new Date().toISOString(),
+              changed_by: { name_en: profile.full_name_en, name_ar: profile.full_name_ar },
+            },
+          ];
+          adjustment.points = args.p_points;
+          adjustment.revision = revision;
+        }
         if (name === 'revoke_adjustment') {
           const adjustment = snapshot.adjustments.find((a) => a.id === args.p_adjustment)!;
           adjustment.revoked_at = new Date().toISOString();

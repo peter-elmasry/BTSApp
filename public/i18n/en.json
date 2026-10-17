@@ -1248,5 +1248,15 @@
     "failed": "Could not confirm the change. Check your connection and try again.",
     "changed": "The game or schedule changed. Close this sheet and reopen it to review the latest impact."
   },
-  "errors.NEUTRAL_GAME": "Neutral game: every participating team is a winner. Manual result entry is disabled."
+  "errors.NEUTRAL_GAME": "Neutral game: every participating team is a winner. Manual result entry is disabled.",
+  "adjustEdit": {
+    "title": "Adjust bonus / penalty",
+    "amount": "New amount",
+    "reason": "Reason for correction",
+    "history": "Edit history",
+    "original": "Current amount: {{n}}",
+    "preserve": "The original issuer, date and reason stay unchanged. This correction is added to the history.",
+    "unchanged": "Enter a different amount."
+  },
+  "errors.ADJUSTMENT_CHANGED": "This bonus changed since you opened it. Close and reopen the editor after refreshing."
 }
