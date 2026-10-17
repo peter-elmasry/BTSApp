@@ -1195,6 +1195,13 @@
   },
   "auth.requiredField": "This field is required.",
   "push": {
+    "promptTitle": "Stay informed when a round starts",
+    "promptHelp": "Turn on round start and end notifications for this event, even when the app is closed.",
+    "allowHelp": "Tap Enable notifications, then choose Allow in the browser prompt. We will remember your choice.",
+    "installSteps": "On iPhone or iPad: open this page in Safari, tap Share, choose Add to Home Screen, then open the new app icon. We will ask you to enable notifications there.",
+    "later": "Not now",
+    "continue": "Continue",
+    "preparing": "Enabling notifications… Please wait for confirmation.",
     "heading": "Background notifications",
     "on": "On",
     "off": "Off",

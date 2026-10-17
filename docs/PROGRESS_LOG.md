@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-17 — Proactive notification permission onboarding — STARTED
+
+- **Request/preflight:** Peter requests automatic enablement or an explicit first-use request rather than expecting viewers to find notification settings. Clean master `8f434d0`; refreshed origin and read collaboration/plan/decisions/Phase 0. Branch `feat/notification-permission-onboarding`.
+- **Plan:** Show an EN/AR first-use notification sheet after sound consent, directly launch native permission from its enable action, explain blocked permission and iPhone Home Screen installation, retain errors for retry and remember dismissal/disable. Never attempt to bypass native permission or subscribe after an explicit decline. Keep existing server/device registration and settings controls. Verify units, browser flows/accessibility, build and cloud CI before publication/release handoff.
+- **Implementation/validation:** Added D071/plan §29, per-event/device onboarding choices with distinct installation stage, sequential accessible sheet, explicit native permission CTA, denied/iPhone instructions, retry/busy state and visible confirmed success. Existing saved subscriptions restore normally; native permission is never requested on load. Build, TypeScript, 26 audio/push units, 26 combined browser journeys, six final notification journeys, axe modal checks, inspected 360px EN/AR screenshots, 1,159-key parity and formatting passed. Tests cover sound-then-push sequence, save failure/retry, defer/reload, blocked permission and installation-to-consent transition. Continue the same notification feature through the user's prior explicit merge/deploy authorization after fresh cloud CI. No backend/event/scoring changes.
+
 ## 2026-10-17 — Approved R39 production release — DONE
 
 - **Authorization/preflight:** Peter explicitly requested "merge and deploy". Refreshed clean branch and repository handoff/runbook; PR #39 head `4c1a298` remains unchanged and passes latest full [CI 39011812871](https://github.com/peter-elmasry/BTSApp/actions/runs/39011812871) plus Vercel preview. Merged that exact head into master at `48295a2`; local master fast-forwarded cleanly.
