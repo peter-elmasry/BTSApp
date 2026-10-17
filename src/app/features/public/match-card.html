@@ -15,6 +15,9 @@
     }
   }
   <div class="space-y-3 p-4">
+    @if (match().is_neutral) {
+      <p class="text-sm font-bold text-teal">{{ t('neutral.label') }}</p>
+    }
     <div class="flex flex-wrap items-center justify-between gap-2">
       <p class="text-sm font-semibold text-teal">
         @if (round()?.type === 'OPENING') {

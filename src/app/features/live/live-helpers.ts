@@ -107,6 +107,7 @@ export function liveErrorKey(error: unknown) {
     'ACTIVE_ROUND_EXISTS',
     'PENDING_MATCHES',
     'INVALID_OUTCOMES',
+    'NEUTRAL_GAME',
     'INVALID_PARTICIPANTS',
     'INVALID_REASON',
     'INVALID_MINUTES',

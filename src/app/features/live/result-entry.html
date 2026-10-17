@@ -3,7 +3,9 @@
     <p role="status" class="rounded-xl bg-gold-soft p-3">{{ t(notice()) }}</p>
   }
   @if (!canEdit()) {
-    <p class="ds-card">{{ t('live.readOnly') }}</p>
+    <p class="ds-card" data-testid="result-read-only">
+      {{ t(neutral() ? 'neutral.resultHint' : 'live.readOnly') }}
+    </p>
   } @else if (reviewing()) {
     <section class="ds-card space-y-3" aria-live="polite">
       <h3 class="font-bold">{{ t('live.confirmResultHint') }}</h3>

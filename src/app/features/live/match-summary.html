@@ -10,6 +10,9 @@
     <span class="text-sm">{{ t('player.matchStatus.' + match().status) }}</span>
   </div>
   <h2 class="text-xl font-bold">{{ name(game(), direction.language()) }}</h2>
+  @if (match().is_neutral) {
+    <p class="rounded-xl bg-gold-soft p-3 text-sm">{{ t('neutral.resultHint') }}</p>
+  }
   @if (location(game(), direction.language())) {
     <p class="text-sm text-slate">{{ location(game(), direction.language()) }}</p>
   }

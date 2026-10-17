@@ -1019,3 +1019,18 @@ activation before server confirmation. Do not bypass browser or OS consent.
 Verify EN/AR narrow layouts, sequential sheets, no automatic native request,
 successful enable/retry, reload, denied permission and installation-to-consent
 transition. D071 records the UX and remembered-choice contract.
+
+## 31. Neutral games during an ongoing event — approved 2026-10-17
+
+Administrators may make an existing game neutral, immediately treating every
+scheduled participant as a winner across past, current and future rounds,
+including DRAFT rounds. Peter explicitly chose immediate future wins. Preserve
+original results for reversal, exclude VOID matches, keep adjustment rules and
+use the configured event win gain. Referees cannot submit neutral results,
+including stale/offline submissions; enforce this on the server. Reconcile
+standings, team breakdowns, schedules, exports, pending/late counts and staff
+screens. Avoid historical audio bursts. Require an online fresh impact preview,
+explicit confirmation and stale-state detection for the bulk effect. Verify
+permissions, replay, both scoring modes, reversal, new schedules and EN/AR mobile
+flows. D074 records the contract. Section 30 remains reserved for decimal bonuses
+in the independent PR #42; release must follow verified migration ordering.

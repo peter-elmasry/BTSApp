@@ -41,6 +41,7 @@ export interface PublicTeam extends LocalizedName {
   guides?: PublicGuide[];
 }
 export interface PublicGame extends LocalizedName {
+  is_neutral?: boolean;
   id: string;
   code: string;
   location_en: string | null;
@@ -74,6 +75,7 @@ export interface PublicParticipant {
   outcome?: Outcome;
 }
 export interface PublicMatch {
+  is_neutral?: boolean;
   id: string;
   round_id: string;
   game_id: string;
