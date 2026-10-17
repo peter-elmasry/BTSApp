@@ -3,10 +3,49 @@ import type { StaffProfile } from '../../core/auth/auth.store';
 import type { LiveAdjustment, LiveMatch, LiveSnapshot } from '../../core/live/live-types';
 import {
   canEditLiveMatch,
+  canManageAdjustment,
   remainingAllowance,
   validOutcomes,
   validAdjustmentAmount,
 } from './live-helpers';
+
+describe('existing adjustment permissions', () => {
+  const item = { given_by: { id: 'issuer' }, revoked_at: null } as LiveAdjustment;
+  const member = (
+    id: string,
+    roles: StaffProfile['roles'] = [],
+    system_role: StaffProfile['system_role'] = 'MEMBER',
+  ) => ({ id, roles, system_role }) as StaffProfile;
+  it('allows only owner, same-event admin, or issuer even after a round ends', () => {
+    expect(canManageAdjustment(null, 'event', item)).toBe(false);
+    expect(canManageAdjustment(member('issuer'), 'event', item)).toBe(true);
+    expect(canManageAdjustment(member('owner', [], 'OWNER'), 'event', item)).toBe(true);
+    expect(
+      canManageAdjustment(
+        member('admin', [{ event_id: 'event', role: 'EVENT_ADMIN', team_id: null }]),
+        'event',
+        item,
+      ),
+    ).toBe(true);
+    expect(
+      canManageAdjustment(
+        member('other', [{ event_id: 'other-event', role: 'EVENT_ADMIN', team_id: null }]),
+        'event',
+        item,
+      ),
+    ).toBe(false);
+    expect(
+      canManageAdjustment(
+        member('other', [{ event_id: 'event', role: 'REFEREE', team_id: null }]),
+        'event',
+        item,
+      ),
+    ).toBe(false);
+    expect(
+      canManageAdjustment(member('issuer'), 'event', { ...item, revoked_at: '2026-10-17' }),
+    ).toBe(false);
+  });
+});
 
 describe('decimal adjustment amounts', () => {
   it('accepts signed hundredths, quarters, halves and old integer submissions', () => {

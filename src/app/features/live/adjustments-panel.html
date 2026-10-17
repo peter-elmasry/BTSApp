@@ -76,6 +76,12 @@
       @if (canRevoke(item)) {
         <button class="ds-button ghost" (click)="openRevoke(item)">{{ t('live.revoke') }}</button>
       }
+      <app-adjustment-editor
+        [item]="item"
+        [eventId]="snapshot().event.id"
+        [disabled]="disabled() || saving()"
+        (changed)="changed.emit()"
+      />
     </article>
   } @empty {
     @if (showList()) {

@@ -20,8 +20,10 @@ import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
 import { CountUp } from '../../shared/ui/count-up';
 import { DsSearchSelect } from '../../shared/ui/search-select';
 import { localizedName } from '../public/public-helpers';
+import { AdjustmentEditor } from './adjustment-editor';
 import {
   canEditLiveMatch,
+  canManageAdjustment,
   isLiveAdmin,
   liveErrorKey,
   remainingAllowance,
@@ -30,7 +32,14 @@ import {
 
 @Component({
   selector: 'app-adjustments-panel',
-  imports: [TranslocoDirective, ReactiveFormsModule, DsBottomSheet, CountUp, DsSearchSelect],
+  imports: [
+    TranslocoDirective,
+    ReactiveFormsModule,
+    DsBottomSheet,
+    CountUp,
+    DsSearchSelect,
+    AdjustmentEditor,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './adjustments-panel.html',
 })
@@ -181,12 +190,8 @@ export class AdjustmentsPanel {
     }
   }
   canRevoke(item: LiveAdjustment) {
-    if (this.disabled() || item.revoked_at) return false;
-    if (isLiveAdmin(this.auth.profile(), this.snapshot().event.id)) return true;
     return (
-      item.given_by.id === this.auth.profile()?.id &&
-      item.scope === 'MATCH' &&
-      canEditLiveMatch(this.snapshot(), this.match(), this.auth.profile())
+      !this.disabled() && canManageAdjustment(this.auth.profile(), this.snapshot().event.id, item)
     );
   }
   openRevoke(item: LiveAdjustment) {

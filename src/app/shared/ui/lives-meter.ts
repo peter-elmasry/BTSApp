@@ -12,7 +12,18 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { DsHeartIcon, type HeartState } from './heart-icon';
 
 export function heartState(total: number, index: number): HeartState {
-  return index < Math.floor(Math.max(0, total)) ? 'full' : index < total ? 'half' : 'empty';
+  const remaining = Math.round((Math.max(0, total) - index) * 100) / 100;
+  return remaining >= 1
+    ? 'full'
+    : remaining <= 0
+      ? 'empty'
+      : remaining === 0.25
+        ? 'quarter'
+        : remaining === 0.5
+          ? 'half'
+          : remaining === 0.75
+            ? 'three-quarter'
+            : remaining;
 }
 
 /** Bounded single row with a window of SVGs, even for 9999 hearts. */

@@ -66,7 +66,13 @@
       >
     </ng-template>
     <ng-template dsCell="actions" let-item>
-      @if (canAdmin() && !item.revoked_at) {
+      <app-adjustment-editor
+        [item]="item"
+        [eventId]="eventId()"
+        [disabled]="saving()"
+        (changed)="changed()"
+      />
+      @if (canManage(item)) {
         <button type="button" class="ds-button sm ghost-danger" (click)="openRevoke(item)">
           {{ t('live.revoke') }}
         </button>

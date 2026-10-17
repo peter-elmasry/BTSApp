@@ -6,6 +6,7 @@ package-lock.json
 design/
 public/brand/
 public/avatars/*.svg
+public/icons/*.svg
 public/sounds/.gitkeep
 public/sounds/*.mp3
 src/environments/environment.ts

@@ -1,5 +1,33 @@
 # Implementation decisions
 
+## D075 — Correct existing adjustments without replacing their history
+
+Peter requested an authorized pen action and quarter-heart SVGs. Editing changes
+the amount on the same adjustment ID, preserving original issuer, creation time,
+reason, team, scope and match. Each correction requires a separate reason and
+appends old/new amount, actor, time and monotonically increasing revision to a
+private history table. Staff snapshots and admin export payloads include this
+history; public reads retain their existing contract and show the current amount.
+Revocation retains the complete correction history.
+
+Only active app owners, this event's EVENT_ADMIN members and the original issuer
+may edit/revoke. Issuers keep this correction right after a round closes; adding
+new adjustments and entering match results retain their existing rules. Check
+permission again under the event lock, reject revoked/stale/no-op edits, validate
+exact signed hundredths and recompute caps excluding the old record. Stable
+operation receipts preserve retry semantics even after later corrections. An
+optimistic revision prevents stale/offline requests from overwriting newer edits.
+Keep normal audit, refresh signals and tie invalidation. Missing/inactive members
+fail closed. The history table has no direct client access or write policies.
+
+The shared pen editor appears on staff match adjustment lines and the admin
+adjustments table, with EN/AR labels, amount/reason form and an expandable history.
+The same permission helper controls revoke in both screens. Quarter and
+three-quarter SVG states use the existing red/pale heart artwork; retain the
+existing half/full artwork and render other decimal fractions proportionally.
+The meter must distinguish 0.25, 0.5 and 0.75 without rounding totals. A reusable
+quarter SVG is available at public/icons/heart-quarter.svg.
+
 ## D074 — Reversible neutral games, including immediate future wins
 
 Peter requested neutral games during an ongoing production event and explicitly

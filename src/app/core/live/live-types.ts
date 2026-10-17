@@ -34,6 +34,8 @@ export interface StaffContact {
   phone: string | null;
 }
 export interface LiveAdjustment {
+  revision?: number;
+  history?: AdjustmentRevision[];
   id: string;
   scope: 'MATCH' | 'EVENT';
   match_id: string | null;
@@ -44,6 +46,14 @@ export interface LiveAdjustment {
   created_at: string;
   revoked_at: string | null;
   revoke_reason: string | null;
+}
+export interface AdjustmentRevision {
+  revision: number;
+  old_points: number;
+  new_points: number;
+  reason: string;
+  changed_at: string;
+  changed_by: { name_en: string; name_ar: string | null };
 }
 export interface LiveSnapshot {
   event: LiveEvent;
@@ -66,6 +76,7 @@ export type LiveMutation =
   | 'reset_match_result'
   | 'void_match'
   | 'add_adjustment'
+  | 'edit_adjustment'
   | 'revoke_adjustment';
 
 export interface MutationReceipt<T = unknown> {

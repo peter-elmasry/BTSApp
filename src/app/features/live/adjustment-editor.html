@@ -1,0 +1,93 @@
+<span *transloco="let t" class="inline-flex flex-wrap items-center gap-2">
+  @if (allowed()) {
+    <button
+      type="button"
+      class="ds-button ghost sm"
+      data-testid="edit-adjustment"
+      [disabled]="saving() || pending()"
+      [attr.aria-label]="t('adjustEdit.title')"
+      [attr.title]="t('adjustEdit.title')"
+      (click)="open()"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <path d="m16 3 5 5-13 13H3v-5L16 3Z" />
+        <path d="m13 6 5 5" />
+      </svg>
+    </button>
+  }
+  @if (item().history?.length) {
+    <details class="text-start text-sm" data-testid="adjustment-history">
+      <summary class="min-h-11 cursor-pointer py-3 font-semibold text-teal">
+        {{ t('adjustEdit.history') }} ({{ item().history!.length }})
+      </summary>
+      <ol class="space-y-2">
+        @for (edit of item().history; track edit.revision) {
+          <li class="rounded-xl bg-ivory p-3">
+            <p class="font-bold" dir="ltr">{{ edit.old_points }} → {{ edit.new_points }}</p>
+            <p>{{ edit.reason }}</p>
+            <p>{{ name(edit.changed_by, direction.language()) }} · {{ time(edit.changed_at) }}</p>
+          </li>
+        }
+      </ol>
+    </details>
+  }
+  @if (notice() && !target()) {
+    <span role="status">{{ t(notice()) }}</span>
+  }
+  @if (target(); as original) {
+    <ds-bottom-sheet [title]="t('adjustEdit.title')" (close)="!saving() && target.set(null)">
+      <div class="space-y-3" data-testid="adjustment-edit-sheet">
+        <p>{{ t('adjustEdit.original', { n: original.points }) }}</p>
+        <p class="text-sm text-slate">{{ t('adjustEdit.preserve') }}</p>
+        <label class="block space-y-1"
+          ><span>{{ t('adjustEdit.amount') }}</span
+          ><input
+            class="ds-control w-full"
+            type="number"
+            step="0.01"
+            inputmode="decimal"
+            [formControl]="amount"
+        /></label>
+        <label class="block space-y-1"
+          ><span>{{ t('adjustEdit.reason') }}</span
+          ><textarea
+            class="ds-control w-full"
+            rows="3"
+            maxlength="500"
+            [formControl]="reason"
+          ></textarea>
+        </label>
+        @if (notice()) {
+          <p role="alert">{{ t(notice()) }}</p>
+        }
+        <div class="ds-actions">
+          <button
+            type="button"
+            class="ds-button ghost"
+            [disabled]="saving()"
+            (click)="target.set(null)"
+          >
+            {{ t('common.cancel') }}
+          </button>
+          <button
+            type="button"
+            class="ds-button primary"
+            data-testid="save-adjustment-edit"
+            [disabled]="saving() || pending()"
+            (click)="save()"
+          >
+            {{ t('common.save') }}
+          </button>
+        </div>
+      </div>
+    </ds-bottom-sheet>
+  }
+</span>
