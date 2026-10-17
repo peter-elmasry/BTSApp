@@ -2,7 +2,7 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-17 — Reversible neutral games during a live event — STARTED
+## 2026-10-17 — Reversible neutral games during a live event — HANDOFF
 
 - **Request/preflight:** Peter requests an admin game setting that automatically awards WIN to every participant across past/current/future rounds immediately, including already scheduled future rounds (explicit clarification), and prevents referee result entry. Stability of the ongoing production event takes priority. Clean master `8d1aa95`, branch `feat/neutral-games`; refreshed collaboration/plan/decisions/Phase 0. PRs #41/#42 remain separate and unmerged. Reserve migration 0035, D074 and SQL test 0026.
 - **Plan:** Add a default-off game flag with an event-locked, admin-only, audited and idempotent setting action. Derive effective wins/completed matches without overwriting historical results; disabling neutral restores original stored results. Keep VOID exclusion and adjustments intact. Make standings, public/team/export/live reads consistent, block neutral result submissions server-side (including stale/offline requests), explain the impact and confirm admin changes. Verify old clients, permissions, non-neutral games, both scoring modes, all round states, reversal and EN/AR mobile behavior. No production mutation or deployment during implementation; publish a reviewable tested PR and require explicit release authorization.
