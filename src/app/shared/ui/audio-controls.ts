@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { EventAudioService } from '../../core/audio/event-audio.service';
+import { SharedNotificationTestService } from '../../core/audio/shared-notification-test.service';
 import { RoundPushControls } from './round-push-controls';
 import { DsBottomSheet } from './bottom-sheet';
 
@@ -22,9 +23,9 @@ import { DsBottomSheet } from './bottom-sheet';
       [attr.aria-label]="t('audio.heading')"
       data-testid="audio-controls"
     >
-      <div class="flex items-start gap-2 rounded-xl border border-mist bg-white p-3">
-        <details class="min-w-0 flex-1" data-testid="audio-options">
-          <summary class="min-h-11 cursor-pointer py-2 font-bold">
+      <div class="relative rounded-xl border border-mist bg-white p-3">
+        <details class="min-w-0" data-testid="audio-options">
+          <summary class="min-h-11 cursor-pointer py-2 pe-28 font-bold">
             {{ t('audio.heading') }}
             <span role="status" class="ms-2 text-sm font-normal text-slate">
               @if (!audio.config().enabled) {
@@ -59,17 +60,43 @@ import { DsBottomSheet } from './bottom-sheet';
                 (input)="audio.setVolume(+$any($event.target).value)"
               />
             </label>
-            <button
-              type="button"
-              class="ds-button secondary sm"
-              [disabled]="audio.loading()"
-              (click)="audio.testSound()"
-            >
-              {{ t('audio.test') }}
-            </button>
+            <div class="flex flex-wrap gap-2">
+              <button
+                type="button"
+                class="ds-button secondary sm"
+                [disabled]="audio.loading()"
+                (click)="audio.testSound()"
+              >
+                {{ t('audio.test') }}
+              </button>
+              @if (shared.canSend()) {
+                <button
+                  type="button"
+                  class="ds-button secondary sm"
+                  [disabled]="shared.busy() || shared.cooling()"
+                  (click)="shared.send()"
+                >
+                  {{ t(shared.busy() ? 'audio.sharedSending' : 'audio.sharedTest') }}
+                </button>
+              }
+            </div>
+            @if (shared.canSend()) {
+              <p class="text-sm text-slate">{{ t('audio.sharedHelp') }}</p>
+            }
+            @if (shared.devices() !== null) {
+              <p role="status" class="text-sm">
+                {{ t('audio.sharedSent', { n: shared.devices() }) }}
+              </p>
+            }
+            @if (shared.cooling()) {
+              <p class="text-sm text-slate">{{ t('audio.sharedLimit') }}</p>
+            }
+            @if (shared.error()) {
+              <p role="alert" class="text-sm text-error">{{ t('audio.' + shared.error()) }}</p>
+            }
           </div>
         </details>
-        <div class="flex shrink-0 flex-col gap-2">
+        <div class="absolute end-3 top-3 flex flex-col gap-2">
           @if (!audio.prompt() && (!audio.enabled() || audio.needsGesture())) {
             <button
               type="button"
@@ -110,6 +137,7 @@ import { DsBottomSheet } from './bottom-sheet';
 })
 export class AudioControls {
   readonly audio = inject(EventAudioService);
+  readonly shared = inject(SharedNotificationTestService);
   readonly roundOnly = input(false);
   constructor() {
     effect(() => this.audio.roundOnly.set(this.roundOnly()));
