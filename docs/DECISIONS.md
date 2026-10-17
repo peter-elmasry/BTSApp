@@ -32,6 +32,27 @@ Deploy those migrations first; the current deployment workflow does not include
 out-of-order migrations. No production configuration or release is authorized by
 the implementation request; verify the PR before seeking release authorization.
 
+## D073 — Exact decimal bonuses and penalties
+
+Peter requested fractional bonuses and explicitly confirmed 0.5 and 0.25. Accept
+signed, nonzero adjustments with up to two decimal places in POINTS and LIVES,
+at match and event scope. Hearts-mode buttons move by 0.25; points-mode buttons
+retain whole-point convenience. Either mode permits typed hundredths. Show the
+decimal rule in English and Arabic, including the minus sign for penalties.
+
+Store adjustments as exact PostgreSQL numeric with a precision check, rejecting
+extra decimals instead of silently rounding. Preserve the previous integer
+bounds. Replace the integer RPC signature with one numeric signature so existing
+JSON integer calls remain valid without PostgREST overload ambiguity. Preserve
+permissions, operation receipts, locking, audit, revocation and tie invalidation.
+Caps remain configurable integers but consume exact signed decimal amounts.
+Standings and breakdowns retain decimals; client cap/projection arithmetic uses
+integer hundredths. Count-up preserves quarter and hundredth endpoints.
+
+Configured match gains, starting hearts and existing half-heart draw rules are
+unchanged. Migration 0034 and test 0025 reserve 0033/test 0024 for the independent
+shared-notification PR; D072 is likewise reserved for that feature.
+
 ## D072 — Event-wide notification test for administrators
 
 Peter requested Test with others beside the existing local Test sound action.

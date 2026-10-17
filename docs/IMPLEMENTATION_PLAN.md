@@ -1031,7 +1031,18 @@ feedback without claiming arrival. Verify anonymous/cross-event denial, expired
 subscriptions, rollback/retry, missed-broadcast recovery, stale/duplicate suppression,
 muted guests, role gating and EN/AR mobile accessibility. D072 records the design.
 
-## 31. Neutral games during an ongoing event — approved 2026-10-17
+## 31. Decimal bonuses and penalties — approved 2026-10-17
+
+Accept signed nonzero bonuses/penalties with up to two decimal places at match
+and event scope, including 0.5 and 0.25 hearts. Hearts-mode buttons step by 0.25;
+typed hundredths are allowed in both modes. Explain decimal input in EN/AR.
+Preserve exact values through RPC validation, storage, cap consumption, replay,
+revocation, standings, team breakdown and score animation. Reject extra precision
+without rounding. Keep permissions, audit, void exclusion and tie invalidation.
+Existing integer submissions and configured match gains remain valid. D073
+records the numeric contract and independence from the shared-notification PR.
+
+## 32. Neutral games during an ongoing event — approved 2026-10-17
 
 Administrators may make an existing game neutral, immediately treating every
 scheduled participant as a winner across past, current and future rounds,
@@ -1043,5 +1054,5 @@ standings, team breakdowns, schedules, exports, pending/late counts and staff
 screens. Avoid historical audio bursts. Require an online fresh impact preview,
 explicit confirmation and stale-state detection for the bulk effect. Verify
 permissions, replay, both scoring modes, reversal, new schedules and EN/AR mobile
-flows. D074 records the contract. Section 30 remains reserved for decimal bonuses
+flows. D074 records the contract. Section 31 records decimal bonuses
 in the independent PR #42; release must follow verified migration ordering.

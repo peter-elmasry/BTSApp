@@ -20,7 +20,13 @@ import { DsBottomSheet } from '../../shared/ui/bottom-sheet';
 import { CountUp } from '../../shared/ui/count-up';
 import { DsSearchSelect } from '../../shared/ui/search-select';
 import { localizedName } from '../public/public-helpers';
-import { canEditLiveMatch, isLiveAdmin, liveErrorKey, remainingAllowance } from './live-helpers';
+import {
+  canEditLiveMatch,
+  isLiveAdmin,
+  liveErrorKey,
+  remainingAllowance,
+  validAdjustmentAmount,
+} from './live-helpers';
 
 @Component({
   selector: 'app-adjustments-panel',
@@ -120,7 +126,9 @@ export class AdjustmentsPanel {
   readonly projectedTotal = computed(() => {
     const current = this.currentTotal();
     const points = this.values().points ?? 0;
-    return current === null || !Number.isInteger(points) ? null : current + points;
+    return current === null || !validAdjustmentAmount(points)
+      ? null
+      : (Math.round(current * 100) + Math.round(points * 100)) / 100;
   });
   constructor() {
     effect(() => {
@@ -130,15 +138,18 @@ export class AdjustmentsPanel {
     });
   }
   step(delta: number) {
-    this.form.controls.points.setValue(this.form.controls.points.value + delta);
+    const step = this.snapshot().event.scoring_mode === 'LIVES' ? 0.25 : 1;
+    const current = this.form.controls.points.value;
+    this.form.controls.points.setValue(
+      (Math.round((Number.isFinite(current) ? current : 0) * 100) + delta * step * 100) / 100,
+    );
   }
   async add() {
     const value = this.form.getRawValue();
     if (!this.canAdd() || this.saving()) return;
     if (
       this.form.invalid ||
-      !Number.isInteger(value.points) ||
-      value.points === 0 ||
+      !validAdjustmentAmount(value.points) ||
       value.reason.trim().length < 3
     ) {
       this.form.markAllAsTouched();
