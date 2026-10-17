@@ -1007,3 +1007,15 @@ Owner activation must switch between newer and older events without transient
 unique-key errors, including retries and invalid targets. Preserve one current
 event, transactional visibility, permissions, audit and realtime signals. D070
 records implementation and regression requirements.
+
+## 29. Proactive notification onboarding — approved 2026-10-17
+
+Ask viewers directly to enable background round notifications on first use of
+each eligible event, after sound consent. The primary action starts the native
+permission request; viewers should not have to discover collapsed settings.
+Explain Allow, blocked permission and iPhone/iPad Home Screen installation.
+Remember defer/dismiss/disable and retain errors for retry without claiming
+activation before server confirmation. Do not bypass browser or OS consent.
+Verify EN/AR narrow layouts, sequential sheets, no automatic native request,
+successful enable/retry, reload, denied permission and installation-to-consent
+transition. D071 records the UX and remembered-choice contract.

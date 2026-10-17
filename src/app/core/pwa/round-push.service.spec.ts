@@ -9,7 +9,12 @@ import { PUSH_DEVICE_KEY, readPushDevice, revokePushDevice } from './round-push-
 
 describe('opt-in round notifications', () => {
   const publicKey = 'B'.repeat(87);
-  const event = signal({ id: 'event-one', name_en: 'Event one', name_ar: 'الحدث الأول' });
+  const event = signal({
+    id: 'event-one',
+    name_en: 'Event one',
+    name_ar: 'الحدث الأول',
+    status: 'LIVE',
+  });
   const language = signal<'en' | 'ar'>('en');
   let subscriptions: BehaviorSubject<PushSubscription | null>;
   let changes: Subject<unknown>;
@@ -36,7 +41,7 @@ describe('opt-in round notifications', () => {
     localStorage.clear();
     requests = [];
     fail = '';
-    event.set({ id: 'event-one', name_en: 'Event one', name_ar: 'الحدث الأول' });
+    event.set({ id: 'event-one', name_en: 'Event one', name_ar: 'الحدث الأول', status: 'LIVE' });
     language.set('en');
     subscriptions = new BehaviorSubject<PushSubscription | null>(null);
     changes = new Subject();
@@ -131,7 +136,7 @@ describe('opt-in round notifications', () => {
   it('does not report an old event as enabled after changing the current event', async () => {
     await start();
     await service.enable();
-    event.set({ id: 'event-two', name_en: 'Second', name_ar: 'الثاني' });
+    event.set({ id: 'event-two', name_en: 'Second', name_ar: 'الثاني', status: 'LIVE' });
     await settle();
     expect(service.enabled()).toBe(false);
     expect(requests.filter((r) => r['action'] === 'subscribe')).toHaveLength(1);
@@ -231,6 +236,30 @@ describe('opt-in round notifications', () => {
     expect(service.error()).toBe('notReady');
     await service.enable();
     expect(requestPermission).not.toHaveBeenCalled();
+  });
+  it('prompts proactively without requesting native permission, then remembers dismissal per event', async () => {
+    await start();
+    expect(service.prompt()).toBe(true);
+    expect(requestPermission).not.toHaveBeenCalled();
+    service.dismissPrompt();
+    expect(service.prompt()).toBe(false);
+    expect(JSON.parse(localStorage.getItem('bts.push.onboarding.v1')!)).toEqual(['event-one']);
+    event.set({ ...event(), id: 'event-two' });
+    expect(service.prompt()).toBe(true);
+    event.set({ ...event(), status: 'FINISHED' });
+    expect(service.prompt()).toBe(false);
+  });
+  it('keeps failed activation in the prompt and respects a later explicit disable', async () => {
+    fail = 'subscribe';
+    await start();
+    await service.enable();
+    expect(service.prompt()).toBe(true);
+    expect(service.error()).toBe('saveFailed');
+    fail = '';
+    await service.enable();
+    expect(service.prompt()).toBe(false);
+    await service.disable();
+    expect(service.prompt()).toBe(false);
   });
   it('clears displayed device state when logout revokes the endpoint', async () => {
     await start();

@@ -1,5 +1,22 @@
 # Implementation decisions
 
+## D071 — Ask proactively for background notification permission
+
+Peter clarified that viewers must be guided automatically rather than expected
+to discover the collapsed background-notification settings. Show a localized
+first-use sheet for the current DRAFT/LIVE event after the sound sheet closes.
+Its Enable notifications button immediately invokes the browser permission flow
+and confirms the event subscription only after server acknowledgment. Preserve
+visible errors and busy feedback; do not automatically request native permission.
+
+Remember Not now, dismissal and explicit disable per event/device. Existing saved
+subscriptions keep their restoration behavior. Blocked permission shows settings
+guidance; an uninstalled iPhone/iPad shows Safari/Home Screen steps. Installation
+guidance and installed-app permission choices use distinct keys, so dismissing
+installation instructions does not hide the later permission prompt. Unsupported
+non-iOS browsers keep their existing capability guidance. Keep sound and push
+consent independent and avoid overlapping modal sheets.
+
 ## D070 — First-visit sound consent and safe current-event switching
 
 Peter requested a first-visit in-app sound modal and no repeated enable step.

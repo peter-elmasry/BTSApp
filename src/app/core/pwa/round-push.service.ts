@@ -5,6 +5,18 @@ import { EventStore } from '../player/event.store';
 import { DirectionService } from '../i18n/i18n.service';
 import { PUSH_DEVICE_KEY, pushRequest, readPushDevice } from './round-push-api';
 
+const PROMPT_KEY = 'bts.push.onboarding.v1';
+function readPromptChoices(): string[] {
+  try {
+    const values: unknown = JSON.parse(localStorage.getItem(PROMPT_KEY) ?? '[]');
+    return Array.isArray(values)
+      ? values.filter((value): value is string => typeof value === 'string').slice(-50)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class RoundPushService {
   private readonly push = inject(SwPush, { optional: true });
@@ -34,6 +46,26 @@ export class RoundPushService {
     return this.direction.language() === 'ar' ? event?.name_ar || event?.name_en : event?.name_en;
   });
   readonly hasDevice = signal(!!readPushDevice());
+  private readonly promptChoices = signal(readPromptChoices());
+  readonly needsInstall =
+    (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
+    !window.matchMedia?.('(display-mode: standalone)').matches &&
+    !(navigator as Navigator & { standalone?: boolean }).standalone;
+  readonly prompt = computed(() => {
+    const event = this.events.event();
+    if (
+      !event ||
+      !['DRAFT', 'LIVE'].includes(event.status) ||
+      this.enabled() ||
+      this.promptChoices().includes(this.promptChoice(event.id))
+    )
+      return false;
+    const saved = readPushDevice();
+    if (this.hasDevice() && saved?.event === event.id && this.permission() === 'granted')
+      return false;
+    return this.needsInstall || (this.supported && this.ready());
+  });
   private publicKey = '';
   private restoring = false;
   private generation = 0;
@@ -80,6 +112,22 @@ export class RoundPushService {
     } catch {
       this.error.set('notReady');
     }
+  }
+
+  dismissPrompt(event = this.events.event()?.id) {
+    if (!event) return;
+    const key = this.promptChoice(event);
+    const choices = [...this.promptChoices().filter((value) => value !== key), key].slice(-50);
+    this.promptChoices.set(choices);
+    try {
+      localStorage.setItem(PROMPT_KEY, JSON.stringify(choices));
+    } catch {
+      // Still remember the choice for this session if device storage is unavailable.
+    }
+  }
+  private promptChoice(event: string) {
+    // Reading installation guidance must not dismiss consent in the installed app.
+    return this.needsInstall ? `${event}:install` : event;
   }
 
   private async restore(event: string, language: string) {
@@ -166,6 +214,7 @@ export class RoundPushService {
         JSON.stringify({ ...saved, event, publicKey: this.publicKey }),
       );
       this.registeredEvent.set(event);
+      this.dismissPrompt(event);
       if (this.events.event()?.id === event) this.notice.set('saved');
     } catch {
       this.error.set('saveFailed');
@@ -197,6 +246,7 @@ export class RoundPushService {
       localStorage.removeItem(PUSH_DEVICE_KEY);
       this.hasDevice.set(false);
       this.notice.set('disabled');
+      this.dismissPrompt();
     } catch {
       this.error.set('removeFailed');
     } finally {
