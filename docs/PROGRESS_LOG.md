@@ -2,10 +2,11 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-17 — Resolve both open PR conflicts — STARTED
+## 2026-10-17 — Resolve both open PR conflicts — HANDOFF
 
 - **Request/preflight:** Peter explicitly requests fixing all conflicts in open PRs #42/#43. Refreshed origin, clean branches and collaboration documents. #42 conflicts with master `0aaf96c`; #43 is currently mergeable. No PR merge, deployment or live-event mutation is authorized by this request.
 - **Plan:** Merge current master into #42 while preserving both feature histories, then merge the resolved decimal branch into dependent #43 so the required 0034-before-0035 order applies without later conflicts. Keep both PRs open, preserve existing source behavior, validate merged translations/format/types and full cloud CI, and push ordinary merge commits without rewriting published history.
+- **Resolved/verified:** Merged master into #42 at `28c745d` and that resolved decimal dependency into #43 at `bc7be41`, preserving both feature sources and histories. Manual conflicts were confined to decision/plan/progress documents; combined source and translations merged automatically. Plan sections are shared notification 30, decimals 31 and neutral 32. Both GitHub PRs are MERGEABLE. Full frontend/database CI passes: #42 run `39032535144` and combined #43 run `39032599862`, including build/unit/browser/auth/Edge/SQL/Lighthouse checks. TypeScript, formatting, 1,170-key decimal and 1,183-key combined translation parity pass. GitHub watch connections dropped transiently; completion was verified by fresh run reads. Final documentation-only handoff is propagated from #42 into #43, so #42 remains an ancestor and applying #42 first does not create a second conflict. No PR merge, deployment, production configuration or history rewrite occurred. Next: review and explicitly authorize release in #42-then-#43 order; refresh checks if master changes again.
 
 ## 2026-10-17 — Decimal bonuses and quarter hearts — HANDOFF
 
