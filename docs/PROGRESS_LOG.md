@@ -2,6 +2,11 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-17 — Resolve both open PR conflicts — STARTED
+
+- **Request/preflight:** Peter explicitly requests fixing all conflicts in open PRs #42/#43. Refreshed origin, clean branches and collaboration documents. #42 conflicts with master `0aaf96c`; #43 is currently mergeable. No PR merge, deployment or live-event mutation is authorized by this request.
+- **Plan:** Merge current master into #42 while preserving both feature histories, then merge the resolved decimal branch into dependent #43 so the required 0034-before-0035 order applies without later conflicts. Keep both PRs open, preserve existing source behavior, validate merged translations/format/types and full cloud CI, and push ordinary merge commits without rewriting published history.
+
 ## 2026-10-17 — Decimal bonuses and quarter hearts — HANDOFF
 
 - **Request/preflight:** Peter requests decimal bonuses and confirms both 0.5 and 0.25 must work. Refreshed clean master `8d1aa95`; read collaboration/plan/decisions/Phase 0. Branch `fix/decimal-bonus-adjustments`. PR #41 remains separate and approval-blocked; reserve migration 0033/D072/test 0024 for that PR and use 0034/D073/test 0025 here.
