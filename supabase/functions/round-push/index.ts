@@ -47,8 +47,8 @@ function payload(job: any, origin: string) {
       body:
         job.cue === 'test'
           ? ar
-            ? 'إشعارات الجولات تعمل على هذا الجهاز.'
-            : 'Round notifications work on this device.'
+            ? 'إشعار تجريبي: إشعارات الجولات تعمل على هذا الجهاز.'
+            : 'Test notification: round alerts are working on this device.'
           : ar
             ? `${job.cue === 'round-start' ? 'بدأت' : 'انتهت'} الجولة ${job.roundNumber}`
             : `Round ${job.roundNumber} ${job.cue === 'round-start' ? 'started' : 'ended'}`,

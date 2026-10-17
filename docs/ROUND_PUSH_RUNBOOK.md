@@ -73,3 +73,15 @@ Implementation references: [Angular push](https://angular.dev/ecosystem/service-
 [Supabase scheduled functions](https://supabase.com/docs/guides/functions/schedule-functions),
 [Web Push sender](https://github.com/web-push-libs/web-push), and
 [WebKit iOS/iPadOS Web Push](https://webkit.org/blog/13878/).
+
+Administrators can open Event sound and choose **Test with others** beside the
+local Test sound action. This targets the current DRAFT/LIVE event, with a shared
+one-minute server cooldown and no round/result changes. Open apps show a localized
+test message, including muted guests; MP3 playback still respects device consent,
+organizer master sound and tab ownership. Enabled devices receive an explicitly
+labeled test push, including while visible (the existing test behavior). Queued
+device count is not proof of receipt. The online-only idempotent RPC is
+`test_event_notifications`; `get_notification_test` exposes only fresh occurrence
+and timestamp, with existing recovery probes covering missed realtime delivery.
+Test with synthetic subscribers/clients before sending a real group test; deployment
+verification must not itself broadcast to production users.

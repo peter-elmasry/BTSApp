@@ -188,7 +188,7 @@ await check('Arabic end and test notifications are localized', async () => {
     const f = fixture({ jobs: [{ ...job, language: 'ar', cue }] });
     await f.handler(request({ action: 'dispatch' }, config.dispatchSecret));
     const n = JSON.parse(f.sends[0][1]).notification;
-    assert.match(n.body, cue === 'test' ? /إشعارات/ : /انتهت الجولة 2/);
+    assert.match(n.body, cue === 'test' ? /إشعار تجريبي/ : /انتهت الجولة 2/);
     assert.equal(n.data.test, cue === 'test');
   }
 });
