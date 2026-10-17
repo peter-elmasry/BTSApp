@@ -50,9 +50,7 @@ select lives_ok($$select public.add_adjustment(gen_random_uuid(),'3d000000-0000-
 select lives_ok($$select public.void_match(gen_random_uuid(),'7d000000-0000-0000-0000-000000000001','Void for testing')$$,'void match retains adjustment history');
 select is((public.get_team_view('3d000000-0000-0000-0000-000000000001','T01')->'breakdown'->>'total')::numeric,10::numeric,'void match decimal is excluded from totals');
 select throws_ok($$select public.add_adjustment(gen_random_uuid(),'3d000000-0000-0000-0000-000000000001','MATCH','7d000000-0000-0000-0000-000000000001','4d000000-0000-0000-0000-000000000001',.25,'Decimal bonus')$$,'P0001','MATCH_VOID','void match refuses new decimal adjustments');
-reset role;
-update public.events set scoring_mode='POINTS' where id='3d000000-0000-0000-0000-000000000001';
-set local role authenticated;
+select lives_ok($$select public.upsert_event_settings(gen_random_uuid(),'3d000000-0000-0000-0000-000000000001','{"scoring_mode":"POINTS"}')$$,'switching to POINTS uses the settings RPC to normalise draw gains');
 select is((public.get_team_view('3d000000-0000-0000-0000-000000000001','T01')->'breakdown'->>'total')::numeric,0::numeric,'POINTS totals exclude starting hearts and void match bonus');
 select lives_ok($$select public.add_adjustment(gen_random_uuid(),'3d000000-0000-0000-0000-000000000001','EVENT',null,'4d000000-0000-0000-0000-000000000002',.1,'Decimal bonus')$$,'POINTS accepts tenths');
 select lives_ok($$select public.add_adjustment(gen_random_uuid(),'3d000000-0000-0000-0000-000000000001','EVENT',null,'4d000000-0000-0000-0000-000000000002',.2,'Decimal bonus')$$,'POINTS accepts another tenth-based bonus');
