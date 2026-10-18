@@ -1,5 +1,39 @@
 # Event-day runbook
 
+### Member appointments (D076; implementation branch, release pending)
+
+After explicit release authorization, deploy migration 0037 and the matching
+frontend together through the normal workflows. This module is independent of
+the active sports event and does not alter teams, rounds or scores.
+
+1. Owner: account menu → Manage appointments → Create session. Set the booking
+   window, Cairo/default IANA timezone, location/optional HTTPS link and cancellation
+   cutoff. Save a draft. Assigned interviewers need active accounts and completed
+   password setup.
+2. Add slots with an interviewer and start/end range, duration and optional break;
+   review the complete preview before confirming. Manual single slots support
+   exceptions. Publish only after checking the schedule. Conflicting interviewer
+   times are rejected across sessions; different interviewers may run in parallel.
+3. Member: Appointments → session → confirm name → select slot → Review → Confirm.
+   My bookings supports cancellation and atomic rescheduling before the cutoff.
+   A confirmation toast means the server reserved it; offline actions are not queued.
+4. Interviewer: My interviews shows assigned attendees and links to assigned sessions
+   with their free/booked slots. Mark completed/no-show only after the slot starts.
+   Other members never receive attendee names. Owners manage all bookings.
+5. If a response is lost, keep the page open and use Check status / retry. It reuses
+   the same operation UUID and checks the receipt before resubmitting. Check My
+   bookings after an accidental reload before making a new reservation. Do not
+   interpret a timeout or stale availability as a confirmed booking.
+6. Occupied slots and booked location/link/timezone cannot silently move. Explicitly
+   cancel before changing those details; history remains. Closing stops new bookings;
+   cancelling a session permanently cancels outstanding bookings and retains history.
+   Owner rescheduling still requires an open published booking window.
+
+Acceptance: verify migration/reset and pgTAP, real concurrent reservations in the
+localhost-only Auth harness, EN/AR mobile booking/rescheduling/cancellation,
+interviewer privacy/attendance, owner preview/publish, ambiguous response recovery,
+and access with no current event/team. Physical device rehearsal remains separate.
+
 **Production release verified 2026-10-16:** PR #33 is merged as `743e7b1`.
 Master [CI 38814241798](https://github.com/peter-elmasry/BTSApp/actions/runs/38814241798)
 and [Supabase deployment 38814241643](https://github.com/peter-elmasry/BTSApp/actions/runs/38814241643)

@@ -1,0 +1,441 @@
+<div *transloco="let t" class="space-y-5">
+  <div class="ds-page-header">
+    <h1 class="text-2xl font-extrabold">
+      {{ detail()?.session?.title || t('appointments.create') }}
+    </h1>
+    <a class="ds-button ghost" [routerLink]="managing ? '/owner/appointments' : '/appointments'">{{
+      t('appointments.back')
+    }}</a>
+  </div>
+  <p class="text-sm text-slate">{{ t('appointments.onlineHint') }}</p>
+  @if (id() !== 'new') {
+    <button type="button" class="ds-button ghost" (click)="refresh()" [disabled]="busy()">
+      {{ t('appointments.refresh') }}
+    </button>
+  }
+  @if (error()) {
+    <p role="alert" class="text-error">{{ t('appointments.errors.' + error()) }}</p>
+  }
+  @if (api.pending()) {
+    <section class="ds-card space-y-3" role="status">
+      <p>{{ t('appointments.pending') }}</p>
+      <button
+        type="button"
+        class="ds-button primary"
+        (click)="retry()"
+        [disabled]="busy() || api.checking()"
+      >
+        {{ t('appointments.checkRetry') }}
+      </button>
+    </section>
+  }
+  @if (loading()) {
+    <p role="status">{{ t('appointments.loading') }}</p>
+  }
+  @if (managing && (id() === 'new' || detail())) {
+    <form
+      [formGroup]="form"
+      (ngSubmit)="prepareSession()"
+      class="ds-card space-y-4"
+      data-testid="appointment-session-form"
+    >
+      <h2 class="text-lg font-bold">{{ t('appointments.settings') }}</h2>
+      @if (detail() && formVersion() !== detail()?.session?.version) {
+        <p role="status" class="text-error">{{ t('appointments.errors.APPOINTMENT_CHANGED') }}</p>
+      }
+      <ds-input [label]="t('appointments.sessionTitle')" formControlName="title" />
+      <label class="block space-y-2"
+        ><span class="font-bold">{{ t('appointments.description') }}</span
+        ><textarea
+          class="ds-control w-full"
+          rows="3"
+          maxlength="2000"
+          formControlName="description"
+        ></textarea>
+      </label>
+      <ds-input [label]="t('appointments.location')" formControlName="location" />
+      <ds-input [label]="t('appointments.meetingUrl')" formControlName="meeting_url" />
+      <ds-input [label]="t('appointments.timezone')" formControlName="timezone" />
+      <ds-search-select
+        [label]="t('appointments.linkedEvent')"
+        [options]="eventOptions()"
+        [placeholder]="t('appointments.independent')"
+        formControlName="event_id"
+      />
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="block min-w-0 space-y-2"
+          ><span class="font-bold">{{ t('appointments.opens') }}</span
+          ><input
+            class="ds-control w-full min-w-0"
+            type="datetime-local"
+            required
+            formControlName="opens_at"
+        /></label>
+        <label class="block min-w-0 space-y-2"
+          ><span class="font-bold">{{ t('appointments.closes') }}</span
+          ><input
+            class="ds-control w-full min-w-0"
+            type="datetime-local"
+            required
+            formControlName="closes_at"
+        /></label>
+      </div>
+      <label class="block space-y-2"
+        ><span class="font-bold">{{ t('appointments.cutoff') }}</span
+        ><input
+          class="ds-control w-full"
+          type="number"
+          min="0"
+          max="10080"
+          step="1"
+          required
+          formControlName="cutoff_minutes"
+      /></label>
+      <label class="block space-y-2"
+        ><span class="font-bold">{{ t('appointments.statusLabel') }}</span
+        ><select class="ds-control w-full" formControlName="status">
+          @for (value of ['DRAFT', 'PUBLISHED', 'CLOSED', 'CANCELLED']; track value) {
+            <option [value]="value" [disabled]="id() === 'new' && value !== 'DRAFT'">
+              {{ t('appointments.status.' + value) }}
+            </option>
+          }
+        </select></label
+      >
+      <p class="text-sm text-slate">{{ t('appointments.ownerHint') }}</p>
+      <div class="ds-actions">
+        <button
+          class="ds-button primary"
+          type="submit"
+          [disabled]="busy() || !!api.pending() || detail()?.session?.status === 'CANCELLED'"
+        >
+          {{ t('appointments.reviewSave') }}
+        </button>
+        @if (detail()) {
+          <button class="ds-button ghost" type="button" (click)="reloadForm()">
+            {{ t('appointments.reloadSettings') }}
+          </button>
+        }
+      </div>
+    </form>
+    @if (detail(); as data) {
+      @if (data.session.status === 'DRAFT' || data.session.status === 'PUBLISHED') {
+        <form
+          id="appointment-slot-editor"
+          [formGroup]="slotForm"
+          class="ds-card space-y-4"
+          (ngSubmit)="prepareSlots(!editingSlot())"
+        >
+          <h2 class="text-lg font-bold">
+            {{ t(editingSlot() ? 'appointments.editSlot' : 'appointments.addSlots') }}
+          </h2>
+          <p class="text-sm">{{ t('appointments.timesIn', { zone: data.session.timezone }) }}</p>
+          <ds-search-select
+            [label]="t('appointments.interviewer')"
+            [options]="memberOptions()"
+            [placeholder]="t('appointments.chooseInterviewer')"
+            formControlName="interviewer_id"
+          />
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="block min-w-0 space-y-2"
+              ><span class="font-bold">{{ t('appointments.start') }}</span
+              ><input
+                type="datetime-local"
+                class="ds-control w-full min-w-0"
+                required
+                formControlName="starts_at"
+            /></label>
+            <label class="block min-w-0 space-y-2"
+              ><span class="font-bold">{{ t('appointments.end') }}</span
+              ><input
+                type="datetime-local"
+                class="ds-control w-full min-w-0"
+                required
+                formControlName="ends_at"
+            /></label>
+          </div>
+          @if (!editingSlot()) {
+            <div class="grid gap-4 sm:grid-cols-2">
+              <label class="block space-y-2"
+                ><span class="font-bold">{{ t('appointments.duration') }}</span
+                ><input
+                  class="ds-control w-full"
+                  type="number"
+                  min="5"
+                  max="240"
+                  step="1"
+                  required
+                  formControlName="duration_minutes" /></label
+              ><label class="block space-y-2"
+                ><span class="font-bold">{{ t('appointments.gap') }}</span
+                ><input
+                  class="ds-control w-full"
+                  type="number"
+                  min="0"
+                  max="120"
+                  step="1"
+                  required
+                  formControlName="gap_minutes"
+              /></label>
+            </div>
+          }
+          <div class="ds-actions">
+            <button class="ds-button primary" type="submit" [disabled]="busy() || !!api.pending()">
+              {{ t(editingSlot() ? 'appointments.reviewSave' : 'appointments.previewSlots') }}
+            </button>
+            @if (!editingSlot()) {
+              <button
+                class="ds-button secondary"
+                type="button"
+                (click)="prepareSlots(false)"
+                [disabled]="busy() || !!api.pending()"
+              >
+                {{ t('appointments.singleSlot') }}
+              </button>
+            } @else {
+              <button class="ds-button ghost" type="button" (click)="editingSlot.set(null)">
+                {{ t('common.cancel') }}
+              </button>
+            }
+          </div>
+        </form>
+      }
+    }
+  }
+  @if (detail(); as data) {
+    <section class="ds-card space-y-3">
+      <p class="font-bold">{{ t('appointments.status.' + data.session.status) }}</p>
+      <p class="whitespace-pre-wrap break-words">{{ data.session.description }}</p>
+      <p class="break-words">{{ data.session.location }}</p>
+      @if (data.session.meeting_url) {
+        <a
+          class="ds-button ghost"
+          [href]="data.session.meeting_url"
+          target="_blank"
+          rel="noopener noreferrer"
+          >{{ t('appointments.meeting') }}</a
+        >
+      }
+      <p>{{ t('appointments.timesIn', { zone: data.session.timezone }) }}</p>
+      <p>
+        {{ t('appointments.opens') }}: {{ time(data.session.opens_at) }} ·
+        {{ t('appointments.closes') }}: {{ time(data.session.closes_at) }}
+      </p>
+      <p>{{ t('appointments.cutoffHint', { n: data.session.cutoff_minutes }) }}</p>
+      @if (!managing) {
+        <ds-input [label]="t('appointments.yourName')" [formControl]="name" />
+        @if (!bookingOpen()) {
+          <p role="status">{{ t('appointments.notOpen') }}</p>
+        }
+        @if (myBooking(); as booking) {
+          <p class="font-bold">
+            {{ t('appointments.existingBooking') }} ·
+            {{ t('appointments.status.' + booking.status) }}
+          </p>
+        }
+      }
+    </section>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <label class="block space-y-2"
+        ><span class="font-bold">{{ t('ui.search') }}</span
+        ><input
+          class="ds-control w-full"
+          type="search"
+          [value]="query()"
+          (input)="query.set($any($event.target).value)" /></label
+      ><label class="block space-y-2"
+        ><span class="font-bold">{{ t('appointments.dateFilter') }}</span
+        ><input
+          class="ds-control w-full"
+          type="date"
+          [value]="day()"
+          (input)="day.set($any($event.target).value)" /></label
+      ><ds-search-select
+        [label]="t('appointments.interviewer')"
+        [options]="interviewerOptions()"
+        [placeholder]="t('appointments.all')"
+        [value]="interviewerFilter()"
+        (valueChange)="interviewerFilter.set($event)"
+      />
+    </div>
+    @if (movingBooking(); as booking) {
+      <section class="ds-card space-y-3">
+        <p>{{ t('appointments.reschedule') }}: {{ booking.display_name }}</p>
+        <button class="ds-button ghost" type="button" (click)="movingBooking.set(null)">
+          {{ t('common.cancel') }}
+        </button>
+      </section>
+    }
+    @for (slot of slots(); track slot.id) {
+      <section class="ds-card space-y-3" data-testid="appointment-slot">
+        <p class="font-bold">{{ time(slot.starts_at) }} – {{ time(slot.ends_at) }}</p>
+        <p>{{ t('appointments.interviewer') }}: {{ slot.interviewer_name }}</p>
+        <p>
+          {{
+            t(
+              slot.blocked
+                ? 'appointments.blocked'
+                : slot.booking
+                  ? 'appointments.status.' + slot.booking.status
+                  : slot.available
+                    ? 'appointments.available'
+                    : 'appointments.unavailable'
+            )
+          }}
+        </p>
+        @if (slot.booking; as booking) {
+          <p class="font-bold">{{ booking.display_name }}</p>
+          @if (managing && booking.status === 'BOOKED') {
+            <div class="ds-actions">
+              <button
+                type="button"
+                class="ds-button secondary"
+                (click)="movingBooking.set(booking)"
+                [disabled]="busy() || !!api.pending()"
+              >
+                {{ t('appointments.reschedule') }}</button
+              ><button
+                type="button"
+                class="ds-button danger"
+                (click)="reviewCancel(booking, slot)"
+                [disabled]="busy() || !!api.pending()"
+              >
+                {{ t('appointments.cancelBooking') }}
+              </button>
+            </div>
+          }
+          @if (managing && canAttend(slot)) {
+            <div class="ds-actions">
+              <button
+                type="button"
+                class="ds-button secondary"
+                (click)="reviewAttendance(slot, 'COMPLETED')"
+                [disabled]="busy() || !!api.pending()"
+              >
+                {{ t('appointments.completed') }}</button
+              ><button
+                type="button"
+                class="ds-button ghost"
+                (click)="reviewAttendance(slot, 'NO_SHOW')"
+                [disabled]="busy() || !!api.pending()"
+              >
+                {{ t('appointments.noShow') }}
+              </button>
+            </div>
+          }
+        }
+        <div class="ds-actions">
+          @if (
+            managing &&
+            !slot.booking &&
+            data.session.status !== 'CANCELLED' &&
+            data.session.status !== 'CLOSED'
+          ) {
+            <button
+              class="ds-button secondary"
+              type="button"
+              (click)="editSlot(slot)"
+              [disabled]="busy() || !!api.pending()"
+            >
+              {{ t('appointments.editSlot') }}</button
+            ><button
+              class="ds-button ghost"
+              type="button"
+              (click)="blockSlot(slot)"
+              [disabled]="busy() || !!api.pending()"
+            >
+              {{ t(slot.blocked ? 'appointments.unblock' : 'appointments.block') }}
+            </button>
+          }
+          @if (canBook(slot)) {
+            <button
+              class="ds-button primary"
+              type="button"
+              (click)="reviewBooking(slot)"
+              [disabled]="busy() || !!api.pending()"
+            >
+              {{
+                t(myBooking() || movingBooking() ? 'appointments.moveHere' : 'appointments.book')
+              }}
+            </button>
+          }
+        </div>
+      </section>
+    } @empty {
+      <p>{{ t('appointments.noSlots') }}</p>
+    }
+    @if (history().length) {
+      <section class="ds-card space-y-3">
+        <h2 class="font-bold">{{ t('appointments.cancelledHistory') }}</h2>
+        @for (booking of history(); track booking.id) {
+          <p class="break-words">
+            {{ booking.display_name }} · {{ time(booking.starts_at) }} ·
+            {{ t('appointments.status.CANCELLED') }}
+          </p>
+        }
+      </section>
+    }
+  }
+  @if (review(); as item) {
+    <ds-bottom-sheet [title]="t('appointments.review')" (close)="review.set(null)">
+      <div class="space-y-4" data-testid="appointment-review">
+        <p class="font-bold">{{ t('appointments.actions.' + item.action) }}</p>
+        @if (item.action === 'BOOK' || item.action === 'RESCHEDULE') {
+          <p>{{ movingBooking()?.display_name || myBooking()?.display_name || name.value }}</p>
+        }
+        @if (item.slot; as slot) {
+          <p>{{ time(slot.starts_at) }} – {{ time(slot.ends_at) }}</p>
+          <p>{{ slot.interviewer_name }}</p>
+          <p>{{ detail()?.session?.location }} · {{ detail()?.session?.timezone }}</p>
+        }
+        @if (item.action === 'RESCHEDULE') {
+          <p>{{ t('appointments.rescheduleHint') }}</p>
+        }
+        @if (item.action === 'CANCEL') {
+          <p>{{ t('appointments.cancelHint') }}</p>
+        }
+        @if (item.action === 'SAVE_SESSION') {
+          <p>
+            {{ item.payload['title'] }} · {{ t('appointments.status.' + item.payload['status']) }}
+          </p>
+          @if (item.payload['status'] === 'CANCELLED') {
+            <p class="font-bold text-error">{{ t('appointments.cancelSessionHint') }}</p>
+          }
+        }
+        @if (item.preview; as preview) {
+          <p>{{ t('appointments.previewCount', { n: preview.length }) }}</p>
+          @for (member of options().members; track member.id) {
+            @if (member.id === item.payload['interviewer_id']) {
+              <p>{{ t('appointments.interviewer') }}: {{ member.name }}</p>
+            }
+          }
+          <ol
+            class="max-h-64 space-y-2 overflow-auto"
+            tabindex="0"
+            [attr.aria-label]="t('appointments.previewSlots')"
+          >
+            @for (slot of preview; track slot.starts_at) {
+              <li>{{ time(slot.starts_at) }} – {{ time(slot.ends_at) }}</li>
+            }
+          </ol>
+        }
+        <div class="ds-actions">
+          <button
+            class="ds-button ghost"
+            type="button"
+            (click)="review.set(null)"
+            [disabled]="busy()"
+          >
+            {{ t('appointments.back') }}</button
+          ><button
+            class="ds-button primary"
+            type="button"
+            (click)="commit()"
+            [disabled]="busy() || !!api.pending()"
+          >
+            {{ t('appointments.confirm') }}
+          </button>
+        </div>
+      </div>
+    </ds-bottom-sheet>
+  }
+</div>

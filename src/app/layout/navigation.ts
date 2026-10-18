@@ -59,6 +59,7 @@ export function navigationFor(
     { key: 'nav.home', icon: '⌂', path: '/home' },
     { key: 'nav.schedule', icon: '▦', path: '/schedule' },
     ...standings,
+    ...(profile ? [{ key: 'appointments.title', icon: '◷', path: '/appointments' }] : []),
   ];
   // Owners without a current event still need their account menu.
   return profile?.system_role === 'OWNER'

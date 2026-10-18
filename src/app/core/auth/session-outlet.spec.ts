@@ -45,6 +45,8 @@ describe('staff session outlet lifecycle', () => {
           { path: 'manage/:eventId/setup', component: StaffScreen },
           { path: 'ref', component: StaffScreen },
           { path: 'players/:eventId', component: StaffScreen },
+          { path: 'appointments', component: StaffScreen },
+          { path: 'interviews', component: StaffScreen },
           { path: 'home', component: StaffScreen },
         ]),
       ],
@@ -58,7 +60,14 @@ describe('staff session outlet lifecycle', () => {
     destroyed = 0; // Observe changes after the initial route has settled.
     return fixture;
   }
-  for (const url of ['/owner/members', '/manage/event/setup', '/ref', '/players/event']) {
+  for (const url of [
+    '/owner/members',
+    '/manage/event/setup',
+    '/ref',
+    '/players/event',
+    '/appointments',
+    '/interviews',
+  ]) {
     it(`destroys ${url} on logout and prevents late reads restoring its DOM`, async () => {
       const fixture = await open(url);
       expect(fixture.nativeElement.textContent).toContain('private data');

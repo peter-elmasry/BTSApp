@@ -16,6 +16,51 @@ import {
 
 export const routes: Routes = [
   {
+    path: 'appointments',
+    canActivate: [authGuard],
+    data: { appointmentMode: 'list' },
+    loadComponent: () =>
+      import('./features/appointments/appointments-page').then((m) => m.AppointmentsPage),
+  },
+  {
+    path: 'appointments/my-bookings',
+    canActivate: [authGuard],
+    data: { appointmentMode: 'mine' },
+    loadComponent: () =>
+      import('./features/appointments/appointments-page').then((m) => m.AppointmentsPage),
+  },
+  {
+    path: 'appointments/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/appointments/appointment-session-page').then(
+        (m) => m.AppointmentSessionPage,
+      ),
+  },
+  {
+    path: 'interviews',
+    canActivate: [authGuard],
+    data: { appointmentMode: 'interviews' },
+    loadComponent: () =>
+      import('./features/appointments/appointments-page').then((m) => m.AppointmentsPage),
+  },
+  {
+    path: 'owner/appointments',
+    canActivate: [authGuard, ownerGuard],
+    data: { appointmentMode: 'manage' },
+    loadComponent: () =>
+      import('./features/appointments/appointments-page').then((m) => m.AppointmentsPage),
+  },
+  {
+    path: 'owner/appointments/:id',
+    canActivate: [authGuard, ownerGuard],
+    data: { appointmentMode: 'manage' },
+    loadComponent: () =>
+      import('./features/appointments/appointment-session-page').then(
+        (m) => m.AppointmentSessionPage,
+      ),
+  },
+  {
     path: 'join/:eventId',
     loadComponent: () => import('./features/registration/join-page').then((m) => m.JoinPage),
   },

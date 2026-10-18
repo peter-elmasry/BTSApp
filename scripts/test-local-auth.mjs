@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { verifyLocalLogin } from './test-local-login.mjs';
 import { verifyLocalMembers } from './test-local-members.mjs';
 import { verifyLocalRealtime } from './test-local-realtime.mjs';
+import { verifyLocalAppointments } from './test-local-appointments.mjs';
 
 // CI-only local Supabase status file. Never echo its credentials or JWTs.
 const path = process.env.SUPABASE_ENV_FILE;
@@ -87,6 +88,7 @@ for (const member of first) {
     throw new Error('Seeded Auth JWT does not grant owner permission');
   if (member.id === first[0].id) {
     await verifyLocalRealtime(url, values.ANON_KEY, admin, client);
+    await verifyLocalAppointments(url, values.ANON_KEY, admin, client);
     const { data } = await client.auth.getSession();
     await verifyLocalMembers(
       url,

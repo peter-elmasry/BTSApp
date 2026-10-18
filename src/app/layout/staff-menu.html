@@ -60,6 +60,20 @@
       </nav>
     }
     <nav class="grid gap-2" [attr.aria-label]="t('menu.playerView')">
+      <a class="menu-row" routerLink="/appointments" (click)="close.emit()">{{
+        t('appointments.title')
+      }}</a>
+      <a class="menu-row" routerLink="/appointments/my-bookings" (click)="close.emit()">{{
+        t('appointments.myBookings')
+      }}</a>
+      <a class="menu-row" routerLink="/interviews" (click)="close.emit()">{{
+        t('appointments.myInterviews')
+      }}</a>
+      @if (owner()) {
+        <a class="menu-row" routerLink="/owner/appointments" (click)="close.emit()">{{
+          t('appointments.manage')
+        }}</a>
+      }
       @if (!selection.staffWithoutTeam()) {
         <a class="menu-row" routerLink="/home" (click)="close.emit()"
           ><span aria-hidden="true">⌂</span>{{ t('menu.playerView') }}</a
