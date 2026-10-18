@@ -1071,3 +1071,34 @@ SVG artwork, distinguish quarter/half/three-quarter/full meter states and preser
 exact decimal totals. D075 records the implementation contract. Validate EN/AR
 mobile/accessibility, permission matrix, replay/stale/revoke/cap/history behavior
 and existing live-scoring regressions before release.
+
+## 34. Members-only appointments — approved 2026-10-18
+
+Add independent appointment sessions, optionally linked to a sports event. Only
+signed-in active DST members may browse/book; name is required and prefilled from
+their existing profile, and authenticated member identity controls ownership.
+Owners configure title/description/location/HTTPS meeting link, IANA timezone,
+booking window and cancellation/rescheduling cutoff, generate/review slots with
+duration/breaks or add manual exceptions, assign active members as interviewers,
+publish/close/cancel sessions and explicitly cancel bookings. Session/slot permissions
+are independent of sports-event roles and team selection. Preserve history.
+
+One member and one attendee per slot; one non-cancelled booking per member/session.
+Prevent attendee/interviewer overlap across sessions; concurrent reservations must
+have exactly one winner. Atomic rescheduling must preserve the original booking if
+the target fails. Members see own bookings; interviewers see assigned attendees and
+mark completed/no-show only after the appointment starts; owners see all. Other
+members see availability without attendee names. No public/anonymous appointment
+reads. Completed/no-show entries keep their occupied slot and booking history.
+
+Use existing Angular/Supabase/design/i18n infrastructure with lazy routes, private
+online-only RPCs, deny-by-default RLS, server permissions/time, operation receipts,
+stale-version checks and independent auditing. Do not enqueue reservations or cache
+private names. Reconcile ambiguous responses with the same operation UUID; discard
+late private responses when identity changes. Use UTC instants and default Cairo
+display/input timezone with DST validation. Poll authorized views in the foreground.
+Bookable routes work with no current sports event. D076 specifies booked-slot locks
+and the first-release scope. Test permission boundaries, competing reservations,
+replay/stale edits, cutoff, cancellation/history, atomic moves, role overlap, lost
+responses, EN/AR mobile/accessibility and existing app regressions. No production
+data writes, merge or release is authorized by the implementation request.

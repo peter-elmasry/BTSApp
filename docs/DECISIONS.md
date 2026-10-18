@@ -1,5 +1,39 @@
 # Implementation decisions
 
+## D076 — Private appointments for DST members
+
+Gendy confirmed that only signed-in DST members book, and sessions are independent
+of sports events with an optional event link. Owners configure sessions and slots;
+an active member assigned to a slot interviews its attendee without acquiring an
+event role. Existing event admins/referees receive no appointment-management power.
+Use separate appointment tables, deny direct client reads/writes, permission-checked
+RPCs and independent audit entries. Published session availability exposes no other
+attendee; only the attendee, assigned interviewer and owners see a booking's name.
+No phones, public broadcasts, offline cache/queue or external messages are added.
+
+One non-cancelled booking occupies a slot and a member/session, including completed
+and no-show appointments. A domain transaction lock serializes cross-session overlap
+checks, including a member acting as both attendee and interviewer. Half-open time
+intervals allow adjacent slots. Cancelling preserves history; rescheduling changes
+the same booking atomically. Account activity, completed password setup, deadlines,
+published state and optimistic versions are checked server-side. Owner cancellation
+can override the member cutoff. Attendance is restricted to owners/the assigned
+interviewer, after the appointment starts. Session cancellation is terminal.
+
+Booked times/interviewer/location/meeting link/timezone cannot silently change;
+owners explicitly cancel a booking before replacing its slot. This first-release
+rule is stricter than a review-only occupied-slot edit. Store UTC instants plus an
+IANA session timezone (Africa/Cairo default); wall-time inputs reject missing or
+ambiguous DST times. Generators preview at most 200 slots per request.
+
+All mutations are online-only, with actor/action/payload-bound operation receipts.
+An ambiguous response keeps its immutable operation in memory and offers status
+reconciliation/retry with the same UUID; no competing operation starts meanwhile.
+Private screens discard late responses on account changes, clear on failed reads,
+and refresh in the foreground every 15 seconds without replacing owner drafts.
+Appointment routes work without current-event/team selection. In-app confirmations
+are included; reminders, external messaging, calendar sync and waitlists are deferred.
+
 ## D075 — Correct existing adjustments without replacing their history
 
 Peter requested an authorized pen action and quarter-heart SVGs. Editing changes

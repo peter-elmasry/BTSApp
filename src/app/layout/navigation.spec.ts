@@ -18,6 +18,7 @@ describe('role-aware bottom navigation', () => {
       'nav.home',
       'nav.schedule',
       'nav.leaderboard',
+      'appointments.title',
       'nav.about',
     ]);
   });
