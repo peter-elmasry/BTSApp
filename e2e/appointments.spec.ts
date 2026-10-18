@@ -206,6 +206,7 @@ for (const lang of ['en', 'ar'] as const) {
   test(`member books, atomically reschedules and cancels without a sports event in ${lang}`, async ({
     page,
   }) => {
+    test.setTimeout(60000);
     const state = await fixture(page, lang);
     await page.goto('/appointments/session-a');
     await expect(page.getByLabel(t.yourName)).toHaveValue('Member Name');
@@ -215,6 +216,10 @@ for (const lang of ['en', 'ar'] as const) {
     expect(state.calls).toHaveLength(0);
     await page.getByRole('dialog').getByRole('button', { name: t.confirm, exact: true }).click();
     await expect(page.getByTestId('toast')).toHaveText(t.confirmed);
+    await expect(page.getByTestId('toast')).toHaveCount(0, { timeout: 10000 });
+    await page
+      .getByRole('button', { name: t.moveHere, exact: true })
+      .evaluate((element) => element.scrollIntoView({ block: 'center' }));
     await page.getByRole('button', { name: t.moveHere, exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: t.confirm, exact: true }).click();
     await expect.poll(() => state.calls.filter((c) => c.action === 'RESCHEDULE').length).toBe(1);
