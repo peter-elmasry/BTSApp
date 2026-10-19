@@ -1,5 +1,18 @@
 # Implementation decisions
 
+## D078 — Arabic sports-day terminology
+
+Gendy requested يوم رياضي / اليوم الرياضي instead of فعالية in Arabic UI copy.
+Use الأيام الرياضية for plurals and adjust grammatical gender in banners,
+completion confirmations, history/help and error text. Existing English copy and domain
+identifiers remain unchanged; completion and access rules still follow D077.
+
+When an owner/moderator views recap, show a prominent labeled status and explicit
+already-finished/archive explanation. Keep the completion button visible but disabled
+with linked blockers for unfinished days; finished days require no further action.
+Gendy's reported missing button on بدل تالف was confirmed by public read: the day
+was already FINISHED after the approved legacy migration, with eight CLOSED rounds.
+
 ## D077 — Finished PROD participation and private event recap
 
 Assigned event roles count as member participation. My history shows only FINISHED
