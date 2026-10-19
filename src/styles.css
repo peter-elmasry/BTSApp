@@ -566,3 +566,33 @@ html[dir='rtl']::view-transition-new(root) {
     animation: none !important;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  body:has(app-recap-page) {
+    background: white;
+    color: black;
+  }
+  body:has(app-recap-page) .app-header,
+  body:has(app-recap-page) .skip-link,
+  body:has(app-recap-page) app-round-banner,
+  body:has(app-recap-page) app-audio-controls,
+  body:has(app-recap-page) app-shell > div > nav,
+  body:has(app-recap-page) app-shell > div > aside,
+  body:has(app-recap-page) ds-toast,
+  body:has(app-recap-page) app-manage-nav,
+  body:has(app-recap-page) app-manage-layout .ds-page-header {
+    display: none !important;
+  }
+  body:has(app-recap-page) main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  body:has(app-recap-page) app-shell > div {
+    background: white;
+    padding-bottom: 0 !important;
+  }
+}

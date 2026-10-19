@@ -45,6 +45,8 @@ describe('staff session outlet lifecycle', () => {
           { path: 'manage/:eventId/setup', component: StaffScreen },
           { path: 'ref', component: StaffScreen },
           { path: 'players/:eventId', component: StaffScreen },
+          { path: 'account/history', component: StaffScreen },
+
           { path: 'appointments', component: StaffScreen },
           { path: 'interviews', component: StaffScreen },
           { path: 'home', component: StaffScreen },
@@ -65,6 +67,8 @@ describe('staff session outlet lifecycle', () => {
     '/manage/event/setup',
     '/ref',
     '/players/event',
+    '/account/history',
+
     '/appointments',
     '/interviews',
   ]) {

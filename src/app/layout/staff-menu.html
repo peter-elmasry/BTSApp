@@ -39,7 +39,13 @@
         t('registration.playersTitle')
       }}</a>
     }
+    <a class="menu-row" routerLink="/account/history" (click)="close.emit()">{{
+      t('eventReport.history')
+    }}</a>
     @if (admin() && eventId(); as id) {
+      <a class="menu-row" [routerLink]="['/manage', id, 'recap']" (click)="close.emit()">{{
+        t('eventReport.recap')
+      }}</a>
       <nav class="grid gap-2" [attr.aria-label]="t('menu.eventTools')">
         <a class="menu-row" [routerLink]="['/manage', id, 'import']" (click)="close.emit()"
           ><span aria-hidden="true">⬆</span>{{ t('manage.toolbar.import') }}</a

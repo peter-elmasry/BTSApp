@@ -15,6 +15,8 @@ export interface StandingRow {
   final_tiebreak_pos: number | null;
 }
 export interface ExportMatch {
+  is_neutral?: boolean;
+  void_reason?: string | null;
   id: string;
   round_number: number;
   round_type: 'REGULAR' | 'OPENING';
@@ -27,6 +29,13 @@ export interface ExportMatch {
   result_entered_at: string | null;
 }
 export interface ExportAdjustment {
+  history?: {
+    old_points: number;
+    new_points: number;
+    reason: string;
+    changed_by: LocalizedName;
+    changed_at: string;
+  }[];
   id: string;
   team_code: string;
   team_name_en: string;

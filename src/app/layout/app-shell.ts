@@ -33,6 +33,7 @@ import { QuickLook } from '../features/quick-look/quick-look.service';
 import { QuickLookSheet } from '../features/quick-look/quick-look-sheet';
 import { OpeningAttachmentCard } from '../shared/ui/opening-attachment-card';
 import { AudioControls } from '../shared/ui/audio-controls';
+import { RpcTransport } from '../core/offline/rpc-transport';
 @Component({
   selector: 'app-shell',
   imports: [
@@ -53,6 +54,19 @@ import { AudioControls } from '../shared/ui/audio-controls';
   templateUrl: './app-shell.html',
 })
 export class AppShell {
+  private readonly transport = inject(RpcTransport);
+  private readonly headerEvent = signal<{
+    id: string;
+    name_en: string;
+    name_ar: string | null;
+    event_type?: string;
+  } | null>(null);
+  readonly viewedEvent = computed(() => {
+    const match = this.routeUrl()?.match(/^\/(?:manage|players|join)\/([^/?#]+)/);
+    if (!match) return this.events.event();
+    return this.headerEvent()?.id === match[1] ? this.headerEvent() : null;
+  });
+  readonly testEvent = computed(() => this.viewedEvent()?.event_type === 'TEST');
   readonly openingAttachment = computed(
     () => this.events.rounds().find((round) => round.type === 'OPENING')?.attachment,
   );
@@ -78,8 +92,9 @@ export class AppShell {
     ),
   );
   readonly displayMode = computed(() => this.routeUrl()?.split(/[?#]/)[0] === '/display');
+  readonly recapMode = computed(() => /\/recap(?:[?#]|$)/.test(this.routeUrl() ?? ''));
   readonly eventName = computed(() => {
-    const event = this.events.event();
+    const event = this.viewedEvent();
     const language = this.direction.language();
     return event
       ? language === 'ar'
@@ -96,6 +111,24 @@ export class AppShell {
       : '';
   });
   constructor() {
+    effect((cleanup) => {
+      const match = this.routeUrl()?.match(/^\/(?:manage|players|join)\/([^/?#]+)/);
+      this.channel.revision();
+      let active = true;
+      cleanup(() => {
+        active = false;
+      });
+      if (match)
+        void this.transport
+          .rpc<{ id: string; name_en: string; name_ar: string | null; event_type?: string } | null>(
+            'get_event_header',
+            { p_event: match[1] },
+          )
+          .then((event) => {
+            if (active) this.headerEvent.set(event);
+          })
+          .catch(() => undefined);
+    });
     void this.auth.initialize().then(() => this.events.initialize());
     void this.clock.synchronize();
     effect(() => this.channel.watch(this.events.event()?.id ?? 'current'));
@@ -160,7 +193,7 @@ export class AppShell {
   readonly visibleNavigation = computed(() =>
     navigationFor(
       this.auth.profile(),
-      this.events.event()?.id ?? null,
+      this.routeUrl()?.match(/^\/manage\/([^/?#]+)/)?.[1] ?? this.events.event()?.id ?? null,
       !!this.events.event() && canSeeAllOutcomes(this.events.event(), this.auth.profile()),
     ),
   );

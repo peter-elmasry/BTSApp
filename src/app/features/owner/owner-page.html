@@ -109,6 +109,13 @@
         class="ds-card grid gap-3 sm:grid-cols-2"
       >
         <h2 class="text-lg font-bold sm:col-span-2">{{ t('owner.createEvent') }}</h2>
+        <label
+          ><span>{{ t('eventReport.type') }}</span
+          ><select class="ds-control w-full" formControlName="event_type">
+            <option value="PROD">PROD</option>
+            <option value="TEST">TEST</option>
+          </select></label
+        >
         <label class="space-y-1"
           ><span>{{ t('owner.eventCode') }}</span
           ><input
@@ -151,6 +158,26 @@
             }
           </div>
           <div class="ds-actions">
+            <a
+              [routerLink]="['/manage', event.id, 'recap']"
+              class="ds-button secondary sm inline-flex"
+              >{{ t('eventReport.recap') }}</a
+            >
+            <span class="font-bold">{{ event.event_type || 'PROD' }}</span>
+            @if (event.status === 'DRAFT') {
+              <label
+                >{{ t('eventReport.type')
+                }}<select
+                  class="ds-control"
+                  [value]="event.event_type || 'PROD'"
+                  [disabled]="busy()"
+                  (change)="changeEventType(event, $any($event.target).value)"
+                >
+                  <option value="PROD">PROD</option>
+                  <option value="TEST">TEST</option>
+                </select></label
+              >
+            }
             <a
               [routerLink]="['/manage', event.id, 'live']"
               class="ds-button ghost sm inline-flex items-center"

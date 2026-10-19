@@ -43,7 +43,9 @@ export class StaffMenu {
   readonly events = inject(EventStore);
   readonly direction = inject(DirectionService);
   private readonly router = inject(Router);
-  readonly eventId = computed(() => this.events.event()?.id ?? null);
+  readonly eventId = computed(
+    () => this.router.url.match(/^\/manage\/([^/?#]+)/)?.[1] ?? this.events.event()?.id ?? null,
+  );
   readonly admin = computed(() => isEventAdmin(this.auth.profile(), this.eventId()));
   readonly owner = computed(() => this.auth.profile()?.system_role === 'OWNER');
   readonly display = computed(() => canSeeAllOutcomes(this.events.event(), this.auth.profile()));

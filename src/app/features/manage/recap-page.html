@@ -1,0 +1,329 @@
+<section *transloco="let t" class="space-y-5" data-testid="event-recap">
+  <div class="report-controls flex flex-wrap gap-2">
+    <button class="ds-button secondary" (click)="load()" [disabled]="loading() || busy()">
+      {{ t('eventReport.refresh') }}
+    </button>
+    <button class="ds-button secondary" (click)="print()" [disabled]="!report() || busy()">
+      {{ t('eventReport.print') }}
+    </button>
+    @if (ready() && !pendingOp()) {
+      <button class="ds-button primary" (click)="prepareFinish()">
+        {{ t('eventReport.finish') }}
+      </button>
+    }
+    @if (pendingOp() && !confirming()) {
+      <button class="ds-button primary" (click)="finish()" [disabled]="busy()">
+        {{ t('eventReport.retry') }}
+      </button>
+    }
+  </div>
+  @if (loading()) {
+    <p role="status">{{ t('eventReport.loading') }}</p>
+  }
+  @if (error()) {
+    <p role="alert" class="report-controls text-error">{{ t('eventReport.' + error()) }}</p>
+  }
+  @if (report(); as r) {
+    <header class="ds-card space-y-2">
+      <h1 class="text-2xl font-extrabold">
+        {{ t('eventReport.recap') }}: {{ name(r.event, direction.language()) }}
+      </h1>
+      <p>
+        {{ r.event.code }} · <strong>{{ r.event.event_type }}</strong> ·
+        {{ t('owner.eventStatus.' + r.event.status) }} ·
+        {{ r.event.starts_on || t('owner.noDate') }}
+      </p>
+      <p>
+        {{ t('eventReport.generated') }}: {{ date(r.generated_at) }} · {{ t('eventReport.cairo') }}
+      </p>
+      @if (r.event.finished_at) {
+        <p>{{ t('eventReport.finishedAt') }}: {{ date(r.event.finished_at) }}</p>
+      }
+      <p>
+        {{ t('eventReport.scoring') }}: {{ r.event.scoring_mode || 'POINTS' }} ·
+        {{ t('eventReport.winDrawLoss') }}: {{ r.event.points_win }} / {{ r.event.points_draw }} /
+        {{ r.event.points_loss }}
+      </p>
+      @if (r.event.scoring_mode === 'LIVES') {
+        <p>
+          {{ t('eventReport.initialLives') }}: {{ r.event.initial_lives }} {{ r.event.life_emoji }}
+        </p>
+      }
+      @if (r.settings; as settings) {
+        <p>
+          {{ t('eventReport.created') }}: {{ date(settings.created_at) }}
+          @if (settings.finished_by) {
+            · {{ t('eventReport.finishedBy') }}: {{ settings.finished_by }}
+          }
+        </p>
+        <p>
+          {{ t('eventReport.registration') }}:
+          {{ t(settings.registration_open ? 'eventReport.open' : 'eventReport.closed') }} ·
+          {{ t('eventReport.publicStandings') }}:
+          {{ t(settings.leaderboard_public ? 'eventReport.yes' : 'eventReport.no') }}
+        </p>
+        <p>
+          {{ t('eventReport.matchCaps') }}:
+          {{ settings.match_bonus_cap ?? t('eventReport.unlimited') }} /
+          {{ settings.match_penalty_cap ?? t('eventReport.unlimited') }}
+        </p>
+        <p>
+          {{ t('eventReport.eventCaps') }}:
+          {{ settings.event_bonus_cap ?? t('eventReport.unlimited') }} /
+          {{ settings.event_penalty_cap ?? t('eventReport.unlimited') }}
+        </p>
+      }
+    </header>
+    @if (r.blockers.round_ids.length || r.blockers.match_ids.length) {
+      <section class="ds-card" data-testid="completion-blockers">
+        <h2 class="text-lg font-bold">{{ t('eventReport.incomplete') }}</h2>
+        @for (round of r.rounds; track round.id) {
+          @if (r.blockers.round_ids.includes(round.id)) {
+            <p>
+              {{ t('eventReport.round') }} {{ round.number }}: {{ round.name_en }} ·
+              {{ t('eventReport.state.' + round.status) }}
+            </p>
+          }
+        }
+        @for (match of r.matches; track match.id) {
+          @if (r.blockers.match_ids.includes(match.id)) {
+            <p>
+              {{ t('eventReport.round') }} {{ match.round_number }} · {{ match.game_code }}
+              {{
+                name(
+                  { name_en: match.game_name_en, name_ar: match.game_name_ar },
+                  direction.language()
+                )
+              }}
+              · {{ t('eventReport.state.' + match.status) }}
+            </p>
+          }
+        }
+      </section>
+    }
+    <section class="ds-card space-y-2">
+      <h2 class="text-xl font-bold">{{ t('eventReport.summary') }}</h2>
+      <p>
+        {{ t('eventReport.teams') }}: {{ r.teams.length }} · {{ t('eventReport.games') }}:
+        {{ r.games.length }} · {{ t('eventReport.rounds') }}: {{ r.rounds.length }} ·
+        {{ t('eventReport.matches') }}: {{ r.matches.length }}
+      </p>
+      <p>
+        {{ t('eventReport.registered') }}: {{ activePlayers() }} · {{ t('eventReport.removed') }}:
+        {{ r.players.length - activePlayers() }} · {{ t('eventReport.staff') }}: {{ staffCount() }}
+      </p>
+      <p>{{ t('eventReport.registrationHelp') }}</p>
+      <p>
+        {{ t('eventReport.state.COMPLETED') }}: {{ matchCount('COMPLETED') }} ·
+        {{ t('eventReport.state.SCHEDULED') }}: {{ matchCount('SCHEDULED') }} ·
+        {{ t('eventReport.state.VOID') }}: {{ matchCount('VOID') }}
+      </p>
+    </section>
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold">{{ t('eventReport.players') }}</h2>
+      @for (team of r.teams; track team.id) {
+        <article class="ds-card space-y-2">
+          <h3 class="text-lg font-bold">{{ team.code }} · {{ team.name_en }}</h3>
+          <table class="report-table players-table">
+            <thead>
+              <tr>
+                <th>{{ t('eventReport.name') }}</th>
+                <th>{{ t('eventReport.details') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (player of r.players; track player.id) {
+                @if (player.team_code === team.code) {
+                  <tr>
+                    <th scope="row">
+                      <span>{{ player.name }}</span>
+                      <div class="report-phone mt-2">
+                        <ds-phone-link [name]="t('owner.phone')" [phone]="player.phone" />
+                      </div>
+                    </th>
+                    <td>
+                      <p>
+                        {{ t('eventReport.state.' + player.status) }} ·
+                        {{ date(player.created_at) }}
+                      </p>
+                      @if (player.possible_duplicate) {
+                        <p>{{ t('eventReport.duplicate') }}</p>
+                      }
+                      @if (player.invite_id) {
+                        <p>
+                          {{ t('eventReport.link') }}: {{ player.invite_team_code || '—' }} ·
+                          {{ player.invite_created_by || '—' }} ·
+                          {{ date(player.invite_created_at) }}
+                        </p>
+                        <small class="break-all">{{ player.invite_id }}</small>
+                      }
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </article>
+      } @empty {
+        <p>{{ t('eventReport.empty') }}</p>
+      }
+    </section>
+    <section class="ds-card space-y-2">
+      <h2 class="text-xl font-bold">{{ t('eventReport.staff') }}</h2>
+      @for (staff of r.staff; track $index) {
+        <p>
+          {{ name(staff, direction.language()) }} · {{ t('menu.role.' + staff.role) }}
+          @if (staff.team_code) {
+            · {{ staff.team_code }}
+          }
+          @if (staff.game_codes.length) {
+            · {{ staff.game_codes.join(', ') }}
+          }
+        </p>
+      } @empty {
+        <p>{{ t('eventReport.empty') }}</p>
+      }
+    </section>
+    <section class="ds-card space-y-2">
+      <h2 class="text-xl font-bold">{{ t('eventReport.standings') }}</h2>
+      <table class="report-table standings-table">
+        <thead>
+          <tr>
+            <th>{{ t('eventReport.rank') }}</th>
+            <th>{{ t('eventReport.team') }}</th>
+            <th>{{ t('eventReport.total') }}</th>
+            <th>{{ t('eventReport.details') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of r.standings; track row.team.id) {
+            <tr>
+              <td>{{ row.rank }}</td>
+              <th scope="row">{{ name(row.team, direction.language()) }}</th>
+              <td>{{ row.total }}</td>
+              <td>
+                {{ t('eventReport.played') }}: {{ row.played }} ·
+                {{ t('eventReport.winDrawLoss') }}: {{ row.wins }}/{{ row.draws }}/{{
+                  row.losses
+                }}
+                · {{ t('eventReport.forfeits') }}: {{ row.forfeits }}<br />{{
+                  t('eventReport.matchPoints')
+                }}: {{ row.match_points }} · {{ t('eventReport.adjustments') }}:
+                {{ row.adjustment_points }}
+                @if (row.is_tied) {
+                  · {{ t('eventReport.tied') }}
+                }
+                @if (row.final_tiebreak_pos !== null) {
+                  · {{ t('eventReport.tieOrder') }}: {{ row.final_tiebreak_pos }}
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+    <section class="ds-card space-y-2">
+      <h2 class="text-xl font-bold">{{ t('eventReport.games') }}</h2>
+      @for (game of r.games; track game.id) {
+        <p>
+          {{ game.code }} · {{ game.name_en }} · {{ game.location_en || '—' }}
+          @if (game.is_neutral) {
+            · {{ t('eventReport.neutral') }}
+          }
+        </p>
+      }
+    </section>
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold">{{ t('eventReport.rounds') }}</h2>
+      @for (round of r.rounds; track round.id) {
+        <article class="ds-card space-y-2">
+          <h3 class="text-lg font-bold">
+            {{ t('eventReport.round') }} {{ round.number }} · {{ round.name_en }} ·
+            {{ t('eventReport.state.' + round.status) }}
+          </h3>
+          <p>
+            {{ t('eventReport.duration') }}: {{ round.duration_min }} + {{ round.extension_min }}
+            {{ t('eventReport.minutes') }}
+          </p>
+          <p>
+            {{ t('eventReport.started') }}: {{ date(round.started_at) }} ·
+            {{ t('eventReport.closed') }}: {{ date(round.closed_at) }}
+          </p>
+          @for (match of r.matches; track match.id) {
+            @if (match.round_number === round.number) {
+              <div class="report-match border-t border-slate/20 pt-2">
+                <h4 class="font-bold">
+                  {{ match.game_code }} ·
+                  {{
+                    name(
+                      { name_en: match.game_name_en, name_ar: match.game_name_ar },
+                      direction.language()
+                    )
+                  }}
+                  · {{ t('eventReport.state.' + match.status) }}
+                  @if (match.is_neutral) {
+                    · {{ t('eventReport.neutral') }}
+                  }
+                </h4>
+                @for (participant of match.participants; track participant.team_code) {
+                  <p>
+                    {{ participant.team_code }} {{ name(participant, direction.language()) }}:
+                    {{ t('eventReport.state.' + participant.outcome) }}
+                  </p>
+                }
+                @if (match.void_reason) {
+                  <p>{{ t('eventReport.reason') }}: {{ match.void_reason }}</p>
+                }
+                <p>
+                  {{ t('eventReport.recordedBy') }}:
+                  {{ match.entered_by ? name(match.entered_by, direction.language()) : '—' }} ·
+                  {{ date(match.result_entered_at) }}
+                </p>
+              </div>
+            }
+          }
+        </article>
+      }
+    </section>
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold">{{ t('eventReport.adjustments') }}</h2>
+      @for (a of r.adjustments; track a.id) {
+        <article class="ds-card space-y-1">
+          <h3 class="font-bold">
+            {{ a.team_code }} {{ a.team_name_en }} · {{ a.points }} ·
+            {{ t('eventReport.scope.' + a.scope) }}
+          </h3>
+          <p>
+            {{ a.reason }} · {{ name(a.given_by, direction.language()) }} · {{ date(a.created_at) }}
+          </p>
+          @if (a.match_id) {
+            <p>{{ t('eventReport.match') }}: {{ a.match_id }}</p>
+          }
+          @if (a.revoked_at) {
+            <p>{{ t('eventReport.revoked') }}: {{ date(a.revoked_at) }} · {{ a.revoke_reason }}</p>
+          }
+          @for (change of a.history || []; track $index) {
+            <p>
+              {{ t('eventReport.correction') }}: {{ change.old_points }} → {{ change.new_points }} ·
+              {{ change.reason }} · {{ name(change.changed_by, direction.language()) }} ·
+              {{ date(change.changed_at) }}
+            </p>
+          }
+        </article>
+      } @empty {
+        <p>{{ t('eventReport.empty') }}</p>
+      }
+    </section>
+  }
+  @if (confirming()) {
+    <ds-bottom-sheet [title]="t('eventReport.finish')" (close)="confirming.set(false)">
+      <p>{{ t('eventReport.finishConfirm') }}</p>
+      @if (error()) {
+        <p role="alert">{{ t('eventReport.' + error()) }}</p>
+      }
+      <button class="ds-button primary mt-4" (click)="finish()" [disabled]="busy()">
+        {{ t(pendingOp() ? 'eventReport.retry' : 'eventReport.finish') }}
+      </button>
+    </ds-bottom-sheet>
+  }
+</section>
