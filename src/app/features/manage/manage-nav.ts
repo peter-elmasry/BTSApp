@@ -4,6 +4,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 
 /** One section bar for every event-administration screen (D040, amended by D045). */
 export const MANAGE_SECTIONS = [
+  { path: 'recap', key: 'eventReport.recap' },
   { path: 'live', key: 'manage.nav.control' },
   { path: 'results', key: 'manage.nav.results' },
   { path: 'adjustments', key: 'manage.nav.adjustments' },

@@ -41,6 +41,7 @@ type Member = {
   has_login: boolean;
 };
 type EventRow = {
+  event_type?: 'PROD' | 'TEST';
   id: string;
   code: string;
   name_en: string;
@@ -145,6 +146,7 @@ export class OwnerPage implements OnInit {
     password: new FormControl('', { nonNullable: true }),
   });
   readonly eventForm = new FormGroup({
+    event_type: new FormControl('PROD', { nonNullable: true }),
     code: new FormControl('', { nonNullable: true }),
     name_en: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     name_ar: new FormControl('', { nonNullable: true }),
@@ -315,14 +317,21 @@ export class OwnerPage implements OnInit {
   async createEvent() {
     if (this.eventForm.invalid || this.busy()) return;
     const v = this.eventForm.getRawValue();
-    const accepted = await this.mutate('create_event', {
+    const accepted = await this.mutate('create_typed_event', {
+      p_event_type: v.event_type,
       p_code: (v.code.trim() || this.defaultCode()).toUpperCase(),
       p_name_en: v.name_en,
       p_name_ar: v.name_en,
       p_starts_on: v.starts_on || null,
     });
     if (accepted) {
-      this.eventForm.reset({ code: '', name_en: '', name_ar: '', starts_on: '' });
+      this.eventForm.reset({
+        code: '',
+        name_en: '',
+        name_ar: '',
+        starts_on: '',
+        event_type: 'PROD',
+      });
     }
   }
   private showPendingOperation(data: { status?: string; operation_id?: string } | null): boolean {
@@ -335,6 +344,9 @@ export class OwnerPage implements OnInit {
     await this.mutate('set_current_event', {
       p_event: event.id,
     });
+  }
+  async changeEventType(event: EventRow, type: string) {
+    await this.mutate('set_event_type', { p_event: event.id, p_event_type: type });
   }
   selectAdmin(eventId: string, memberId: string) {
     this.adminSelection.update((v) => ({ ...v, [eventId]: memberId }));

@@ -1,0 +1,70 @@
+:host {
+  display: block;
+}
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.report-table th,
+.report-table td {
+  text-align: start;
+  padding: 0.6rem 0.25rem;
+  vertical-align: top;
+  border-bottom: 1px solid #cbd5e1;
+  overflow-wrap: anywhere;
+}
+.report-table th {
+  font-weight: 700;
+}
+.players-table th:first-child {
+  width: 45%;
+}
+.standings-table th:first-child {
+  width: 10%;
+}
+.standings-table th:nth-child(2) {
+  width: 25%;
+}
+.standings-table th:nth-child(3) {
+  width: 15%;
+}
+.report-phone {
+  font-weight: 400;
+}
+@media (max-width: 480px) {
+  .report-table {
+    font-size: 0.8rem;
+  }
+  .report-phone ds-phone-link {
+    display: block;
+  }
+}
+@media print {
+  .report-controls,
+  .report-phone {
+    display: none !important;
+  }
+  .ds-card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    padding: 8pt;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    break-after: avoid;
+  }
+  tr,
+  .report-match {
+    break-inside: avoid;
+  }
+  thead {
+    display: table-header-group;
+  }
+  table {
+    font-size: 9pt;
+  }
+}

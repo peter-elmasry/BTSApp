@@ -5,6 +5,8 @@ export interface LocalizedName {
   name_ar: string | null;
 }
 export interface PublicEvent extends LocalizedName {
+  event_type?: 'PROD' | 'TEST';
+  finished_at?: string | null;
   id: string;
   code: string;
   status: 'DRAFT' | 'LIVE' | 'FINISHED' | 'ARCHIVED';

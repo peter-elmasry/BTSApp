@@ -1,5 +1,34 @@
 # Implementation decisions
 
+## D077 — Finished PROD participation and private event recap
+
+Assigned event roles count as member participation. My history shows only FINISHED
+PROD events, never TEST or unfinished events; owner status alone is not attendance.
+A separate managed-events list gives owners/moderators access to historical recaps
+without changing the globally current event. Role removal removes eligibility.
+
+Owners create PROD/TEST events and may correct type only while DRAFT. The header
+uses the viewed event ID (including join links), with a small label for venue display.
+Legacy rows are TEST except the unique exact-name بدل تالف event; duplicate name
+matches abort migration for manual ID review. Existing completed legacy events are
+finished automatically; incomplete evidence is retained and reported in recap rather
+than fabricating results or force-closing rounds. Migration does not alter outcomes.
+
+Owners/event moderators finish atomically under the shared event lock, only when
+all rounds are CLOSED and all effective non-VOID results are complete. Neutral wins
+count as completed. Ending closes registration, records actor/time/audit and emits a
+thin settings signal; retries are payload/actor bound. Finished events cannot reopen
+rounds or reset results to pending; admins retain corrections of completed results.
+
+Recap reuses the existing one-statement export/scoring snapshot plus allowlisted
+roster/link references, round timing and game details. It is private, online-only,
+cleared at session boundaries and never stored in the persistent read cache. Players
+are registrations, not verified physical attendees. No token/device identifier is
+returned. Screen phones stay private; Print / Save as PDF omits all player phones,
+prints every row and correction, hides controls and uses Cairo timestamps. Existing
+XLSX contracts/privacy remain intact. Reports reflect the displayed generation time,
+not an immutable final archive; admins may later correct completed results.
+
 ## D075 — Correct existing adjustments without replacing their history
 
 Peter requested an authorized pen action and quarter-heart SVGs. Editing changes

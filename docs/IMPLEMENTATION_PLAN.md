@@ -1071,3 +1071,27 @@ SVG artwork, distinguish quarter/half/three-quarter/full meter states and preser
 exact decimal totals. D075 records the implementation contract. Validate EN/AR
 mobile/accessibility, permission matrix, replay/stale/revoke/cap/history behavior
 and existing live-scoring regressions before release.
+
+## 35. PROD history, event completion and recap — approved 2026-10-19
+
+- Owners create PROD/TEST events. Only DRAFT classification may change. Show TEST in
+  the viewed event's header; venue display gets a small top label.
+- Assigned event role counts as attendance. Member history includes only FINISHED
+  PROD events and the member's roles/teams/games. Separate managed-event access never
+  changes the public current event and grants no extra role or roster access.
+- Owners and event moderators end an event only with all rounds CLOSED and every
+  effective non-VOID match result complete. Validate under the event transaction lock,
+  close registration, audit actor/time, emit thin realtime and support safe retries.
+  Keep completed-result admin corrections; prevent reopening rounds/pending resets.
+- Legacy events are intended finished; only the unique بدل تالف event is PROD, others
+  TEST. Complete eligible existing events; report incomplete legacy evidence instead
+  of fabricating outcomes or bypassing completion requirements. Review any ambiguous
+  name mapping before deployment. New events default PROD for old-client compatibility.
+- Private recap orders overview, counters, per-team link registrations, staff,
+  standings, games, rounds/results and adjustment correction/revocation history.
+  Reuse existing scoring/export projections and one database statement snapshot.
+- Provide Print / Save as PDF with all detail rows, Arabic/English layout, Cairo time,
+  no player phones, controls, invitation tokens or device secrets. Keep roster reads
+  out of persistent caches; clear on logout/permission/account changes.
+- Acceptance requires SQL permissions/completion/replay/history/projection tests,
+  browser EN/AR/history/header/print/retry/session checks and build/type/i18n/format.

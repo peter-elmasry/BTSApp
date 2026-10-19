@@ -16,6 +16,11 @@ import {
 
 export const routes: Routes = [
   {
+    path: 'account/history',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/account/history-page').then((m) => m.HistoryPage),
+  },
+  {
     path: 'join/:eventId',
     loadComponent: () => import('./features/registration/join-page').then((m) => m.JoinPage),
   },
@@ -117,6 +122,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/manage/manage-layout').then((m) => m.ManageLayout),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'live' },
+      {
+        path: 'recap',
+        loadComponent: () => import('./features/manage/recap-page').then((m) => m.RecapPage),
+      },
       {
         path: 'results',
         loadComponent: () => import('./features/manage/results-page').then((m) => m.ResultsPage),

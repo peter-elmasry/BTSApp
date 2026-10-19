@@ -60,7 +60,12 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(page.getByTestId('toolbar-export')).toContainText(t.manage.toolbar.export);
       await expect(
         page.getByRole('navigation', { name: t.manage.nav.label }).getByRole('link'),
-      ).toHaveCount(6);
+      ).toHaveCount(7);
+      await expect(
+        page
+          .getByRole('navigation', { name: t.manage.nav.label })
+          .getByRole('link', { name: t.eventReport.recap }),
+      ).toBeVisible();
     }
     await page.setViewportSize({ width: 360, height: 740 });
     const nav = mainNav(page, t);

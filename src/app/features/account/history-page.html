@@ -1,0 +1,53 @@
+<section *transloco="let t" class="space-y-4">
+  <h1 class="text-2xl font-extrabold">{{ t('eventReport.history') }}</h1>
+  <p>{{ t('eventReport.historyHelp') }}</p>
+  <button class="ds-button secondary" (click)="load()" [disabled]="loading()">
+    {{ t('eventReport.refresh') }}
+  </button>
+  @if (loading()) {
+    <p role="status">{{ t('eventReport.loading') }}</p>
+  }
+  @if (error()) {
+    <p role="alert">{{ t('eventReport.loadFailed') }}</p>
+  }
+  @if (data(); as data) {
+    @for (event of data.history; track event.id) {
+      <article class="ds-card space-y-2" data-testid="history-event">
+        <h2 class="text-lg font-bold">{{ name(event, direction.language()) }}</h2>
+        <p>
+          {{ event.code }} · {{ event.starts_on || t('owner.noDate') }} ·
+          {{ t('owner.eventStatus.' + event.status) }}
+        </p>
+        @for (role of event.roles; track $index) {
+          <p>
+            {{ t('menu.role.' + role.role) }}
+            @if (role.team_code) {
+              · {{ role.team_code }} {{ role.team_name }}
+            }
+            @if (role.game_codes.length) {
+              · {{ role.game_codes.join(', ') }}
+            }
+          </p>
+        }
+        @if (event.can_recap) {
+          <a
+            class="ds-button secondary inline-flex"
+            [routerLink]="['/manage', event.id, 'recap']"
+            >{{ t('eventReport.recap') }}</a
+          >
+        }
+      </article>
+    } @empty {
+      <p class="ds-card" data-testid="history-empty">{{ t('eventReport.noHistory') }}</p>
+    }
+    @if (data.managed.length) {
+      <h2 class="text-xl font-bold">{{ t('eventReport.managed') }}</h2>
+      @for (event of data.managed; track event.id) {
+        <a class="ds-card block" [routerLink]="['/manage', event.id, 'recap']"
+          >{{ name(event, direction.language()) }} · {{ event.event_type }} ·
+          {{ t('owner.eventStatus.' + event.status) }}</a
+        >
+      }
+    }
+  }
+</section>
