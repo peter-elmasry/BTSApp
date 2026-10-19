@@ -24,13 +24,17 @@ export class SessionOutlet {
   );
   private readonly area = computed(() => this.url()?.split(/[/?#]/)[1]);
   private readonly staff = computed(() =>
-    ['owner', 'manage', 'ref', 'players', 'account'].includes(this.area() ?? ''),
+    ['owner', 'manage', 'ref', 'players', 'account', 'appointments', 'interviews'].includes(
+      this.area() ?? '',
+    ),
   );
   readonly allowed = computed(() => {
     if (!this.staff()) return true;
     const profile = this.auth.profile();
     if (!this.auth.session() || !profile) return false;
     if (this.area() === 'account') return true;
+
+    if (this.area() === 'appointments' || this.area() === 'interviews') return true;
     if (profile.system_role === 'OWNER') return true;
     if (this.area() === 'owner') return false;
     if (this.area() === 'manage' || this.area() === 'players') {

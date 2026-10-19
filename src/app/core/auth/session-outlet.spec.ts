@@ -46,6 +46,9 @@ describe('staff session outlet lifecycle', () => {
           { path: 'ref', component: StaffScreen },
           { path: 'players/:eventId', component: StaffScreen },
           { path: 'account/history', component: StaffScreen },
+
+          { path: 'appointments', component: StaffScreen },
+          { path: 'interviews', component: StaffScreen },
           { path: 'home', component: StaffScreen },
         ]),
       ],
@@ -65,6 +68,9 @@ describe('staff session outlet lifecycle', () => {
     '/ref',
     '/players/event',
     '/account/history',
+
+    '/appointments',
+    '/interviews',
   ]) {
     it(`destroys ${url} on logout and prevents late reads restoring its DOM`, async () => {
       const fixture = await open(url);
