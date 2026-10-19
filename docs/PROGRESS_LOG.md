@@ -866,4 +866,3 @@ Append entries newest-first. Preserve older entries as the handoff history.
 
 - Added `AGENTS.md`, this coordination guide, and the progress log. README links to the entry points.
 - Going forward, begin each substantive session with a `STARTED` progress entry and update it at milestones and handoff. Never place secret values in docs.
-
