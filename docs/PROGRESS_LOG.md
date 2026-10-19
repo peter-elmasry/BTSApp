@@ -2,11 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
-## 2026-10-19 — PR #46 database allowlist repair — STARTED
+## 2026-10-19 — PR #46 database allowlist repair — DONE
 
 - **Request/preflight:** Gendy requests checking/fixing failed DB CI for PR #46. Clean `codex/event-history-recap` at published e2fd714; fetched origin and attached PR. No merge/deployment authorized.
 - **Evidence:** CI 39238013371 frontend passes; migration reset, real Auth/appointments/push integration and all 46 new history assertions pass. Database job executes 1,433 assertions across 30 suites; only Phase 4 assertion 3 fails because its public-event allowlist predates event_type/finished_at. Registry pull throttling recovers and is not the failure.
-- **Plan:** Update the explicit public allowlist for the two intentional fields, assert default type/null completion time and retain negative privacy checks including finished_by. Run applicable formatting/whitespace checks, commit/push the focused test fix and verify cloud CI.
+- **Fix:** Updated the explicit public allowlist for the two intentional fields, added default type/null completion-time assertions and strengthened negative privacy checks with finished_by. No application or permission changes. Changed-document formatting and whitespace checks pass. Published c5303dc on the existing PR branch.
+- **Cloud acceptance:** CI 39238734093 passes both database and frontend on c5303dc: all 1,435 assertions across 30 SQL suites, clean migration reset, real Auth/appointment race/push runtime integration, full unit/browser/build/translation/format/release/Edge/Lighthouse checks. This supersedes the prior PR/database verification blocker. PR #46 is attached and remains open; no merge or deployment. This documentation-only follow-up records the verified runtime/test head; next is explicit review/merge authorization.
 
 ## 2026-10-19 — PROD history and event recap — HANDOFF
 
