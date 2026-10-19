@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-10-19 — Arabic sports-day terminology — HANDOFF
+
+- **Request/preflight:** Gendy asks how to finish an event and requests replacing فعالية with grammatical يوم رياضي / اليوم الرياضي. Explained the recap completion action and closed-round/completed-result prerequisites. Clean published feature branch; fetched merged master 824d763 and created codex/arabic-sports-day-labels.
+- **Scope/update:** Contextual Arabic terminology plus visible completion state. Gendy reports no end button/status for بدل تالف · BTS-PROD. Read-only public RPC confirms FINISHED with eight CLOSED rounds/no late results; no production writes. Add prominent status/already-ended text and keep a disabled completion action linked to blockers for unfinished days. Preserve server completion/access rules. Add meaningful finished-state Arabic accessibility/browser coverage and update stale-preview expectations. Owner/all-events and moderator/own-event recap access was explained; no permissions changed.
+- **Validation/outcome:** Contextual copy and explicit completion status are implemented. Production build, app/spec TypeScript, 1,393-key EN/AR parity, formatting/whitespace and a key/placeholder-preservation scan pass; no فعالي wording remains in the Arabic UI catalog. All 10 EN/AR recap browser journeys pass, including finished-day Arabic axe coverage, disabled stale-preview action and print flows; all seven existing completion/API unit checks pass. Visually inspected artifacts/sports-day-finished-ar.png. Initial concurrent compiler/type checks failed from Windows memory pressure; sequential bundled-Node checks with bounded workers/Go threads passed. No SQL, permission or production data changes. Next: commit/push the focused UI change, open PR and verify cloud CI before release; no merge/deployment requested.
+
 ## 2026-10-19 — PR #46 database allowlist repair — DONE
 
 - **Request/preflight:** Gendy requests checking/fixing failed DB CI for PR #46. Clean `codex/event-history-recap` at published e2fd714; fetched origin and attached PR. No merge/deployment authorized.

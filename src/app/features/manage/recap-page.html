@@ -6,10 +6,17 @@
     <button class="ds-button secondary" (click)="print()" [disabled]="!report() || busy()">
       {{ t('eventReport.print') }}
     </button>
-    @if (ready() && !pendingOp()) {
-      <button class="ds-button primary" (click)="prepareFinish()">
-        {{ t('eventReport.finish') }}
-      </button>
+    @if (report(); as r) {
+      @if ((r.event.status === 'DRAFT' || r.event.status === 'LIVE') && !pendingOp()) {
+        <button
+          class="ds-button primary"
+          (click)="prepareFinish()"
+          [disabled]="!ready() || busy()"
+          [attr.aria-describedby]="ready() ? null : 'event-completion-blockers'"
+        >
+          {{ t('eventReport.finish') }}
+        </button>
+      }
     }
     @if (pendingOp() && !confirming()) {
       <button class="ds-button primary" (click)="finish()" [disabled]="busy()">
@@ -24,6 +31,18 @@
     <p role="alert" class="report-controls text-error">{{ t('eventReport.' + error()) }}</p>
   }
   @if (report(); as r) {
+    <div class="ds-card space-y-2 border-2 border-navy" data-testid="event-completion-state">
+      <p class="text-lg font-extrabold">
+        {{ t('eventReport.status') }}: {{ t('owner.eventStatus.' + r.event.status) }}
+      </p>
+      @if (r.event.status === 'FINISHED') {
+        <p role="status" data-testid="event-finished-notice">
+          {{ t('eventReport.alreadyFinished') }}
+        </p>
+      } @else if (r.event.status === 'ARCHIVED') {
+        <p role="status">{{ t('eventReport.archived') }}</p>
+      }
+    </div>
     <header class="ds-card space-y-2">
       <h1 class="text-2xl font-extrabold">
         {{ t('eventReport.recap') }}: {{ name(r.event, direction.language()) }}
@@ -75,7 +94,7 @@
       }
     </header>
     @if (r.blockers.round_ids.length || r.blockers.match_ids.length) {
-      <section class="ds-card" data-testid="completion-blockers">
+      <section class="ds-card" data-testid="completion-blockers" id="event-completion-blockers">
         <h2 class="text-lg font-bold">{{ t('eventReport.incomplete') }}</h2>
         @for (round of r.rounds; track round.id) {
           @if (r.blockers.round_ids.includes(round.id)) {

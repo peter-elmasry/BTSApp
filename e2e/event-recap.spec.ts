@@ -223,6 +223,7 @@ test('end confirmation requires explicit action and refreshes final status', asy
   await page.getByRole('dialog').getByRole('button', { name: 'End event', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByTestId('event-recap')).toContainText('Finished');
+  await expect(page.getByTestId('event-finished-notice')).toContainText('already ended');
   expect(fixture.finishOps).toHaveLength(1);
   await expect(page.getByRole('button', { name: 'End event', exact: true })).toHaveCount(0);
 });
@@ -249,7 +250,7 @@ test('server rejects stale completion preview and page identifies blocking round
   await page.getByRole('button', { name: 'End event', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'End event', exact: true }).click();
   await expect(page.getByTestId('completion-blockers')).toContainText('First round');
-  await expect(page.getByRole('button', { name: 'End event', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'End event', exact: true })).toBeDisabled();
 });
 test('member history works independently of current event and links authorized recap', async ({
   page,
@@ -267,6 +268,27 @@ test('PROD header does not display TEST banner', async ({ page }) => {
   await page.goto(`/manage/${eventId}/recap`);
   await expect(page.getByText('Registered player', { exact: true })).toBeVisible();
   await expect(page.getByTestId('test-event-banner')).toHaveCount(0);
+});
+
+test('Arabic finished sports day clearly explains why no end action is needed', async ({
+  page,
+}) => {
+  const fixture = await mockReport(page, 'ar');
+  fixture.snapshot.event.status = 'FINISHED';
+  fixture.snapshot.event.event_type = 'PROD';
+  fixture.snapshot.event.name_en = 'بدل تالف';
+  fixture.snapshot.event.name_ar = 'بدل تالف';
+  await page.goto(`/manage/${eventId}/recap`);
+  await expect(page.getByTestId('event-completion-state')).toContainText('حالة اليوم الرياضي');
+  await expect(page.getByTestId('event-finished-notice')).toContainText(
+    'اليوم الرياضي منتهي بالفعل',
+  );
+  await expect(page.getByRole('button', { name: 'إنهاء اليوم الرياضي', exact: true })).toHaveCount(
+    0,
+  );
+  expect(fixture.finishOps).toEqual([]);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await page.screenshot({ path: 'artifacts/sports-day-finished-ar.png', fullPage: true });
 });
 
 test('historical recap navigation stays scoped to that event', async ({ page }) => {

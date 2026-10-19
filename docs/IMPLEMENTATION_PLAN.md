@@ -1105,6 +1105,8 @@ data writes, merge or release is authorized by the implementation request.
 
 ## 35. PROD history, event completion and recap — approved 2026-10-19
 
+- Arabic UI refers to a sports event as يوم رياضي / اليوم الرياضي (plural الأيام
+  الرياضية), including recap, completion, type labels, help and errors (D078).
 - Owners create PROD/TEST events. Only DRAFT classification may change. Show TEST in
   the viewed event's header; venue display gets a small top label.
 - Assigned event role counts as attendance. Member history includes only FINISHED
@@ -1114,6 +1116,8 @@ data writes, merge or release is authorized by the implementation request.
   effective non-VOID match result complete. Validate under the event transaction lock,
   close registration, audit actor/time, emit thin realtime and support safe retries.
   Keep completed-result admin corrections; prevent reopening rounds/pending resets.
+- Show a prominent completion status in recap. Explain already-finished/archived
+  days; unfinished days keep a disabled end action with linked blockers when needed.
 - Legacy events are intended finished; only the unique بدل تالف event is PROD, others
   TEST. Complete eligible existing events; report incomplete legacy evidence instead
   of fabricating outcomes or bypassing completion requirements. Review any ambiguous
