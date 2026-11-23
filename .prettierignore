@@ -18,3 +18,9 @@ supabase/config.toml
 supabase/migrations/*.sql
 supabase/tests/*.sql
 docs/IMPLEMENTATION_PLAN.md
+
+# Standalone presentation binaries and Python/source script notes
+/presentations/**/assets/
+/presentations/**/output/
+/presentations/**/*.py
+/presentations/**/*.txt

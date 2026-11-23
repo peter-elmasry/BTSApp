@@ -1,5 +1,17 @@
 # Implementation decisions
 
+## D079 — Standalone editable presentation artifact
+
+Gendy's supplied PDF is a presentation brief, separate from BTSApp requirements.
+Keep the 20-slide PowerPoint, source and replaceable artwork under
+`presentations/gift-being-yourself`; do not alter app behavior or production data.
+Use supplied DST/SHEEN images intact on Creativity, native editable text/diagrams,
+Egyptian Arabic notes with explicit RTL metadata, and source references in notes.
+Generated character scenes are illustrations; Gage uses an attributed historical
+portrait and a clearly labeled approximate educational injury schematic.
+Arial is the available portable bilingual font. Spaces creation tools are absent,
+so the presentation skill's local Artifact Tool fallback produces the PPTX.
+
 ## D078 — Arabic sports-day terminology
 
 Gendy requested يوم رياضي / اليوم الرياضي instead of فعالية in Arabic UI copy.

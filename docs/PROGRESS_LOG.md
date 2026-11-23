@@ -2,6 +2,12 @@
 
 Append entries newest-first. Preserve older entries as the handoff history.
 
+## 2026-11-23 — The Gift of Being Yourself presentation — STARTED
+
+- **Request/preflight:** Gendy provided a ten-page presentation brief and DST/SHEEN logos, asking to implement it and add character images. Clean workspace; fetched origin and created `codex/gift-being-yourself` from master `d36b656`. The request concerns a separate presentation, not application behavior.
+- **Scope:** Build an editable 20-slide widescreen PowerPoint, English headings/Egyptian Arabic narration, embedded notes/references, replaceable character illustrations and supplied logos. Keep source/assets/readme under `presentations/gift-being-yourself`; application and production data stay untouched. Spaces creation/connection tools are unavailable, so use the presentation skill's local Artifact Tool fallback.
+- **Implementation/validation milestone:** Authored all 20 slides, 24m40s suggested timing, Egyptian Arabic notes/transitions/references, native diagram/comparison table and replaceable artwork/logos. Artifact Tool path previews failed to load images; switched to embedded bytes. Its Arabic preview required explicit native RTL XML metadata. Corrected the Gage schematic before use. Finalizer passes package integrity, geometry/font/slide-count/native-table and reimport checks. Installed PowerPoint opened the actual final PPTX read-only and rendered all 20 slides; inspected every native render for Arabic order, image presence, text fit and logos. No app/SQL tests needed for this isolated artifact. Next: formatting/source checks, commit/push and PR/cloud verification.
+
 ## 2026-10-19 — Arabic sports-day terminology — HANDOFF
 
 - **Request/preflight:** Gendy asks how to finish an event and requests replacing فعالية with grammatical يوم رياضي / اليوم الرياضي. Explained the recap completion action and closed-round/completed-result prerequisites. Clean published feature branch; fetched merged master 824d763 and created codex/arabic-sports-day-labels.
